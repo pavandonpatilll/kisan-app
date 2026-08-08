@@ -1,0 +1,6969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Kisan AI</title>
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+
+background:linear-gradient(135deg,#1b5e20,#2e7d32,#43a047);
+
+min-height:100vh;
+
+overflow-x:hidden;
+
+}
+
+/* Splash */
+
+#splashScreen{
+
+position:fixed;
+
+top:0;
+
+left:0;
+
+width:100%;
+
+height:100%;
+
+background:linear-gradient(135deg,#1b5e20,#43a047);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+z-index:9999;
+
+animation:hideSplash .8s ease 2.5s forwards;
+
+}
+
+@keyframes hideSplash{
+
+to{
+
+opacity:0;
+
+visibility:hidden;
+
+}
+
+}
+
+.logoBox{
+
+text-align:center;
+
+color:#fff;
+
+}
+
+.logoCircle{
+
+width:110px;
+
+height:110px;
+
+border-radius:50%;
+
+background:#fff;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:55px;
+
+margin:auto;
+
+box-shadow:0 10px 30px rgba(0,0,0,.3);
+
+animation:rotateLogo 2s infinite;
+
+}
+
+@keyframes rotateLogo{
+
+0%{
+
+transform:scale(1);
+
+}
+
+50%{
+
+transform:scale(1.08);
+
+}
+
+100%{
+
+transform:scale(1);
+
+}
+
+}
+
+.logoBox h1{
+
+margin-top:20px;
+
+font-size:38px;
+
+font-weight:bold;
+
+}
+
+.logoBox p{
+
+margin-top:10px;
+
+font-size:18px;
+
+opacity:.9;
+
+}
+
+/* Sections */
+
+section{
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+min-height:100vh;
+
+padding:20px;
+
+}
+
+#registerSection{
+
+display:none;
+
+}
+
+#homeSection{
+
+display:none;
+
+padding-top:90px;
+
+}
+
+/* Card */
+
+.card{
+
+width:100%;
+
+max-width:420px;
+
+background:rgba(255,255,255,.15);
+
+backdrop-filter:blur(18px);
+
+padding:30px;
+
+border-radius:25px;
+
+box-shadow:0 10px 40px rgba(0,0,0,.25);
+
+color:#fff;
+
+}
+
+.card h2{
+
+text-align:center;
+
+margin-bottom:8px;
+
+font-size:30px;
+
+}
+
+.card p{
+
+text-align:center;
+
+margin-bottom:25px;
+
+opacity:.9;
+
+}
+
+/* Inputs */
+
+.card input{
+
+width:100%;
+
+padding:15px;
+
+margin-bottom:16px;
+
+border:none;
+
+outline:none;
+
+border-radius:12px;
+
+font-size:16px;
+
+}
+
+/* Button */
+
+.card button{
+
+width:100%;
+
+padding:15px;
+
+border:none;
+
+border-radius:12px;
+
+background:#00c853;
+
+color:#fff;
+
+font-size:18px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+.card button:hover{
+
+background:#00a843;
+
+transform:translateY(-2px);
+
+}
+
+/* Bottom Text */
+
+.bottomText{
+
+margin-top:20px;
+
+text-align:center;
+
+font-size:15px;
+
+}
+
+.bottomText span{
+
+color:#ffeb3b;
+
+cursor:pointer;
+
+font-weight:bold;
+
+}
+
+/* Home */
+
+header{
+
+position:fixed;
+
+top:0;
+
+left:0;
+
+width:100%;
+
+height:70px;
+
+background:#2e7d32;
+
+color:#fff;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:0 20px;
+
+font-size:24px;
+
+box-shadow:0 3px 10px rgba(0,0,0,.2);
+
+}
+
+.welcomeCard{
+
+background:#fff;
+
+border-radius:20px;
+
+padding:25px;
+
+margin:20px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.15);
+
+}
+
+.welcomeCard h2{
+
+color:#2e7d32;
+
+margin-bottom:10px;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:repeat(2,1fr);
+
+gap:15px;
+
+padding:20px;
+
+}
+
+.item{
+
+background:#fff;
+
+border-radius:18px;
+
+padding:25px;
+
+text-align:center;
+
+font-size:35px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.15);
+
+transition:.3s;
+
+cursor:pointer;
+
+}
+
+.item:hover{
+
+transform:translateY(-5px);
+
+}
+
+.item p{
+
+margin-top:10px;
+
+font-size:17px;
+
+font-weight:bold;
+
+color:#333;
+
+}
+
+nav{
+
+position:fixed;
+
+bottom:0;
+
+left:0;
+
+width:100%;
+
+height:70px;
+
+background:#fff;
+
+display:flex;
+
+justify-content:space-around;
+
+align-items:center;
+
+box-shadow:0 -3px 12px rgba(0,0,0,.15);
+
+}
+
+nav div{
+
+text-align:center;
+
+font-size:24px;
+
+cursor:pointer;
+
+}
+
+nav p{
+
+font-size:13px;
+
+margin-top:4px;
+
+}
+
+/* Mobile */
+
+@media(max-width:600px){
+
+.logoCircle{
+
+width:90px;
+
+height:90px;
+
+font-size:45px;
+
+}
+
+.card{
+
+padding:25px;
+
+}
+
+.grid{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+.featurePage{
+
+display:none;
+
+flex-direction:column;
+
+justify-content:center;
+
+align-items:center;
+
+gap:20px;
+
+background:#fff;
+
+color:#2e7d32;
+
+min-height:100vh;
+
+}
+
+
+.featurePage button{
+
+padding:12px 25px;
+
+border:none;
+
+border-radius:10px;
+
+background:#2e7d32;
+
+color:white;
+
+font-size:16px;
+
+}
+
+#sideMenu{
+
+position:fixed;
+
+top:0;
+
+left:-280px;
+
+width:260px;
+
+height:100%;
+
+background:#fff;
+
+z-index:999;
+
+padding:30px;
+
+transition:.3s;
+
+box-shadow:5px 0 20px rgba(0,0,0,.2);
+
+}
+
+
+#sideMenu p{
+
+padding:15px;
+
+font-size:18px;
+
+cursor:pointer;
+
+color:#2e7d32;
+
+border-bottom:1px solid #ddd;
+
+}
+
+
+#sideMenu.active{
+
+left:0;
+
+}
+
+
+.menuBtn{
+
+cursor:pointer;
+
+}
+
+.profileBox{
+
+background:white;
+
+padding:30px;
+
+border-radius:20px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.15);
+
+text-align:center;
+
+width:90%;
+
+max-width:350px;
+
+}
+
+
+.profileBox p{
+
+margin-top:15px;
+
+font-size:18px;
+
+color:#555;
+
+}
+
+.weatherCard{
+
+background:white;
+
+width:90%;
+
+max-width:400px;
+
+padding:25px;
+
+border-radius:25px;
+
+text-align:center;
+
+box-shadow:0 5px 20px rgba(0,0,0,.15);
+
+}
+
+
+.weatherCard h1{
+
+font-size:50px;
+
+color:#2e7d32;
+
+margin:20px;
+
+}
+
+
+.weatherInfo{
+
+display:flex;
+
+justify-content:space-around;
+
+margin-top:25px;
+
+}
+
+
+.weatherInfo div{
+
+font-size:25px;
+
+}
+
+
+.weatherInfo p{
+
+font-size:14px;
+
+color:#555;
+
+}
+
+
+.weatherInfo span{
+
+font-size:18px;
+
+font-weight:bold;
+
+}
+
+.weatherCard button{
+
+padding:12px 25px;
+
+border:none;
+
+border-radius:12px;
+
+background:#2e7d32;
+
+color:white;
+
+font-size:16px;
+
+margin-top:20px;
+
+cursor:pointer;
+
+}
+
+.weatherIcon{
+
+font-size:70px;
+
+margin:15px;
+
+}
+
+
+.farmAdvice{
+
+margin-top:20px;
+
+padding:15px;
+
+border-radius:20px;
+
+background:#e8f5e9;
+
+color:#2e7d32;
+
+font-size:16px;
+
+}
+
+.navItem{
+
+position:relative;
+
+cursor:pointer;
+
+}
+
+
+.navIcon{
+
+position:relative;
+
+font-size:26px;
+
+}
+
+
+#alertCount{
+
+position:absolute;
+
+top:-8px;
+
+right:-12px;
+
+background:red;
+
+color:white;
+
+font-size:12px;
+
+width:20px;
+
+height:20px;
+
+border-radius:50%;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-weight:bold;
+
+}
+
+.forecastBox{
+
+margin-top:20px;
+
+display:flex;
+
+flex-direction:column;
+
+gap:15px;
+
+}
+
+.forecastCard{
+
+background:linear-gradient(135deg,#ffffff,#f5fff2);
+
+border-radius:20px;
+
+padding:18px;
+
+box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+cursor:pointer;
+
+transition:.3s;
+
+border-left:6px solid #4CAF50;
+
+}
+
+.forecastCard:hover{
+
+transform:translateY(-3px);
+
+}
+
+.forecastTop{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+}
+
+.forecastDay{
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+font-size:20px;
+
+font-weight:bold;
+
+}
+
+.forecastIcon{
+
+font-size:34px;
+
+}
+
+.forecastTemp{
+
+font-size:22px;
+
+font-weight:bold;
+
+color:#2e7d32;
+
+}
+
+.forecastRain{
+
+margin-top:12px;
+
+font-size:15px;
+
+color:#666;
+
+}
+
+.forecastDetails{
+
+display:none;
+
+margin-top:18px;
+
+padding-top:15px;
+
+border-top:1px solid #ddd;
+
+}
+
+.forecastGrid{
+
+display:grid;
+
+grid-template-columns:repeat(2,1fr);
+
+gap:15px;
+
+margin-top:10px;
+
+}
+
+.detailCard{
+
+background:#fff;
+
+padding:12px;
+
+border-radius:12px;
+
+text-align:center;
+
+box-shadow:0 2px 8px rgba(0,0,0,.05);
+
+}
+
+.detailCard h3{
+
+margin:0;
+
+font-size:15px;
+
+}
+
+.detailCard p{
+
+margin-top:8px;
+
+font-size:18px;
+
+font-weight:bold;
+
+color:#2e7d32;
+
+}
+
+.adviceBox{
+
+margin-top:18px;
+
+background:#e8f5e9;
+
+padding:15px;
+
+border-radius:12px;
+
+font-size:15px;
+
+font-weight:bold;
+
+}
+
+
+.aiCard{
+
+background:#ffffff;
+
+border-radius:16px;
+
+padding:15px;
+
+margin:12px 0;
+
+box-shadow:0 3px 12px rgba(0,0,0,.15);
+
+text-align:left;
+
+}
+
+.aiTitle{
+
+font-size:18px;
+
+font-weight:bold;
+
+margin-bottom:8px;
+
+color:#2e7d32;
+
+}
+
+.aiValue{
+
+font-size:16px;
+
+color:#222;
+
+line-height:1.5;
+
+}
+
+.badgeRed{
+
+background:#ffebee;
+
+color:#c62828;
+
+padding:12px;
+
+border-radius:12px;
+
+font-size:22px;
+
+font-weight:bold;
+
+text-align:center;
+
+margin-bottom:15px;
+
+}
+
+.badgeGreen{
+
+background:#e8f5e9;
+
+color:#2e7d32;
+
+padding:12px;
+
+border-radius:12px;
+
+font-size:22px;
+
+font-weight:bold;
+
+text-align:center;
+
+margin-bottom:15px;
+
+}
+
+.cropGuideCard{
+
+background:linear-gradient(135deg,#ffffff,#f1fff4);
+
+border-radius:20px;
+
+padding:20px;
+
+margin:15px 0;
+
+box-shadow:0 8px 20px rgba(0,0,0,0.12);
+
+border:1px solid #d8f3dc;
+
+}
+
+
+.cropHeader{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+background:#2e7d32;
+
+color:white;
+
+padding:15px;
+
+border-radius:15px;
+
+margin-bottom:15px;
+
+}
+
+
+.cropHeader h2{
+
+margin:0;
+
+font-size:22px;
+
+}
+
+
+.cropLocation{
+
+font-size:14px;
+
+opacity:0.9;
+
+}
+
+
+
+.guideBox{
+
+background:white;
+
+border-radius:15px;
+
+padding:15px;
+
+margin:12px 0;
+
+border-left:5px solid #4caf50;
+
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+
+}
+
+
+.guideBox h3{
+
+margin:0 0 8px;
+
+font-size:17px;
+
+}
+
+
+.guideBox p{
+
+margin:0;
+
+line-height:1.5;
+
+color:#444;
+
+}
+
+
+
+.stageBox{
+border-left-color:#2196f3;
+}
+
+
+.waterBox{
+border-left-color:#03a9f4;
+}
+
+
+.fertilizerBox{
+border-left-color:#8bc34a;
+}
+
+
+.weatherBox{
+border-left-color:#ff9800;
+}
+
+
+.pestBox{
+border-left-color:#e53935;
+}
+
+
+.aiBox{
+border-left-color:#673ab7;
+}
+
+.alertLocation{
+
+background:#f1f8e9;
+
+padding:15px;
+
+border-radius:15px;
+
+margin:15px 0;
+
+font-size:18px;
+
+font-weight:bold;
+
+}
+
+
+
+.alertCard{
+
+background:white;
+
+border-radius:20px;
+
+padding:18px;
+
+margin:15px 0;
+
+box-shadow:0 5px 15px rgba(0,0,0,0.12);
+
+border-left:6px solid #4caf50;
+
+}
+
+
+
+.alertCard h2{
+
+margin-top:0;
+
+font-size:20px;
+
+}
+
+
+
+.alertCard p{
+
+font-size:16px;
+
+line-height:1.6;
+
+}
+
+
+
+.weatherAlert{
+
+border-left-color:#2196f3;
+
+background:#e3f2fd;
+
+}
+
+
+
+.cropAlert{
+
+border-left-color:#4caf50;
+
+background:#f1f8e9;
+
+}
+
+
+
+.diseaseAlert{
+
+border-left-color:#ff9800;
+
+background:#fff3e0;
+
+}
+
+
+
+.reminderAlert{
+
+border-left-color:#9c27b0;
+
+background:#f3e5f5;
+
+}
+
+
+
+#farmTasks p{
+
+background:#fafafa;
+
+padding:10px;
+
+border-radius:10px;
+
+margin:8px 0;
+
+}
+
+.riskLow{
+
+background:#e8f5e9 !important;
+
+border-left-color:#4caf50 !important;
+
+}
+
+
+.riskMedium{
+
+background:#fff3e0 !important;
+
+border-left-color:#ff9800 !important;
+
+}
+
+
+.riskHigh{
+
+background:#ffebee !important;
+
+border-left-color:#f44336 !important;
+
+}
+
+.searchCard{
+
+background:#fff;
+padding:18px;
+border-radius:18px;
+box-shadow:0 5px 20px rgba(0,0,0,.12);
+
+}
+
+#searchInput{
+
+width:100%;
+padding:15px;
+font-size:17px;
+border-radius:12px;
+border:2px solid #4caf50;
+outline:none;
+box-sizing:border-box;
+
+}
+
+#searchInput:focus{
+
+border-color:#2e7d32;
+
+}
+
+.searchItem{
+
+padding:14px;
+margin-top:10px;
+background:#f8f8f8;
+border-radius:12px;
+cursor:pointer;
+transition:.25s;
+
+}
+
+.searchItem:hover{
+
+background:#e8f5e9;
+transform:scale(1.02);
+
+}
+
+.searchTitle{
+
+font-size:18px;
+font-weight:bold;
+color:#2e7d32;
+
+}
+
+.searchText{
+
+margin-top:5px;
+color:#555;
+
+}
+
+mark{
+
+background:#ffe082;
+padding:2px 4px;
+border-radius:4px;
+
+}
+
+.searchHint{
+
+text-align:center;
+color:#777;
+padding:25px;
+
+}
+
+.searchBar{
+
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:15px;
+
+}
+
+.searchBar input{
+
+flex:1;
+
+}
+
+#voiceBtn{
+
+width:55px;
+height:55px;
+border:none;
+border-radius:100%;
+background:#08d413;
+color:white;
+font-size:25px;
+cursor:pointer;
+transition:.3s;
+
+}
+
+#voiceBtn:hover{
+
+background:#1b5e20;
+transform:scale(1.05);
+
+}
+
+.notificationWrapper{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.notificationBtn{
+    position:relative;
+    width:42px;
+    height:42px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:25px;
+    cursor:pointer;
+
+    border-radius:50%;
+
+    transition:0.2s ease;
+}
+
+.notificationBtn:hover{
+    background:#f1f8f2;
+    transform:scale(1.05);
+}
+
+
+/* 🔴 Notification Count */
+
+#notificationBadge{
+
+    position:absolute;
+
+    top:-3px;
+    right:-3px;
+
+    min-width:18px;
+    height:18px;
+
+    padding:0 5px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:#e53935;
+    color:#ffffff;
+
+    border:2px solid #ffffff;
+
+    border-radius:20px;
+
+    font-size:10px;
+    font-weight:800;
+
+    line-height:1;
+
+    box-sizing:border-box;
+
+    box-shadow:
+        0 2px 6px rgba(0,0,0,0.25);
+}
+
+
+/* Jab notification count 0 ho */
+
+#notificationBadge:empty{
+    display:none;
+}
+
+
+/* Notification page */
+
+#notificationPage{
+    width:100%;
+    box-sizing:border-box;
+}
+
+#notificationPage .weatherCard{
+
+    width:100%;
+    max-width:700px;
+
+    margin:20px auto;
+
+    box-sizing:border-box;
+}
+
+
+/* Notification cards */
+
+#notificationPage .aiCard{
+
+    margin:12px 0;
+
+    padding:15px;
+
+    border-radius:14px;
+
+    background:#ffffff;
+
+    border:1px solid #eeeeee;
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,0.08);
+}
+
+
+/* Mobile */
+
+@media(max-width:600px){
+
+    .notificationBtn{
+        width:40px;
+        height:40px;
+        font-size:23px;
+    }
+
+    #notificationBadge{
+
+        min-width:17px;
+        height:17px;
+
+        font-size:9px;
+
+    }
+
+}
+
+.newsCard{
+
+background:white;
+
+border-radius:20px;
+
+padding:18px;
+
+margin:15px 0;
+
+box-shadow:
+0 8px 25px rgba(0,0,0,0.12);
+
+transition:.3s;
+
+cursor:pointer;
+
+}
+
+
+
+.newsCard:hover{
+
+transform:translateY(-4px);
+
+}
+
+
+
+.newsCategory{
+
+display:inline-block;
+
+padding:6px 14px;
+
+border-radius:25px;
+
+font-size:13px;
+
+font-weight:bold;
+
+margin-bottom:12px;
+
+}
+
+
+
+.newsCard h3{
+
+font-size:17px;
+
+line-height:1.4;
+
+margin:5px 0;
+
+color:#222;
+
+}
+
+
+
+.newsCard p{
+
+font-size:14px;
+
+color:#555;
+
+line-height:1.6;
+
+margin-top:10px;
+
+}
+
+
+
+.newsFooter{
+
+border-top:1px solid #eee;
+
+margin-top:15px;
+
+padding-top:10px;
+
+font-size:12px;
+
+color:#777;
+
+}
+
+
+
+/* Category Badge */
+
+
+.weatherBadge{
+
+background:#e3f2fd;
+
+color:#1565c0;
+
+}
+
+
+
+.cropBadge{
+
+background:#e8f5e9;
+
+color:#2e7d32;
+
+}
+
+
+
+.marketBadge{
+
+background:#fff3e0;
+
+color:#ef6c00;
+
+}
+
+
+
+.diseaseBadge{
+
+background:#ffebee;
+
+color:#c62828;
+
+}
+
+
+
+.govBadge{
+
+background:#f3e5f5;
+
+color:#6a1b9a;
+
+}
+
+.newsFilter{
+
+display:flex;
+gap:10px;
+overflow-x:auto;
+padding:10px 0;
+margin-bottom:15px;
+
+}
+
+
+.newsFilter button{
+
+border:none;
+background:#e8f5e9;
+
+color:#2e7d32;
+
+padding:8px 15px;
+
+border-radius:20px;
+
+font-weight:bold;
+
+white-space:nowrap;
+
+cursor:pointer;
+
+}
+
+
+.newsFilter button:hover{
+
+background:#2e7d32;
+color:white;
+
+}
+
+.farmerMeaning{
+
+background:#f1f8e9;
+
+border-left:4px solid #43a047;
+
+padding:12px;
+
+margin-top:12px;
+
+border-radius:10px;
+
+font-size:14px;
+
+line-height:1.5;
+
+color:#33691e;
+
+}
+
+/* CHAT PAGE */
+
+#chatPage{
+
+background:linear-gradient(
+135deg,
+#e8f5e9,
+#fff8e1
+);
+
+min-height:100vh;
+
+padding:15px;
+
+}
+
+
+/* Chat Header */
+
+#chatTitle{
+
+background:linear-gradient(
+90deg,
+#2e7d32,
+#66bb6a
+);
+
+color:white;
+
+padding:15px;
+
+border-radius:18px;
+
+text-align:center;
+
+box-shadow:
+0 5px 15px rgba(0,0,0,.15);
+
+}
+
+
+
+/* Chat Box */
+
+#chatBox{
+
+margin-top:15px;
+
+height:420px;
+
+overflow-y:auto;
+
+padding:15px;
+
+background:white;
+
+border-radius:20px;
+
+box-shadow:
+0 5px 20px rgba(0,0,0,.12);
+
+}
+
+
+
+/* Message Bubble */
+
+.message{
+
+background:linear-gradient(
+135deg,
+#c8e6c9,
+#e8f5e9
+);
+
+color:#1b5e20;
+
+padding:12px 15px;
+
+margin:12px 0;
+
+border-radius:18px 18px 18px 5px;
+
+font-size:15px;
+
+box-shadow:
+0 3px 8px rgba(0,0,0,.12);
+
+}
+
+
+
+/* Time */
+
+.message small{
+
+color:#666;
+
+font-size:11px;
+
+}
+
+
+
+/* Input Area */
+
+.chatInput{
+
+position:fixed;
+
+bottom:15px;
+
+left:15px;
+
+right:15px;
+
+display:flex;
+
+gap:10px;
+
+background:white;
+
+padding:10px;
+
+border-radius:30px;
+
+box-shadow:
+0 5px 20px rgba(0,0,0,.18);
+
+}
+
+
+
+/* Message Input */
+
+.chatInput input{
+
+flex:1;
+
+border:none;
+
+outline:none;
+
+padding:13px 18px;
+
+border-radius:25px;
+
+background:#f1f8e9;
+
+font-size:15px;
+
+}
+
+
+
+/* Send Button */
+
+.chatInput button{
+
+width:90px;
+
+border:none;
+
+border-radius:25px;
+
+background:linear-gradient(
+135deg,
+#ff9800,
+#ff5722
+);
+
+color:white;
+
+font-weight:bold;
+
+font-size:15px;
+
+cursor:pointer;
+
+}
+
+
+
+/* Back Button */
+
+#chatPage button[onclick*="kisanPage"]{
+
+margin-top:20px;
+
+width:100%;
+
+padding:12px;
+
+border:none;
+
+border-radius:15px;
+
+background:#1565c0;
+
+color:white;
+
+font-size:16px;
+
+}
+
+.chatRow{
+
+display:flex;
+
+margin:10px 0;
+
+}
+
+
+.myMessage{
+
+justify-content:flex-end;
+
+}
+
+
+.otherMessage{
+
+justify-content:flex-start;
+
+}
+
+
+
+.messageBubble{
+
+max-width:75%;
+
+padding:12px 15px;
+
+border-radius:18px;
+
+font-size:15px;
+
+box-shadow:
+0 3px 8px rgba(0,0,0,.12);
+
+}
+
+
+
+/* Other Farmer */
+
+.otherMessage .messageBubble{
+
+background:#ffffff;
+
+color:#333;
+
+border-radius:
+
+18px 18px 18px 5px;
+
+border-left:4px solid #4caf50;
+
+}
+
+
+
+/* My Message */
+
+.myMessage .messageBubble{
+
+background:linear-gradient(
+135deg,
+#66bb6a,
+#2e7d32
+);
+
+color:white;
+
+border-radius:
+
+18px 18px 5px 18px;
+
+}
+
+.languagePage{
+
+position:fixed;
+
+inset:0;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+background:
+linear-gradient(
+135deg,
+#e8f5e9,
+#fff8e1,
+#e3f2fd
+);
+
+z-index:999999;
+
+padding:20px;
+
+}
+
+
+.languageBox{
+
+width:100%;
+
+max-width:380px;
+
+background:white;
+
+padding:35px 25px;
+
+border-radius:28px;
+
+text-align:center;
+
+box-shadow:
+0 15px 45px rgba(0,0,0,.15);
+
+}
+
+
+.languageLogo{
+
+font-size:55px;
+
+margin-bottom:5px;
+
+}
+
+
+.languageBox h1{
+
+margin:5px 0;
+
+color:#2e7d32;
+
+font-size:30px;
+
+}
+
+
+#languageSubtitle{
+
+color:#666;
+
+margin-bottom:25px;
+
+}
+
+
+.languageBox button{
+
+width:100%;
+
+padding:15px;
+
+margin:8px 0;
+
+border:none;
+
+border-radius:16px;
+
+background:linear-gradient(
+135deg,
+#43a047,
+#2e7d32
+);
+
+color:white;
+
+font-size:17px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+box-shadow:
+0 5px 12px rgba(46,125,50,.2);
+
+transition:.2s;
+
+}
+
+
+.languageBox button:hover{
+
+transform:translateY(-2px);
+
+}
+
+</style>
+
+</head>
+<body>
+
+<!-- Splash Screen -->
+
+<div id="splashScreen">
+
+<div class="logoBox">
+
+<div class="logoCircle">
+
+🌾
+
+</div>
+
+<h1>Kisan AI</h1>
+
+<p>Smart Farming Assistant</p>
+
+</div>
+
+</div>
+
+<section id="languagePage" class="languagePage">
+
+    <div class="languageBox">
+
+        <div class="languageLogo">
+            🌾
+        </div>
+
+        <h1>किसान AI</h1>
+
+        <p id="languageSubtitle">
+            अपनी भाषा चुनें
+        </p>
+
+
+        <button onclick="selectLanguage('mr')">
+            🇮🇳 मराठी
+        </button>
+
+
+        <button onclick="selectLanguage('hi')">
+            🇮🇳 हिंदी
+        </button>
+
+
+        <button onclick="selectLanguage('en')">
+            🇬🇧 English
+        </button>
+
+    </div>
+
+</section>
+
+<!-- Login Section -->
+
+<section id="loginSection">
+
+<div class="card">
+
+<h2>Welcome Farmer 👨‍🌾</h2>
+
+<p>Login to Continue</p>
+
+<input
+type="tel"
+id="loginMobile"
+placeholder="Mobile Number"
+maxlength="10">
+
+<input
+type="password"
+id="loginPassword"
+placeholder="Password">
+
+<button onclick="loginUser()">
+
+Login
+
+</button>
+
+<div class="bottomText">
+
+Don't have an account?
+
+<span onclick="showRegister()">
+
+Register
+
+</span>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- Register Section -->
+
+<section id="registerSection">
+
+<div class="card">
+
+<h2>Create Account</h2>
+
+<p>Join Kisan AI</p>
+
+<input
+type="text"
+id="regName"
+placeholder="Full Name">
+
+<input
+type="tel"
+id="regMobile"
+placeholder="Mobile Number"
+maxlength="10">
+
+<input
+type="text"
+id="regVillage"
+placeholder="Village">
+
+<label>🌾 Main Crop</label>
+
+<select id="crop" required>
+
+<option value="">Select Crop</option>
+
+<option>Rice (Paddy)</option>
+
+<option>Wheat</option>
+
+<option>Soybean</option>
+
+<option>Cotton</option>
+
+<option>Maize</option>
+
+<option>Sugarcane</option>
+
+<option>Groundnut</option>
+
+<option>Onion</option>
+
+<option>Potato</option>
+
+<option>Tomato</option>
+
+<option>Chilli</option>
+
+<option>Tur (Pigeon Pea)</option>
+
+<option>Gram (Chana)</option>
+
+<option>Moong</option>
+
+<option>Urad</option>
+
+<option>Jowar</option>
+
+<option>Bajra</option>
+
+<option>Ragi</option>
+
+<option>Sunflower</option>
+
+<option>Mustard</option>
+
+<option>Sesame (Til)</option>
+
+<option>Coriander</option>
+
+<option>Cumin (Jeera)</option>
+
+<option>Garlic</option>
+
+<option>Ginger</option>
+
+<option>Banana</option>
+
+<option>Mango</option>
+
+<option>Grapes</option>
+
+<option>Orange</option>
+
+<option>Pomegranate</option>
+
+<option>Papaya</option>
+
+<option>Other</option>
+
+</select>
+
+<input
+type="password"
+id="regPassword"
+placeholder="Password">
+
+<button onclick="registerUser()">
+
+Register
+
+</button>
+
+<div class="bottomText">
+
+Already have account?
+
+<span onclick="showLogin()">
+
+Login
+
+</span>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- Home -->
+
+<section id="homeSection">
+
+<header>
+
+    <div onclick="openMenu()" class="menuBtn">
+        ☰
+    </div>
+
+    <h2>
+        🌾 Kisan AI
+    </h2>
+
+    <div
+    class="notificationWrapper"
+    onclick="openPage('notificationPage')"
+>
+    <div class="notificationBtn">
+
+        🔔
+
+        <span id="notificationBadge">
+            1
+        </span>
+
+    </div>
+</div>
+
+</header>
+
+<div id="sideMenu">
+
+<h2>
+🌾 Kisan AI
+</h2>
+
+
+<p onclick="goHome()">
+🏠 Home
+</p>
+
+
+<p onclick="openPage('profilePage')">
+👤 Profile
+</p>
+
+
+<p onclick="openPage('schemePage')">
+🏛 Schemes
+</p>
+
+
+<p onclick="openPage('newsPage')">
+📰 News
+</p>
+
+
+<p onclick="logout()">
+🚪 Logout
+</p>
+
+
+</div>
+
+<div class="welcomeCard">
+
+<h2>
+👋 Welcome
+<span id="farmerName">
+Farmer
+</span>
+</h2>
+
+
+<p><b>🌾 Main Crop</b></p>
+
+<select id="homeCropSelect" onchange="changeHomeCrop()">
+
+<option>Rice (Paddy)</option>
+<option>Wheat</option>
+<option>Soybean</option>
+<option>Cotton</option>
+<option>Maize</option>
+<option>Sugarcane</option>
+<option>Groundnut</option>
+<option>Onion</option>
+<option>Potato</option>
+<option>Tomato</option>
+<option>Chilli</option>
+<option>Tur (Pigeon Pea)</option>
+<option>Gram (Chana)</option>
+<option>Moong</option>
+<option>Urad</option>
+<option>Jowar</option>
+<option>Bajra</option>
+<option>Ragi</option>
+<option>Sunflower</option>
+<option>Mustard</option>
+<option>Sesame (Til)</option>
+<option>Coriander</option>
+<option>Cumin (Jeera)</option>
+<option>Garlic</option>
+<option>Ginger</option>
+<option>Banana</option>
+<option>Mango</option>
+<option>Grapes</option>
+<option>Orange</option>
+<option>Pomegranate</option>
+<option>Papaya</option>
+
+</select>
+
+<p>
+🏡 Village:
+<span id="homeVillage">
+--
+</span>
+</p>
+
+
+<p>
+📍 Location:
+<span id="currentLocation">
+Detecting...
+</span>
+</p>
+
+
+
+<div class="weatherCard">
+
+<h2>
+📊 Disease Summary
+</h2>
+
+
+<p>
+🔍 Total Scans:
+<span id="totalScans">
+0
+</span>
+</p>
+
+
+<p>
+🌾 Last Crop:
+<span id="lastCrop">
+--
+</span>
+</p>
+
+
+<p>
+🦠 Last Disease:
+<span id="lastDisease">
+--
+</span>
+</p>
+
+
+<p>
+⚠ Risk Level:
+<span id="riskLevel">
+--
+</span>
+</p>
+
+</div>
+</div>
+
+<div class="grid">
+
+    <div class="item" onclick="openPage('weatherPage')">
+        🌦
+        <p id="txtWeather">Weather</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('kisanPage')">
+        👥
+        <p id="txtKisanConnect">Kisan Connect</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('mandiPage')">
+        💰
+        <p id="txtMandi">Mandi</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('aiPage')">
+        🤖
+        <p id="txtAIChat">AI Chat</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('advicePage')">
+        🤖
+        <p id="txtAIAdvice">AI Farming Advice</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('cropGuidePage')">
+        🌱
+        <p id="txtCropGuide">Crop Guide</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('diseasePage')">
+        📷
+        <p id="txtDiseaseScan">Disease Scan</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('schemePage')">
+        🏛
+        <p id="txtSchemes">Schemes</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('historyPage')">
+        📋
+        <p id="txtDiseaseHistory">Disease History</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('newsPage')">
+        📰
+        <p id="txtNews">News</p>
+    </div>
+
+
+    <div class="item" onclick="openPage('profilePage')">
+        👤
+        <p id="txtProfile">Profile</p>
+    </div>
+
+</div>
+
+
+<nav>
+
+    <div onclick="goHome()">
+        🏠
+        <p id="navHome">Home</p>
+    </div>
+
+
+    <div onclick="openPage('searchPage')">
+        🔍
+        <p id="navSearch">Search</p>
+    </div>
+
+
+    <div onclick="openPage('aiPage')">
+        🤖
+        <p id="navAI">AI</p>
+    </div>
+
+
+    <div class="navItem" onclick="openPage('alertPage')">
+
+        <div class="navIcon">
+            🔔
+            <span id="alertCount">0</span>
+        </div>
+
+        <p id="navAlerts">Alerts</p>
+
+    </div>
+
+
+    <div onclick="openPage('profilePage')">
+        👤
+        <p id="navProfile">Profile</p>
+    </div>
+
+</nav>
+</section>
+
+<section id="weatherPage" class="featurePage">
+
+<h1>🌦 Weather</h1>
+
+
+<div class="weatherCard">
+
+<h2 id="weatherCity">
+📍 Your Location
+</h2>
+
+
+<h1 id="temperature">
+--°C
+</h1>
+
+<p id="weatherStatus">
+Loading Weather...
+</p>
+
+<div class="weatherIcon" id="weatherIcon">
+☀️
+</div>
+
+
+<div class="farmAdvice">
+
+🌱 Farming Advice
+
+<p id="advice">
+Weather data aane ke baad farming advice milegi
+</p>
+
+</div>
+
+<button onclick="getLiveLocation()">
+📍 Get My Location
+</button>
+
+<p id="locationText">
+Location not detected
+</p>
+
+
+<div class="weatherInfo">
+
+
+<div>
+💧
+<p>Humidity</p>
+<span id="humidity">
+--%
+</span>
+</div>
+
+
+<div>
+🌧️
+<p>Rain</p>
+<span id="rain">
+--%
+</span>
+</div>
+
+
+<div>
+💨
+<p>Wind</p>
+<span id="wind">
+-- km/h
+</span>
+</div>
+
+
+</div>
+
+
+<h2>📅 7-Day Forecast</h2>
+
+<div id="forecastBox" class="forecastBox">
+
+Loading Forecast...
+
+</div>
+
+</div>
+
+<button onclick="goHome()">
+Back Home
+</button>
+
+</section>
+
+<section id="searchPage" class="featurePage">
+
+<h1>🔍 Smart Farmer Search</h1>
+
+<div class="searchCard">
+
+<div class="searchBar">
+
+<input
+type="text"
+id="searchInput"
+placeholder="Search crop, disease, fertilizer, weather..."
+onkeyup="smartSearch()"
+autocomplete="off">
+
+<button
+id="voiceBtn"
+onclick="startVoiceSearch()">
+🎙️
+</button>
+
+</div>
+
+<div id="searchResults">
+
+<div class="searchHint">
+
+🌾 Try:
+Soybean, Onion, Cotton, Rain, Disease,
+Pesticide, Fertilizer, Weather, Market
+
+</div>
+
+</div>
+
+</div>
+
+<br>
+
+<button onclick="goHome()">
+🏠 Back Home
+</button>
+
+</section>
+
+<section id="alertPage" class="featurePage">
+
+<h1>🔔 Farmer Alerts</h1>
+
+
+<div class="alertLocation">
+
+📍 <span id="alertLocation">Loading Location...</span>
+
+</div>
+
+
+
+<div class="alertCard weatherAlert">
+
+<h2>🌦 Weather Alert</h2>
+
+<p id="weatherAlert">
+Loading...
+</p>
+
+</div>
+
+
+
+
+<div class="alertCard cropAlert">
+
+<h2>🌱 Crop Alert</h2>
+
+<p id="cropAlert">
+Loading...
+</p>
+
+</div>
+
+
+
+
+
+<div id="diseaseCard" class="alertCard diseaseAlert">
+
+<h2>🐛 Disease Risk</h2>
+
+<p id="diseaseRisk">
+Loading...
+</p>
+
+</div>
+
+
+
+
+
+<div class="alertCard reminderAlert">
+
+<h2>📅 Farming Reminder</h2>
+
+<p id="farmReminder">
+Loading...
+</p>
+
+</div>
+
+
+
+
+
+<div class="alertCard">
+
+<h2>✅ Today's Tasks</h2>
+
+<div id="farmTasks">
+
+Loading...
+
+</div>
+
+
+</div>
+
+
+
+
+
+<button onclick="loadAlerts()">
+
+🔄 Refresh Alerts
+
+</button>
+
+
+<br><br>
+
+
+<button onclick="goHome()">
+
+🏠 Back Home
+
+</button>
+
+
+</section>
+
+<section id="notificationPage" class="featurePage">
+
+    <h1>🔔 Farmer Notifications</h1>
+
+    <div class="weatherCard">
+
+        <h2>🌦 Today's Alerts</h2>
+
+        <div id="notificationContent">
+            🔄 Loading notifications...
+        </div>
+
+    </div>
+
+    <button onclick="goHome()">
+        🏠 Back Home
+    </button>
+
+</section>
+
+<section id="mandiPage" class="featurePage">
+
+<h1>💰 Live Mandi Rates</h1>
+
+<div class="weatherCard">
+
+<h2 id="mandiCrop">
+🌾 Loading Crop...
+</h2>
+
+<h3 id="mandiLocation">
+📍 Loading Location...
+</h3>
+
+<h1 id="todayPrice">
+₹ --
+</h1>
+
+<p id="marketName">
+Loading Market...
+</p>
+
+<p id="priceDate">
+Today's Price
+</p>
+
+<div class="weatherInfo">
+
+<div>
+
+📈
+
+<p>Maximum</p>
+
+<span id="maxPrice">
+--
+</span>
+
+</div>
+
+<div>
+
+📉
+
+<p>Minimum</p>
+
+<span id="minPrice">
+--
+</span>
+
+</div>
+
+<div>
+
+⚖️
+
+<p>Average</p>
+
+<span id="avgPrice">
+--
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+<button onclick="goHome()">
+Back Home
+</button>
+
+</section>
+
+<section id="aiPage" class="featurePage">
+
+<h1>🤖 AI Kisan Assistant</h1>
+
+
+<div class="weatherCard">
+
+
+<h2>
+🌱 Kisan ka Sawal
+</h2>
+
+
+<textarea 
+id="farmerQuestion"
+placeholder="Apna farming sawal likhe..."
+style="
+width:100%;
+height:120px;
+padding:15px;
+border-radius:10px;
+font-size:16px;
+">
+Soybean me patte peele ho rahe hai kya kare?
+</textarea>
+
+
+
+<br><br>
+
+
+<button onclick="askAI()">
+
+🤖 Ask AI
+
+</button>
+
+
+
+<hr>
+
+
+
+<h2>
+💡 AI Advice
+</h2>
+
+
+<p id="aiAnswer">
+
+Aapke sawal ka AI farming answer yaha aayega.
+
+</p>
+
+</div>
+
+<button onclick="goHome()">
+
+🏠 Back Home
+
+</button>
+
+</section>
+
+<section id="advicePage" class="featurePage">
+
+<h1>
+🤖 AI Farming Advice
+</h1>
+
+
+<div class="weatherCard">
+
+
+<div id="adviceBox">
+
+Loading AI Advice...
+
+</div>
+
+
+</div>
+
+
+<button onclick="goHome()">
+
+🏠 Back Home
+
+</button>
+
+
+</section>
+
+
+<section id="cropGuidePage" class="featurePage">
+
+<h1>🌱 Smart Crop Guide</h1>
+
+<div class="cropGuideCard">
+
+<div class="cropHeader">
+
+<div>
+
+<h2 id="guideCrop">
+🌾 Loading Crop...
+</h2>
+
+<h3 class="cropLocation" id="guideLocation">
+📍 Loading Location...
+</h3>
+
+</div>
+
+<div class="cropEmoji">
+🌱
+</div>
+
+</div>
+
+
+<div class="guideBox">
+
+<h3>🌾 Select Crop</h3>
+
+<select id="guideCropSelect" onchange="loadCropGuide()">
+
+<option value="">Choose Crop</option>
+
+<option>Rice (Paddy)</option>
+<option>Wheat</option>
+<option>Soybean</option>
+<option>Cotton</option>
+<option>Maize</option>
+<option>Sugarcane</option>
+<option>Groundnut</option>
+<option>Onion</option>
+<option>Potato</option>
+<option>Tomato</option>
+<option>Chilli</option>
+<option>Tur (Pigeon Pea)</option>
+<option>Gram (Chana)</option>
+<option>Moong</option>
+<option>Urad</option>
+<option>Jowar</option>
+<option>Bajra</option>
+<option>Ragi</option>
+<option>Sunflower</option>
+<option>Mustard</option>
+<option>Sesame (Til)</option>
+<option>Coriander</option>
+<option>Cumin (Jeera)</option>
+<option>Garlic</option>
+<option>Ginger</option>
+<option>Banana</option>
+<option>Mango</option>
+<option>Grapes</option>
+<option>Orange</option>
+<option>Pomegranate</option>
+<option>Papaya</option>
+<option>Other</option>
+
+</select>
+
+<br><br>
+
+<input
+type="text"
+id="otherCrop"
+placeholder="✍️ Enter crop name"
+style="display:none;width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;">
+
+</div>
+
+
+<div class="guideBox stageBox">
+
+<h3>🌱 Crop Stage</h3>
+
+<p id="guideStage">
+Loading...
+</p>
+
+</div>
+
+
+<div class="guideBox waterBox">
+
+<h3>💧 Irrigation Advice</h3>
+
+<p id="guideWater">
+Loading...
+</p>
+
+</div>
+
+
+<div class="guideBox fertilizerBox">
+
+<h3>🌿 Fertilizer Advice</h3>
+
+<p id="guideFertilizer">
+Loading...
+</p>
+
+</div>
+
+
+<div class="guideBox weatherBox">
+
+<h3>🌦 Weather Advice</h3>
+
+<p id="guideWeather">
+Loading...
+</p>
+
+</div>
+
+
+<div class="guideBox pestBox">
+
+<h3>🐛 Pest Alert</h3>
+
+<p id="guidePest">
+Loading...
+</p>
+
+</div>
+
+
+<div class="guideBox aiBox">
+
+<h3>🤖 AI Recommendation</h3>
+
+<p id="guideAI">
+Loading...
+</p>
+
+</div>
+
+</div>
+
+<button onclick="goHome()">
+🏠 Back Home
+</button>
+
+</section>
+
+
+<section id="diseasePage" class="featurePage">
+
+<h1>📷 AI Disease Scan</h1>
+
+<div class="cropGuideCard">
+
+<h2>🌿 Scan Crop Disease</h2>
+
+<p>
+Take a live photo or choose an image from your gallery.
+</p>
+
+<!-- Hidden Camera Input -->
+<input
+type="file"
+id="cameraImage"
+accept="image/*"
+capture="environment"
+style="display:none"
+onchange="scanDisease()">
+
+<!-- Hidden Gallery Input -->
+<input
+type="file"
+id="galleryImage"
+accept="image/*"
+style="display:none"
+onchange="scanDisease()">
+
+<div style="margin-top:20px;">
+
+<button onclick="document.getElementById('cameraImage').click()">
+📷 Open Camera
+</button>
+
+<button onclick="document.getElementById('galleryImage').click()">
+🖼 Choose From Gallery
+</button>
+
+</div>
+
+<br>
+
+<img
+id="previewImage"
+src=""
+style="
+display:none;
+width:100%;
+max-height:260px;
+object-fit:cover;
+border-radius:12px;
+margin-top:15px;
+border:2px solid #ddd;
+">
+
+<hr>
+
+<div id="scanResult">
+
+🌱 Waiting for crop image...
+
+</div>
+
+</div>
+
+<br>
+
+<button onclick="goHome()">
+🏠 Back Home
+</button>
+
+</section>
+
+<section id="schemePage" class="featurePage">
+
+<h1>🏛 Government Schemes</h1>
+
+
+<div class="weatherCard">
+
+
+<h2>
+👨‍🌾 Farmer Schemes
+</h2>
+
+
+<select id="schemeState">
+
+<option value="Maharashtra">
+Maharashtra
+</option>
+
+<option value="Madhya Pradesh">
+Madhya Pradesh
+</option>
+
+<option value="Karnataka">
+Karnataka
+</option>
+
+</select>
+
+
+<br><br>
+
+
+<button onclick="loadSchemes()">
+
+🔍 Find Schemes
+
+</button>
+
+
+
+<hr>
+
+
+
+<div id="schemeList">
+
+Select your state to view schemes
+
+</div>
+
+
+
+</div>
+
+
+
+<button onclick="goHome()">
+
+🏠 Back Home
+
+</button>
+
+
+</section>
+
+<section id="historyPage" class="featurePage">
+
+<h1>📋 Disease History</h1>
+
+<div id="historyList">
+
+Loading...
+
+</div>
+
+<button onclick="goHome()">
+🏠 Back Home
+</button>
+
+</section>
+
+<section id="reportPage" class="featurePage">
+
+<h1>🤖 AI Disease Report</h1>
+
+
+<div class="weatherCard" id="reportBox">
+
+Loading Report...
+
+</div>
+
+<button onclick="downloadDiseaseReport()">
+
+📄 Download PDF Report
+
+</button>
+
+<button onclick="openPage('historyPage')">
+
+⬅ Back History
+
+</button>
+
+
+</section>
+
+
+<section id="newsPage" class="featurePage">
+
+<h1>📰 Agriculture News</h1>
+
+<div class="newsFilter">
+
+<button onclick="filterNews('All')">
+📰 All
+</button>
+
+<button onclick="filterNews('Weather')">
+🌧 Weather
+</button>
+
+<button onclick="filterNews('Crop')">
+🌱 Crop
+</button>
+
+<button onclick="filterNews('Market')">
+💰 Market
+</button>
+
+<button onclick="filterNews('Disease')">
+🐛 Disease
+</button>
+
+<button onclick="filterNews('Government')">
+🏛 Government
+</button>
+
+</div>
+
+
+<div id="newsList">
+
+</div>
+
+<div class="newsContainer" id="newsList">
+
+🔄 Loading news...
+
+</div>
+
+
+<button onclick="goHome()">
+🏠 Back Home
+</button>
+
+
+</section>
+
+<section id="profilePage" class="featurePage">
+
+<h1>👤 Farmer Profile</h1>
+
+
+<div class="profileBox">
+
+
+<h2 id="profileName">
+Name
+</h2>
+
+
+<p id="profileMobile">
+Mobile
+</p>
+
+
+<p id="profileVillage">
+Village
+</p>
+
+
+</div>
+
+
+<button onclick="goHome()">
+Back Home
+</button>
+
+
+</section>
+
+<section id="kisanPage" class="featurePage">
+
+<h1>
+👥 Kisan Connect
+</h1>
+
+
+<div class="comingBox">
+
+<h2>🌾 Kisan Connect</h2>
+
+<br><br>
+
+👨‍🌾 Kisan ek dusre se judenge
+
+<br><br>
+
+📸 Crop photo share karenge
+
+<br><br>
+
+💬 Farming discussion karenge
+
+<br><br>
+
+📍 Nearby farmers milenge
+
+
+<h2>
+🚧 Coming Soon
+</h2>
+
+
+</div>
+
+
+<button onclick="goHome()">
+🏠 Back Home
+</button>
+
+
+</section>
+
+<script>
+
+let allNews=[];
+let chatUserId = null;
+let chatUserName = "";
+let sendingMessage = false;
+
+const API = "http://127.0.0.1:8000";
+// ----------------------------
+// Show Login
+// ----------------------------
+
+function showLogin(){
+
+document.getElementById("loginSection").style.display="flex";
+document.getElementById("registerSection").style.display="none";
+
+}
+
+// ----------------------------
+// Show Register
+// ----------------------------
+
+function showRegister(){
+
+document.getElementById("loginSection").style.display="none";
+document.getElementById("registerSection").style.display="flex";
+
+}
+
+// ----------------------------
+// Register
+// ----------------------------
+
+async function registerUser(){
+
+let name=document.getElementById("regName").value.trim();
+
+let mobile=document.getElementById("regMobile").value.trim();
+
+let village=document.getElementById("regVillage").value.trim();
+
+let crop = document.getElementById("crop").value;
+
+let password=document.getElementById("regPassword").value.trim();
+
+
+if(name==""){
+alert("Enter Full Name");
+return;
+}
+
+if(mobile.length!=10){
+alert("Enter Valid Mobile Number");
+return;
+}
+
+if(village==""){
+alert("Enter Village");
+return;
+}
+
+if(password.length<6){
+alert("Password minimum 6 characters");
+return;
+}
+
+
+let response = await fetch(
+"http://127.0.0.1:8000/register",
+{
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body: JSON.stringify({
+    name: name,
+    mobile: mobile,
+    village: village,
+    crop: crop,
+    password: password,
+
+    language: localStorage.getItem("appLanguage") || "hi"
+})
+
+});
+
+
+let data = await response.json();
+
+
+if(data.status){
+
+alert(data.message);
+
+showLogin();
+
+}
+
+else{
+
+alert(data.message);
+
+}
+
+}
+
+// ----------------------------
+// Login
+// ----------------------------
+
+async function loginUser(){
+
+let mobile=document.getElementById("loginMobile").value.trim();
+
+let password=document.getElementById("loginPassword").value.trim();
+
+
+let response = await fetch(
+"http://127.0.0.1:8000/login",
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+mobile:mobile,
+
+password:password
+
+})
+
+});
+
+
+let data = await response.json();
+
+
+if(data.status){
+
+
+localStorage.setItem(
+"user",
+JSON.stringify(data.user)
+);
+
+
+// ADD THIS LINE ✅
+
+localStorage.setItem(
+"userId",
+data.user.id
+);
+
+
+
+document.getElementById("loginSection").style.display="none";
+
+
+document.getElementById("homeSection").style.display="block";
+loadDiseaseSummary();
+
+document.getElementById("farmerName").innerHTML=data.user.name;
+
+
+}
+
+else{
+
+alert(data.message);
+
+}
+
+
+}
+
+
+// ----------------------------
+// Logout
+// ----------------------------
+
+function logout(){
+
+localStorage.removeItem("kisanUser");
+
+location.reload();
+
+}
+
+
+function openPage(page){
+
+    document.getElementById("homeSection").style.display = "none";
+
+    let pages = document.querySelectorAll(".featurePage");
+
+    pages.forEach(function(p){
+
+        p.style.display = "none";
+
+    });
+
+    document.getElementById(page).style.display = "flex";
+
+    if(page == "profilePage"){
+
+        loadProfile();
+
+    }
+
+     else if(page=="alertPage"){
+
+        loadAlerts();
+
+    }
+
+    else if(page == "notificationPage"){
+
+    loadNotificationPage();
+
+    }
+
+    else if(page=="newsPage"){
+
+    loadNews();
+
+    }
+
+    else if(page == "weatherPage"){
+
+        loadWeather();
+
+    }
+
+    else if(page == "mandiPage"){
+
+        loadMandi();
+
+    }
+
+    else if(page=="kisanPage"){
+
+       loadFarmers();
+
+    }
+
+    else if(page == "cropGuidePage"){
+
+        loadCropGuide();
+
+    }
+
+    else if(page=="historyPage"){
+
+    loadDiseaseHistory();
+
+    }
+
+    else if(page=="advicePage"){
+
+    loadFarmingAdvice();
+
+    }
+
+}
+
+async function loadFarmers(){
+
+let box=document.getElementById("farmerList");
+
+box.innerHTML="🔄 Loading...";
+
+
+let res=await fetch(
+API+"/farmers"
+);
+
+
+let data=await res.json();
+
+
+let html="";
+
+
+data.farmers.forEach(f=>{
+
+
+html += `
+
+<div class="farmerCard">
+
+<h3>
+👨‍🌾 ${f.name}
+</h3>
+
+<p>
+🌱 Crop: ${f.crop || "Not Added"}
+</p>
+
+<p>
+📍 ${f.village}
+</p>
+
+
+<button onclick="openChat(${f.id}, '${f.name}')">
+💬 Chat
+</button>
+
+
+</div>
+
+`;
+
+
+});
+
+
+box.innerHTML=html;
+
+
+}
+
+function openChat(id,name){
+
+chatUserId=id;
+chatUserName=name;
+
+
+openPage("chatPage");
+
+
+document.getElementById("chatTitle").innerHTML=
+"💬 Chat with "+name;
+
+
+loadChat();
+
+}
+
+async function loadChat(){
+
+
+let user=JSON.parse(
+localStorage.getItem("user")
+);
+
+
+let res=await fetch(
+API+"/chat/"+user.id+"/"+chatUserId
+);
+
+
+let data=await res.json();
+
+
+let html="";
+
+
+data.chat.forEach(c=>{
+
+
+let user = JSON.parse(
+localStorage.getItem("user")
+);
+
+
+data.chat.forEach(c=>{
+
+
+let side = "";
+
+
+if(c.sender == user.id){
+
+    side = "myMessage";
+
+}
+else{
+
+    side = "otherMessage";
+
+}
+
+
+
+html += `
+
+<div class="chatRow ${side}">
+
+
+<div class="messageBubble">
+
+${c.message}
+
+<br>
+
+<small>
+${c.time}
+</small>
+
+
+</div>
+
+
+</div>
+
+`;
+
+
+});
+
+});
+
+
+document.getElementById("chatBox").innerHTML=html;
+
+
+}
+
+async function sendChat(){
+
+
+if(sendingMessage){
+    return;
+}
+
+
+let user=JSON.parse(
+localStorage.getItem("user")
+);
+
+
+let input=document.getElementById("chatMessage");
+
+
+let msg=input.value.trim();
+
+
+if(!msg){
+    return;
+}
+
+
+
+sendingMessage=true;
+
+
+
+try{
+
+
+await fetch(
+API+"/send-chat",
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+sender_id:user.id,
+
+receiver_id:chatUserId,
+
+message:msg
+
+})
+
+
+});
+
+
+input.value="";
+
+
+loadChat();
+
+
+
+}
+catch(e){
+
+console.log(e);
+
+}
+
+
+finally{
+
+
+sendingMessage=false;
+
+
+}
+
+
+}
+
+async function loadNews(){
+
+
+let user = JSON.parse(localStorage.getItem("user"));
+
+
+if(!user){
+    return;
+}
+
+
+
+let box=document.getElementById("newsList");
+
+
+box.innerHTML="🔄 Loading latest agriculture news...";
+
+
+
+try{
+
+
+let response = await fetch(
+API + "/agri-news/" + user.id
+);
+
+
+let data = await response.json();
+
+
+console.log(data);
+
+
+
+if(data.status && data.news.length){
+
+
+
+let html="";
+
+
+ allNews=data.news;
+
+data.news.forEach(n=>{
+
+
+let badge="cropBadge";
+
+
+if(n.category=="Weather"){
+
+    badge="weatherBadge";
+
+}
+
+else if(n.category=="Market"){
+
+    badge="marketBadge";
+
+}
+
+else if(n.category=="Disease"){
+
+    badge="diseaseBadge";
+
+}
+
+else if(n.category=="Government"){
+
+    badge="govBadge";
+
+}
+
+
+
+html += `
+
+
+<div class="newsCard">
+
+
+<div class="newsCategory ${badge}">
+
+${n.icon} ${n.category}
+
+</div>
+
+
+
+<h3>
+
+${n.title}
+
+</h3>
+
+
+
+<p>
+${
+(n.description || "Latest agriculture update")
+.substring(0,180)
+}
+...
+</p>
+
+
+
+<div class="newsFooter">
+
+
+📰 ${n.source}
+
+<br>
+
+📅 ${n.date}
+
+
+</div>
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+box.innerHTML=html;
+
+
+
+}
+
+else{
+
+
+box.innerHTML=
+"❌ No agriculture news found";
+
+
+}
+
+
+
+}
+
+
+catch(e){
+
+
+console.log(e);
+
+
+box.innerHTML=
+"❌ Server Error";
+
+
+}
+
+
+}
+
+function filterNews(category){
+
+
+let box=document.getElementById("newsList");
+
+
+let list=allNews;
+
+
+if(category!="All"){
+
+list=allNews.filter(
+n=>n.category==category
+);
+
+}
+
+
+
+let html="";
+
+
+list.forEach(n=>{
+
+
+html += `
+
+
+<div class="newsCard">
+
+
+<div class="newsCategory">
+
+${n.icon} ${n.category}
+
+</div>
+
+
+<h3>
+${n.title}
+</h3>
+
+
+<p>
+${n.description || "Latest agriculture update"}
+</p>
+
+<div class="farmerMeaning">
+
+🤖 Kisan ke liye iska matlab kya hai?
+
+<br><br>
+
+🌾 ${n.farmer_meaning || "Farming impact check kare."}
+
+</div>
+
+
+<div class="newsFooter">
+
+📰 ${n.source}
+
+<br>
+
+📅 ${n.date}
+
+</div>
+
+
+</div>
+
+
+`;
+
+
+});
+
+
+box.innerHTML=html;
+
+
+}
+
+
+async function loadNotificationPage(){
+
+    let user =
+        JSON.parse(localStorage.getItem("user"));
+
+    if(!user){
+        return;
+    }
+
+    let box =
+        document.getElementById("notificationContent");
+
+    box.innerHTML =
+        "🔄 AI is checking today's farming alerts...";
+
+
+    try{
+
+        let response = await fetch(
+
+            `http://127.0.0.1:8000/rain-alert/${user.id}`,
+
+            {
+                method:"GET",
+                cache:"no-store"
+            }
+
+        );
+
+
+        let data = await response.json();
+
+
+        console.log("RAIN ALERT DATA:", data);
+
+
+        if(!data.status){
+
+            box.innerHTML =
+                "⚠️ " + (data.message || "Unable to load alerts.");
+
+            return;
+
+        }
+
+
+        box.innerHTML = `
+
+            <div class="aiCard">
+
+                <div class="aiTitle">
+                    🌦 Weather Alert
+                </div>
+
+                <div class="aiValue">
+
+                    ${data.weather || "Weather unavailable"}
+
+                    <br><br>
+
+                    🌡 Temperature:
+                    ${data.temperature ?? "--"} °C
+
+                    <br>
+
+                    💧 Humidity:
+                    ${data.humidity ?? "--"} %
+
+                    <br>
+
+                    🌧 Rain Probability:
+                    ${data.rain_probability ?? 0} %
+
+                    <br><br>
+
+                    <b>🤖 AI Rain Status</b>
+
+                    <br>
+
+                    ${data.rain_status || "--"}
+
+                </div>
+
+            </div>
+
+
+            <div class="aiCard">
+
+                <div class="aiTitle">
+                    🌱 Crop Risk
+                </div>
+
+                <div class="aiValue">
+
+                    🌾 Crop:
+                    ${data.crop || "--"}
+
+                    <br><br>
+
+                    ${data.crop_risk || "--"}
+
+                </div>
+
+            </div>
+
+
+            <div class="aiCard">
+
+                <div class="aiTitle">
+                    💡 Farming Advice
+                </div>
+
+                <div class="aiValue">
+
+                    ${data.advice || "--"}
+
+                </div>
+
+            </div>
+
+
+            <div class="aiCard">
+
+                <div class="aiTitle">
+                    ✅ Recommended Action
+                </div>
+
+                <div class="aiValue">
+
+                    ${data.action || "--"}
+
+                </div>
+
+            </div>
+
+
+            <div class="aiCard">
+
+                <div class="aiTitle">
+                    📍 Location
+                </div>
+
+                <div class="aiValue">
+
+                    ${data.location || "--"}
+
+                </div>
+
+            </div>
+
+        `;
+
+
+    }
+
+    catch(error){
+
+        console.log(
+            "Notification Error:",
+            error
+        );
+
+
+        box.innerHTML =
+
+            "❌ Unable to load AI notifications.<br><br>" +
+
+            "Please try again.";
+
+    }
+
+}
+
+function goHome(){
+
+    let pages = document.querySelectorAll(".featurePage");
+
+    pages.forEach(function(p){
+
+        p.style.display = "none";
+
+    });
+
+    document.getElementById("homeSection").style.display = "block";
+
+    // User Data
+    let user = JSON.parse(localStorage.getItem("user"));
+
+if(user){
+
+    if(document.getElementById("farmerName")){
+        document.getElementById("farmerName").innerHTML = user.name;
+    }
+
+    if(document.getElementById("homeCrop")){
+        document.getElementById("homeCrop").innerHTML = user.crop;
+    }
+
+    if(document.getElementById("homeVillage")){
+        document.getElementById("homeVillage").innerHTML = user.village;
+    }
+
+    }
+
+    }
+
+function openMenu(){
+
+document
+.getElementById("sideMenu")
+.classList.toggle("active");
+
+}
+
+function getLiveLocation(){
+
+
+navigator.geolocation.getCurrentPosition(
+
+async function(position){
+
+
+let lat =
+position.coords.latitude;
+
+
+let lon =
+position.coords.longitude;
+
+
+
+console.log(
+"Location:",
+lat,
+lon
+);
+
+
+
+getLocationName(
+lat,
+lon
+);
+
+
+
+loadWeather(
+lat,
+lon
+);
+
+
+
+},
+
+
+function(error){
+
+
+alert(
+"Location allow karo farming features ke liye"
+);
+
+
+}
+
+);
+
+
+}
+
+
+async function getLocationName(lat,lon){
+
+
+try{
+
+
+let response =
+await fetch(
+
+`${API}/location-name/${lat}/${lon}`
+
+);
+
+
+
+let data =
+await response.json();
+
+
+
+if(data.status){
+
+
+document.getElementById(
+"currentLocation"
+).innerHTML =
+data.location;
+
+
+}
+
+
+}
+
+catch(e){
+
+console.log(e);
+
+}
+
+
+}
+
+
+async function loadWeather(lat, lon) {
+
+    let response = await fetch(
+        "http://127.0.0.1:8000/weather/" + lat + "/" + lon
+    );
+
+    let data = await response.json();
+
+    if (!data.status) return;
+
+    document.getElementById("temperature").innerHTML =
+        data.temperature + "°C";
+
+    document.getElementById("humidity").innerHTML =
+        data.humidity + "%";
+
+    document.getElementById("wind").innerHTML =
+        data.wind + " km/h";
+
+    document.getElementById("rain").innerHTML =
+        data.rain_probability + "%";
+
+
+    // Weather Code Mapping
+    const weatherMap = {
+
+        0: { icon: "☀️", text: "Clear Sky" },
+
+        1: { icon: "🌤️", text: "Mainly Clear" },
+
+        2: { icon: "⛅", text: "Partly Cloudy" },
+
+        3: { icon: "☁️", text: "Overcast" },
+
+        45: { icon: "🌫️", text: "Fog" },
+
+        61: { icon: "🌧️", text: "Light Rain" },
+
+        63: { icon: "🌧️", text: "Rain" },
+
+        65: { icon: "🌧️", text: "Heavy Rain" },
+
+        80: { icon: "🌦️", text: "Rain Showers" },
+
+        95: { icon: "⛈️", text: "Thunderstorm" }
+
+    };
+
+
+    let weather = weatherMap[data.weather_code] || {
+
+        icon: "🌍",
+
+        text: "Unknown Weather"
+
+    };
+
+
+    document.getElementById("weatherStatus").innerHTML =
+        weather.text;
+
+    document.getElementById("weatherIcon").innerHTML =
+        weather.icon;
+
+
+    document.getElementById("advice").innerHTML =
+        "AI Farming Advice will be generated based on live weather.";
+
+        showForecast(data.forecast);
+}
+
+let weatherForecastData = null;
+
+function showForecast(forecast){
+    weatherForecastData = forecast;
+
+    const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+    const weatherData = {
+
+        0:{icon:"☀️",color:"#FFD54F",name:"Clear Sky"},
+
+        1:{icon:"🌤️",color:"#FFEE58",name:"Mainly Clear"},
+
+        2:{icon:"⛅",color:"#90CAF9",name:"Partly Cloudy"},
+
+        3:{icon:"☁️",color:"#B0BEC5",name:"Overcast"},
+
+        45:{icon:"🌫️",color:"#CFD8DC",name:"Fog"},
+
+        48:{icon:"🌫️",color:"#CFD8DC",name:"Fog"},
+
+        51:{icon:"🌦️",color:"#81D4FA",name:"Drizzle"},
+
+        53:{icon:"🌦️",color:"#81D4FA",name:"Drizzle"},
+
+        55:{icon:"🌦️",color:"#4FC3F7",name:"Heavy Drizzle"},
+
+        61:{icon:"🌧️",color:"#64B5F6",name:"Rain"},
+
+        63:{icon:"🌧️",color:"#42A5F5",name:"Rain"},
+
+        65:{icon:"🌧️",color:"#1E88E5",name:"Heavy Rain"},
+
+        71:{icon:"❄️",color:"#E1F5FE",name:"Snow"},
+
+        80:{icon:"🌦️",color:"#64B5F6",name:"Rain Showers"},
+
+        81:{icon:"🌧️",color:"#42A5F5",name:"Rain Showers"},
+
+        82:{icon:"⛈️",color:"#5C6BC0",name:"Heavy Showers"},
+
+        95:{icon:"⛈️",color:"#3949AB",name:"Thunderstorm"}
+
+    };
+
+    let html = "";
+
+    for(let i=0;i<forecast.date.length;i++){
+
+        let d = new Date(forecast.date[i]);
+
+        let day = i===0 ? "Today" : days[d.getDay()];
+
+        let w = weatherData[forecast.weather_code[i]] || {
+
+            icon:"🌍",
+
+            color:"#4CAF50",
+
+            name:"Weather"
+
+        };
+
+        html += `
+
+        <div class="forecastCard"
+
+             style="border-left-color:${w.color}"
+
+             onclick="toggleForecast(${i})">
+
+            <div class="forecastTop">
+
+                <div class="forecastDay">
+
+                    <span class="forecastIcon">${w.icon}</span>
+
+                    <div>
+
+                        <div>${day}</div>
+
+                        <small>${w.name}</small>
+
+                    </div>
+
+                </div>
+
+                <div class="forecastTemp">
+
+                    ${forecast.max[i]}° / ${forecast.min[i]}°
+
+                </div>
+
+            </div>
+
+            <div class="forecastRain">
+
+                👆 Tap to view details
+
+            </div>
+
+            <div class="forecastDetails"
+
+                 id="forecastDetails${i}">
+
+                Loading...
+
+            </div>
+
+        </div>
+
+        `;
+
+    }
+
+    document.getElementById("forecastBox").innerHTML = html;
+
+}
+
+function toggleForecast(i){
+
+    let box = document.getElementById("forecastDetails"+i);
+
+
+    if(box.style.display=="block"){
+
+        box.style.display="none";
+
+        return;
+
+    }
+
+
+    document.querySelectorAll(".forecastDetails").forEach(d=>{
+
+        d.style.display="none";
+
+    });
+
+
+
+    let sunrise = new Date(weatherForecastData.sunrise[i])
+    .toLocaleTimeString([],{
+        hour:"2-digit",
+        minute:"2-digit"
+    });
+
+
+    let sunset = new Date(weatherForecastData.sunset[i])
+    .toLocaleTimeString([],{
+        hour:"2-digit",
+        minute:"2-digit"
+    });
+
+
+
+    box.innerHTML = `
+
+
+    <div class="forecastGrid">
+
+
+        <div class="detailCard">
+
+            <h3>🌧 Rain</h3>
+
+            <p>
+            ${weatherForecastData.rain[i]}%
+            </p>
+
+        </div>
+
+
+
+        <div class="detailCard">
+
+
+
+
+
+            <h3>🌅 Sunrise</h3>
+
+            <p>
+            ${sunrise}
+            </p>
+
+        </div>
+
+
+
+        <div class="detailCard">
+
+            <h3>🌇 Sunset</h3>
+
+            <p>
+            ${sunset}
+            </p>
+
+        </div>
+
+
+
+        <div class="detailCard">
+
+            <h3>🌡 Temperature</h3>
+
+            <p>
+            ${weatherForecastData.max[i]}°
+            </p>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="adviceBox">
+
+    🌾 AI Farming Advice
+
+    <br><br>
+
+    Weather ke hisaab se advice generate hogi.
+
+    </div>
+
+
+    `;
+
+
+    box.style.display="block";
+
+}
+
+async function loadLocationName(lat, lon){
+
+    let response = await fetch(
+        "http://127.0.0.1:8000/location/" + lat + "/" + lon
+    );
+
+    let data = await response.json();
+
+    if(data.status){
+
+        document.getElementById("weatherCity").innerHTML =
+        "📍 " + data.village + ", " + data.state;
+
+    }
+
+}
+
+
+async function loadMandi(){
+
+    let crop = document.getElementById("homeCrop").innerText.trim();
+
+    let state = localStorage.getItem("userState");
+
+
+    if(crop=="--" || crop==""){
+
+        crop="Rice";
+
+    }
+
+
+    if(!state){
+
+        state="Maharashtra";
+
+    }
+
+
+    try{
+
+
+        let response = await fetch(
+            `http://127.0.0.1:8000/mandi/${crop}/${state}`
+        );
+
+
+        let data = await response.json();
+
+
+        console.log("MANDI DATA",data);
+
+
+
+        if(data.records && data.records.length > 0){
+
+
+            let mandi=data.records[0];
+
+
+            document.getElementById("mandiCrop").innerHTML =
+            "🌾 "+mandi.Commodity;
+
+
+            document.getElementById("mandiLocation").innerHTML =
+            "📍 "+mandi.Market;
+
+
+            document.getElementById("todayPrice").innerHTML =
+            "₹ "+mandi.Modal_Price;
+
+
+            document.getElementById("maxPrice").innerHTML =
+            "₹ "+mandi.Max_Price;
+
+
+            document.getElementById("minPrice").innerHTML =
+            "₹ "+mandi.Min_Price;
+
+
+            document.getElementById("avgPrice").innerHTML =
+            "₹ "+mandi.Modal_Price;
+
+
+        }
+        else{
+
+
+            document.getElementById("todayPrice").innerHTML =
+            "No Data";
+
+
+        }
+
+
+    }
+    catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+async function loadCropGuide(){
+
+    let user = JSON.parse(localStorage.getItem("user"));
+
+    let crop = document.getElementById("guideCropSelect").value;
+
+    if(crop=="Other"){
+
+        crop=document.getElementById("otherCrop").value.trim();
+
+    }
+
+    if(!crop){
+
+        crop="General Crop";
+
+    }
+
+    let response = await fetch(
+
+        `http://127.0.0.1:8000/crop-guide/${user.id}/${encodeURIComponent(crop)}`
+
+    );
+
+    let data = await response.json();
+
+    if(data.status){
+
+        document.getElementById("guideCrop").innerHTML="🌾 "+data.crop;
+
+        document.getElementById("guideLocation").innerHTML="📍 "+data.location;
+
+        document.getElementById("guideStage").innerHTML=data.stage;
+
+        document.getElementById("guideWater").innerHTML=data.irrigation;
+
+        document.getElementById("guideFertilizer").innerHTML=data.fertilizer;
+
+        document.getElementById("guideWeather").innerHTML=data.weather;
+
+        document.getElementById("guidePest").innerHTML=data.pest;
+
+        document.getElementById("guideAI").innerHTML=data.ai;
+
+    }else{
+
+        alert(data.message);
+
+    }
+
+}
+
+async function scanDisease(){
+
+    let file =
+        document.getElementById("cameraImage").files[0] ||
+        document.getElementById("galleryImage").files[0];
+
+    if(!file){
+
+        alert("Please select an image.");
+
+        return;
+
+    }
+
+    // Image Preview
+    let reader = new FileReader();
+
+    reader.onload = function(e){
+
+        let img = document.getElementById("previewImage");
+
+        img.src = e.target.result;
+
+        img.style.display = "block";
+
+    };
+
+    reader.readAsDataURL(file);
+
+
+
+    let formData = new FormData();
+
+    formData.append("file", file);
+
+    let user = JSON.parse(localStorage.getItem("user"));
+
+    formData.append("user_id", user.id);
+
+
+
+    document.getElementById("scanResult").innerHTML =
+    "🔍 AI is analyzing image...";
+
+
+
+    try{
+
+        let response = await fetch(
+
+            API + "/disease-scan",
+
+            {
+                method:"POST",
+                body:formData
+            }
+
+        );
+
+        let data = await response.json();
+
+        console.log(data);
+
+
+
+        if(data.status){
+
+            let badge = "🟢 Healthy Plant";
+
+            let badgeClass = "badgeGreen";
+
+            let diseaseText = data.disease.toLowerCase();
+
+
+
+            if(
+
+                diseaseText.includes("none") ||
+
+                diseaseText.includes("healthy") ||
+
+                diseaseText.includes("no disease")
+
+            ){
+
+                badge = "🟢 Healthy Plant";
+
+                badgeClass = "badgeGreen";
+
+            }
+
+            else{
+
+                badge = "🔴 Disease Detected";
+
+                badgeClass = "badgeRed";
+
+            }
+
+
+
+            let severityColor = "#2e7d32";
+
+            if(data.severity){
+
+                let sev = data.severity.toLowerCase();
+
+                if(sev.includes("high")){
+
+                    severityColor = "#d32f2f";
+
+                }
+
+                else if(
+
+                    sev.includes("medium") ||
+
+                    sev.includes("moderate")
+
+                ){
+
+                    severityColor = "#f9a825";
+
+                }
+
+            }
+
+
+
+            document.getElementById("scanResult").innerHTML = `
+
+<div class="${badgeClass}">
+
+${badge}
+
+<br>
+
+🎯 Confidence : ${data.confidence}
+
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">🌾 Crop</div>
+<div class="aiValue">${data.crop}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">🦠 Disease</div>
+<div class="aiValue">${data.disease}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">⚠ Severity</div>
+<div class="aiValue" style="color:${severityColor};font-weight:bold;">
+${data.severity}
+</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">🍃 Affected Part</div>
+<div class="aiValue">${data.affected}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">❓ Reason</div>
+<div class="aiValue">${data.reason}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">📋 Symptoms</div>
+<div class="aiValue">${data.symptoms}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">💊 Chemical Medicine</div>
+<div class="aiValue">${data.medicine}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">🌿 Organic Treatment</div>
+<div class="aiValue">${data.organic}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">⏳ Recovery Time</div>
+<div class="aiValue">${data.recovery}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">📉 Estimated Yield Loss</div>
+<div class="aiValue">${data.yield_loss}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">🛡 Prevention</div>
+<div class="aiValue">${data.prevention}</div>
+</div>
+
+
+<div class="aiCard">
+<div class="aiTitle">🤖 AI Recommendation</div>
+<div class="aiValue">${data.ai}</div>
+</div>
+
+`;
+
+        }
+
+        else{
+
+            document.getElementById("scanResult").innerHTML =
+            "❌ " + data.message;
+
+        }
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        document.getElementById("scanResult").innerHTML =
+        "❌ Server Error";
+
+    }
+
+}
+
+
+async function loadDiseaseHistory(){
+
+    let user = JSON.parse(
+        localStorage.getItem("user")
+    );
+
+
+    if(!user){
+
+        alert("Please login again");
+
+        return;
+
+    }
+
+
+    try{
+
+
+        let response = await fetch(
+            API + "/disease-history/" + user.id
+        );
+
+
+        let data = await response.json();
+
+
+        console.log(data);
+
+
+
+        let html = "";
+
+
+
+        if(data.status && data.history.length > 0){
+
+
+            data.history.forEach(item => {
+
+
+                html += `
+
+<div class="historyCard"
+onclick='openReport(${JSON.stringify(item)})'>
+
+
+<div class="historyCrop">
+
+🌾 ${item.crop}
+
+</div>
+
+
+<div class="historyDisease">
+
+🦠 ${item.disease}
+
+</div>
+
+
+<p>
+
+🎯 Confidence:
+${item.confidence}
+
+</p>
+
+
+<p>
+
+⚠ Severity:
+${item.severity}
+
+</p>
+
+
+<p>
+
+📅 ${item.date}
+
+</p>
+
+
+<button class="historyBtn">
+
+View Full Report
+
+</button>
+
+
+</div>
+
+
+                `;
+
+
+            });
+
+
+
+        }
+
+        else{
+
+
+            html = `
+
+<h3>
+No Disease History Found
+</h3>
+
+`;
+
+        }
+
+
+
+        document.getElementById(
+            "historyList"
+        ).innerHTML = html;
+
+
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+
+        document.getElementById(
+            "historyList"
+        ).innerHTML =
+        "❌ Server Error";
+
+    }
+
+}
+
+
+function openReport(item){
+
+
+localStorage.setItem(
+"selectedReport",
+JSON.stringify(item)
+);
+
+
+openPage("reportPage");
+
+
+let html = `
+
+
+<h2>
+🌾 ${item.crop}
+</h2>
+
+
+<h2 style="color:red">
+
+🦠 ${item.disease}
+
+</h2>
+
+
+<hr>
+
+
+<h3>
+🎯 Confidence
+</h3>
+
+<p>
+${item.confidence}
+</p>
+
+
+<h3>
+⚠ Severity
+</h3>
+
+<p>
+${item.severity}
+</p>
+
+
+<hr>
+
+
+<h3>
+❓ Reason
+</h3>
+
+<p>
+${item.reason || "--"}
+</p>
+
+
+<h3>
+📋 Symptoms
+</h3>
+
+<p>
+${item.symptoms || "--"}
+</p>
+
+
+
+<h3>
+💊 Chemical Medicine
+</h3>
+
+<p>
+${item.medicine || "--"}
+</p>
+
+
+
+<h3>
+🌿 Organic Treatment
+</h3>
+
+<p>
+${item.organic || "--"}
+</p>
+
+
+
+<h3>
+⏳ Recovery
+</h3>
+
+<p>
+${item.recovery || "--"}
+</p>
+
+
+
+<h3>
+📉 Yield Loss
+</h3>
+
+<p>
+${item.yield_loss || "--"}
+</p>
+
+
+
+<h3>
+🛡 Prevention
+</h3>
+
+<p>
+${item.prevention || "--"}
+</p>
+
+
+
+<h3>
+🤖 AI Recommendation
+</h3>
+
+<p>
+${item.ai || "--"}
+</p>
+
+
+
+<h3>
+🌦 Weather
+</h3>
+
+<p>
+${item.weather || "--"}
+</p>
+
+
+`;
+
+
+
+document.getElementById(
+"reportBox"
+).innerHTML = html;
+
+
+}
+
+
+function closeReport(){
+
+loadDiseaseHistory();
+
+}
+
+
+function downloadDiseaseReport(){
+
+
+let item = JSON.parse(
+localStorage.getItem("selectedReport")
+);
+
+
+if(!item){
+
+alert("Report not found");
+
+return;
+
+}
+
+
+
+let report = `
+
+KISAN AI - Disease Report
+
+
+Crop:
+${item.crop}
+
+
+Disease:
+${item.disease}
+
+
+Confidence:
+${item.confidence}
+
+
+Severity:
+${item.severity}
+
+
+Affected Part:
+${item.affected}
+
+
+Reason:
+${item.reason}
+
+
+Symptoms:
+${item.symptoms}
+
+
+Chemical Medicine:
+${item.medicine}
+
+
+Organic Treatment:
+${item.organic}
+
+
+Recovery Time:
+${item.recovery}
+
+
+Yield Loss:
+${item.yield_loss}
+
+
+Prevention:
+${item.prevention}
+
+
+AI Recommendation:
+${item.ai}
+
+
+Weather:
+${item.weather}
+
+
+Date:
+${item.date}
+
+
+`;
+
+
+
+let blob = new Blob(
+[report],
+{
+type:"text/plain"
+}
+);
+
+
+
+let url = URL.createObjectURL(blob);
+
+
+
+let a=document.createElement("a");
+
+a.href=url;
+
+a.download=
+"Kisan_AI_Disease_Report.txt";
+
+
+a.click();
+
+
+URL.revokeObjectURL(url);
+
+
+}
+
+
+async function loadDiseaseSummary(){
+
+
+let user = JSON.parse(
+localStorage.getItem("user")
+);
+
+
+if(!user){
+
+return;
+
+}
+
+
+
+let response = await fetch(
+
+API+
+"/disease-history/"
++
+user.id
+
+);
+
+
+
+let data = await response.json();
+
+
+
+if(data.status && data.history.length){
+
+
+let latest =
+data.history[0];
+
+
+
+document.getElementById(
+"totalScans"
+).innerHTML =
+data.count;
+
+
+
+document.getElementById(
+"lastCrop"
+).innerHTML =
+latest.crop;
+
+
+
+document.getElementById(
+"lastDisease"
+).innerHTML =
+latest.disease;
+
+
+
+document.getElementById(
+"riskLevel"
+).innerHTML =
+latest.severity;
+
+
+
+}
+
+}
+
+
+async function loadFarmingAdvice(){
+
+
+let user =
+JSON.parse(
+localStorage.getItem("user")
+);
+
+
+
+let res = await fetch(
+
+API+
+"/farming-advice/"
++
+user.id
+
+);
+
+
+
+let data =
+await res.json();
+
+
+
+if(data.status){
+
+
+document.getElementById(
+"adviceBox"
+).innerHTML =
+
+`
+
+<h3>
+🌾 ${data.crop}
+</h3>
+
+<pre style="
+white-space:pre-wrap;
+font-size:16px;
+">
+
+${data.advice}
+
+</pre>
+
+`;
+
+
+}
+
+}
+
+async function askAI(){
+
+    let question =
+        document.getElementById("farmerQuestion").value.trim();
+
+    if(!question){
+        return;
+    }
+
+    let lang =
+        localStorage.getItem("appLanguage") || "en";
+
+    document.getElementById("aiAnswer").innerHTML =
+        "🤖 AI soch raha hai...";
+
+    try{
+
+        let response = await fetch(
+            API + "/ai-chat",
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+    question:question,
+
+    language:getSelectedLanguage(),
+
+    language_instruction:getLanguageInstruction()
+
+})
+            }
+        );
+
+        let data = await response.json();
+
+        if(data.status){
+
+            document.getElementById("aiAnswer").innerHTML =
+                data.answer.replace(/\n/g,"<br>");
+
+        }
+        else{
+
+            document.getElementById("aiAnswer").innerHTML =
+                data.message || "AI answer nahi de paya.";
+
+        }
+
+    }
+    catch(error){
+
+        console.log(error);
+
+        document.getElementById("aiAnswer").innerHTML =
+            "❌ AI server error";
+
+    }
+
+}
+
+
+async function loadSchemes(){
+
+
+let state =
+document.getElementById("schemeState").value;
+
+
+
+let response = await fetch(
+
+"http://127.0.0.1:8000/schemes/"+state
+
+);
+
+
+
+let data = await response.json();
+
+
+
+let html="";
+
+
+
+if(data.status){
+
+
+data.schemes.forEach(s=>{
+
+
+html += `
+
+<div class="weatherCard">
+
+
+
+<h2>🏛 ${s.name}</h2>
+
+
+<p>
+📝 ${s.description}
+</p>
+
+
+<p>
+💰 Benefit:
+${s.benefit}
+</p>
+
+
+<p>
+👨‍🌾 Eligibility:
+${s.eligibility}
+</p>
+
+<a href="${s.apply}" target="_blank">
+
+<button>
+🌐 Apply Now
+</button>
+
+</a>
+
+</div>
+
+`;
+
+
+});
+
+
+
+}
+
+
+else{
+
+
+html="No schemes found";
+
+}
+
+document.getElementById("schemeList").innerHTML=html;
+
+}
+
+
+document.getElementById("guideCropSelect").addEventListener("change",function(){
+
+if(this.value=="Other"){
+
+document.getElementById("otherCrop").style.display="block";
+
+}else{
+
+document.getElementById("otherCrop").style.display="none";
+
+}
+
+});
+
+async function changeHomeCrop(){
+
+let user = JSON.parse(localStorage.getItem("user"));
+
+let crop = document.getElementById("homeCropSelect").value;
+
+let response = await fetch(
+"http://127.0.0.1:8000/update-home-crop",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+
+user_id:user.id,
+crop:crop
+
+})
+});
+
+let data = await response.json();
+
+if(data.status){
+
+user.crop=crop;
+
+localStorage.setItem(
+"user",
+JSON.stringify(user)
+);
+
+alert("✅ Crop Updated");
+
+}
+
+}
+
+async function loadAlerts(){
+
+    let user = JSON.parse(localStorage.getItem("user"));
+
+    if(!user){
+        return;
+    }
+
+
+    // Show quick local data immediately
+
+    if(user.village){
+
+        document.getElementById("alertLocation").innerHTML =
+        " " + user.village;
+
+    }
+
+
+    document.getElementById("weatherAlert").innerHTML =
+    "🌦 Checking live weather...";
+
+    document.getElementById("cropAlert").innerHTML =
+    "🌱 Checking crop...";
+
+    document.getElementById("diseaseRisk").innerHTML =
+    "🐛 Checking disease risk...";
+
+    document.getElementById("farmReminder").innerHTML =
+    "📅 Checking farming reminder...";
+
+    document.getElementById("farmTasks").innerHTML =
+    "🔄 Loading today's tasks...";
+
+
+    try{
+
+        let response = await fetch(
+
+            `http://127.0.0.1:8000/alerts/${user.id}`,
+
+            {
+                method:"GET",
+
+                cache:"no-store"
+            }
+
+        );
+
+
+        let data = await response.json();
+
+
+        console.log("ALERT DATA:",data);
+
+
+        if(!data.status){
+
+            document.getElementById("weatherAlert").innerHTML =
+            "⚠️ Weather data unavailable.";
+
+            return;
+
+        }
+
+
+        // Location
+
+        document.getElementById("alertLocation").innerHTML =
+        "📍 " + data.location;
+
+
+        // Weather
+
+        let weather = data.weather_data || {};
+
+        document.getElementById("weatherAlert").innerHTML =
+        `
+        🌡 Temperature: ${weather.temperature} °C
+        <br>
+        💧 Humidity: ${weather.humidity} %
+        <br>
+        💨 Wind: ${weather.wind} km/h
+        <br>
+        🌧 Rain Probability: ${weather.rain} %
+        <br><br>
+        ${data.weather_alert}
+        `;
+
+
+        // Crop
+
+        document.getElementById("cropAlert").innerHTML =
+        `
+        🌾 ${data.crop}
+        <br><br>
+        ${data.crop_alert}
+        `;
+
+
+        // Disease
+
+        let disease = data.disease_alert || {};
+
+        document.getElementById("diseaseRisk").innerHTML =
+        `
+        ${disease.message}
+        `;
+
+
+        // Reminder
+
+        document.getElementById("farmReminder").innerHTML =
+        `
+        ${data.reminder}
+        `;
+
+
+        // Tasks
+
+        let tasks = data.tasks || [];
+
+        let taskHTML = "";
+
+        tasks.forEach(function(task){
+
+            taskHTML += `
+            <div style="margin:8px 0;">
+                ${task}
+            </div>
+            `;
+
+        });
+
+
+        document.getElementById("farmTasks").innerHTML =
+        taskHTML;
+
+
+    }
+
+    catch(error){
+
+        console.log("Alert Error:",error);
+
+
+        document.getElementById("weatherAlert").innerHTML =
+        "⚠️ Live weather temporarily unavailable.";
+
+        document.getElementById("cropAlert").innerHTML =
+        `🌱 ${user.crop || "Crop"} crop selected.`;
+
+        document.getElementById("diseaseRisk").innerHTML =
+        "ℹ️ Disease risk data temporarily unavailable.";
+
+        document.getElementById("farmReminder").innerHTML =
+        "📅 Please refresh alerts again.";
+
+        document.getElementById("farmTasks").innerHTML =
+        "⚠️ Unable to load today's tasks.";
+
+    }
+
+}
+
+async function loadAlertCount(){
+
+
+let user = JSON.parse(localStorage.getItem("user"));
+
+
+if(!user){
+    return;
+}
+
+
+let res = await fetch(
+`http://127.0.0.1:8000/alerts/${user.id}`
+);
+
+
+let data = await res.json();
+
+
+
+if(data.status){
+
+
+let count = 0;
+
+
+
+// Weather risk
+
+if(
+data.weather_alert.includes("Avoid") ||
+data.weather_alert.includes("risk")
+){
+
+count++;
+
+}
+
+
+
+// Disease risk
+
+if(
+data.disease_alert.risk=="High" ||
+data.disease_alert.risk=="Medium"
+){
+
+count++;
+
+}
+
+
+
+// Reminder
+
+if(
+data.reminder.includes("Delay")
+){
+
+count++;
+
+}
+
+
+
+document.getElementById("alertCount").innerHTML=count;
+
+
+
+}
+
+}
+
+async function toggleNotifications(){
+
+    let popup =
+    document.getElementById("notificationPopup");
+
+
+    if(popup.style.display === "block"){
+
+        popup.style.display = "none";
+
+        return;
+
+    }
+
+
+    popup.style.display = "block";
+
+
+    await loadNotificationPopup();
+
+}
+
+
+function closeNotifications(){
+
+    document.getElementById(
+        "notificationPopup"
+    ).style.display = "none";
+
+}
+
+
+async function loadNotificationPopup(){
+
+    let user =
+    JSON.parse(localStorage.getItem("user"));
+
+
+    if(!user){
+
+        return;
+
+    }
+
+
+    let box =
+    document.getElementById(
+        "notificationContent"
+    );
+
+
+    try{
+
+        let response = await fetch(
+
+            `http://127.0.0.1:8000/alerts/${user.id}`,
+
+            {
+                cache:"no-store"
+            }
+
+        );
+
+
+        let data = await response.json();
+
+
+        if(!data.status){
+
+            box.innerHTML =
+            "⚠️ Alerts unavailable.";
+
+            return;
+
+        }
+
+
+        let count = 0;
+
+        let html = "";
+
+
+        if(data.weather_alert){
+
+            html += `
+            <div style="margin:10px 0;">
+                ${data.weather_alert}
+            </div>
+            `;
+
+            count++;
+
+        }
+
+
+        if(data.crop_alert){
+
+            html += `
+            <div style="margin:10px 0;">
+                ${data.crop_alert}
+            </div>
+            `;
+
+            count++;
+
+        }
+
+
+        if(data.disease_alert){
+
+            html += `
+            <div style="margin:10px 0;">
+                ${data.disease_alert.message}
+            </div>
+            `;
+
+            if(
+                data.disease_alert.risk &&
+                data.disease_alert.risk.toLowerCase() !== "low"
+            ){
+
+                count++;
+
+            }
+
+        }
+
+
+        if(data.reminder){
+
+            html += `
+            <div style="margin:10px 0;">
+                ${data.reminder}
+            </div>
+            `;
+
+            count++;
+
+        }
+
+
+        box.innerHTML = html;
+
+
+        document.getElementById(
+            "notificationBadge"
+        ).innerHTML = count;
+
+
+    }
+
+    catch(error){
+
+        console.log(
+            "Notification Error:",
+            error
+        );
+
+        box.innerHTML =
+        "⚠️ Unable to load alerts.";
+
+    }
+
+}
+
+async function loadNotificationCount(){
+
+    let user =
+        JSON.parse(localStorage.getItem("user"));
+
+    if(!user){
+        return;
+    }
+
+    let badge =
+        document.getElementById("notificationBadge");
+
+    if(!badge){
+        return;
+    }
+
+    try{
+
+        let response = await fetch(
+            `http://127.0.0.1:8000/rain-alert/${user.id}`,
+            {
+                cache:"no-store"
+            }
+        );
+
+        let data = await response.json();
+
+        if(!data.status){
+
+            badge.style.display = "none";
+            return;
+
+        }
+
+
+        let count = 0;
+
+
+        // 🌧 Rain alert
+        if(
+            data.rain_probability >= 50 ||
+            (
+                data.rain_status &&
+                !data.rain_status.toLowerCase().includes("no")
+            )
+        ){
+
+            count++;
+
+        }
+
+
+        // 🌱 Crop risk
+        if(
+            data.crop_risk &&
+            !data.crop_risk.toLowerCase().includes("low")
+        ){
+
+            count++;
+
+        }
+
+
+        // 💡 AI advice/action
+        if(
+            data.advice &&
+            data.action
+        ){
+
+            count++;
+
+        }
+
+
+        if(count > 0){
+
+            badge.innerText =
+                count > 9 ? "9+" : count;
+
+            badge.style.display =
+                "flex";
+
+        }
+        else{
+
+            badge.style.display =
+                "none";
+
+        }
+
+    }
+
+    catch(error){
+
+        console.log(
+            "Notification Count Error:",
+            error
+        );
+
+        badge.style.display =
+            "none";
+
+    }
+
+}
+
+
+const appPages=[
+
+{type:"page",name:"Weather",page:"weatherPage"},
+{type:"page",name:"Mandi",page:"mandiPage"},
+{type:"page",name:"Crop Guide",page:"cropGuidePage"},
+{type:"page",name:"Disease Scan",page:"diseasePage"},
+{type:"page",name:"AI Farming Advice",page:"advicePage"},
+{type:"page",name:"Government Schemes",page:"schemePage"},
+{type:"page",name:"Alerts",page:"alertPage"},
+{type:"page",name:"Profile",page:"profilePage"}
+
+];
+
+
+function smartSearch(){
+
+let keyword=document.getElementById("searchInput").value.trim();
+
+let box=document.getElementById("searchResults");
+
+if(keyword==""){
+
+box.innerHTML="<div class='searchHint'>🌾 Search any crop, disease, weather, fertilizer...</div>";
+
+return;
+
+}
+
+let html="";
+
+appPages.forEach(item=>{
+
+if(item.name.toLowerCase().includes(keyword.toLowerCase())){
+
+html+=`
+
+<div class="searchItem"
+onclick="openPage('${item.page}')">
+
+<div class="searchTitle">
+
+📄 ${item.name}
+
+</div>
+
+</div>
+
+`;
+
+}
+
+});
+
+html+=`
+
+<div class="searchItem"
+
+onclick="searchCrop('${keyword}')">
+
+<div class="searchTitle">
+
+🌾 Search Crop : ${keyword}
+
+</div>
+
+<div class="searchText">
+
+Open AI Crop Guide for ${keyword}
+
+</div>
+
+</div>
+
+`;
+
+if(html==""){
+
+html="<div class='searchHint'>No Result</div>";
+
+}
+
+box.innerHTML=html;
+
+}
+
+
+function searchCrop(crop){
+
+document.getElementById("guideCropSelect").value="Other";
+
+document.getElementById("otherCrop").style.display="block";
+
+document.getElementById("otherCrop").value=crop;
+
+openPage("cropGuidePage");
+
+setTimeout(()=>{
+
+loadCropGuide();
+
+},300);
+
+}
+
+function startVoiceSearch(){
+
+    if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+
+        alert("Voice Search is not supported on this device.");
+
+        return;
+
+    }
+
+
+    const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+    const recognition = new SpeechRecognition();
+
+
+    recognition.lang = "en-IN";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+
+    let btn = document.getElementById("voiceBtn");
+
+
+    btn.innerHTML = "🎙 Listening...";
+
+
+    recognition.start();
+
+
+
+    recognition.onresult = function(event){
+
+
+        let text = event.results[0][0].transcript;
+
+
+        document.getElementById("searchInput").value = text;
+
+
+        smartSearch();
+
+
+    };
+
+
+
+    recognition.onerror = function(event){
+
+
+        console.log("Voice Error:", event.error);
+
+
+        btn.innerHTML = "🎤";
+
+
+    };
+
+
+
+    recognition.onend = function(){
+
+
+        btn.innerHTML = "🎤";
+
+
+    };
+
+
+}
+
+function selectLanguage(lang){
+
+    // Language save
+    localStorage.setItem(
+        "appLanguage",
+        lang
+    );
+
+
+    // Language page hide
+    document.getElementById(
+        "languagePage"
+    ).style.display = "none";
+
+
+    // Login page show
+    document.getElementById(
+        "loginPage"
+    ).style.display = "block";
+
+}
+
+window.addEventListener("load", function(){
+
+    let lang =
+        localStorage.getItem("appLanguage");
+
+
+    if(lang){
+
+        document.getElementById(
+            "languagePage"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "loginPage"
+        ).style.display = "block";
+
+    }
+
+});
+
+const translations = {
+
+    en: {
+        weather: "Weather",
+        kisanConnect: "Kisan Connect",
+        mandi: "Mandi",
+        aiChat: "AI Chat",
+        aiAdvice: "AI Farming Advice",
+        cropGuide: "Crop Guide",
+        diseaseScan: "Disease Scan",
+        schemes: "Schemes",
+        diseaseHistory: "Disease History",
+        news: "News",
+        profile: "Profile",
+
+        home: "Home",
+        search: "Search",
+        ai: "AI",
+        alerts: "Alerts"
+    },
+
+
+    hi: {
+        weather: "मौसम",
+        kisanConnect: "किसान कनेक्ट",
+        mandi: "मंडी भाव",
+        aiChat: "AI चैट",
+        aiAdvice: "कृषि AI सलाह",
+        cropGuide: "फसल गाइड",
+        diseaseScan: "रोग जांच",
+        schemes: "सरकारी योजनाएं",
+        diseaseHistory: "रोग इतिहास",
+        news: "कृषि समाचार",
+        profile: "प्रोफाइल",
+
+        home: "होम",
+        search: "खोजें",
+        ai: "AI",
+        alerts: "सूचनाएं"
+    },
+
+
+    mr: {
+        weather: "हवामान",
+        kisanConnect: "किसान कनेक्ट",
+        mandi: "बाजार भाव",
+        aiChat: "AI चॅट",
+        aiAdvice: "शेतीसाठी AI सल्ला",
+        cropGuide: "पीक मार्गदर्शक",
+        diseaseScan: "रोग तपासणी",
+        schemes: "सरकारी योजना",
+        diseaseHistory: "रोग इतिहास",
+        news: "शेतीच्या बातम्या",
+        profile: "प्रोफाइल",
+
+        home: "मुख्यपृष्ठ",
+        search: "शोध",
+        ai: "AI",
+        alerts: "सूचना"
+    }
+
+};
+
+
+function applyLanguage(){
+
+    const lang =
+        localStorage.getItem("appLanguage") || "en";
+
+    const t =
+        translations[lang] || translations.en;
+
+
+    document.getElementById("txtWeather").innerText =
+        t.weather;
+
+    document.getElementById("txtKisanConnect").innerText =
+        t.kisanConnect;
+
+    document.getElementById("txtMandi").innerText =
+        t.mandi;
+
+    document.getElementById("txtAIChat").innerText =
+        t.aiChat;
+
+    document.getElementById("txtAIAdvice").innerText =
+        t.aiAdvice;
+
+    document.getElementById("txtCropGuide").innerText =
+        t.cropGuide;
+
+    document.getElementById("txtDiseaseScan").innerText =
+        t.diseaseScan;
+
+    document.getElementById("txtSchemes").innerText =
+        t.schemes;
+
+    document.getElementById("txtDiseaseHistory").innerText =
+        t.diseaseHistory;
+
+    document.getElementById("txtNews").innerText =
+        t.news;
+
+    document.getElementById("txtProfile").innerText =
+        t.profile;
+
+
+    document.getElementById("navHome").innerText =
+        t.home;
+
+    document.getElementById("navSearch").innerText =
+        t.search;
+
+    document.getElementById("navAI").innerText =
+        t.ai;
+
+    document.getElementById("navAlerts").innerText =
+        t.alerts;
+
+    document.getElementById("navProfile").innerText =
+        t.profile;
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        applyLanguage();
+
+    }
+);
+
+function getSelectedLanguage(){
+
+    return localStorage.getItem("appLanguage") || "hi";
+
+}
+
+
+function getLanguageInstruction(){
+
+    const lang = getSelectedLanguage();
+
+    if(lang === "mr"){
+
+        return `
+Answer only in Marathi.
+Use simple farmer-friendly Marathi.
+Do not use Hindi or English unnecessarily.
+`;
+
+    }
+
+    if(lang === "en"){
+
+        return `
+Answer only in English.
+Use simple farmer-friendly English.
+`;
+
+    }
+
+    return `
+Answer only in Hindi.
+Use simple farmer-friendly Hindi.
+`;
+
+}
+
+
+async function loadProfile(){
+
+
+let user=JSON.parse(
+localStorage.getItem("user")
+);
+
+
+if(!user){
+
+return;
+
+}
+
+
+let response=await fetch(
+
+"http://127.0.0.1:8000/profile/"+user.id
+
+);
+
+
+let data=await response.json();
+
+
+
+if(data.status){
+
+
+document.getElementById("profileName").innerHTML=
+"👨‍🌾 "+data.user.name;
+
+
+document.getElementById("profileMobile").innerHTML=
+"📱 "+data.user.mobile;
+
+
+document.getElementById("profileVillage").innerHTML=
+"🏡 "+data.user.village;
+
+
+}
+
+
+}
+
+window.onload = function(){
+
+getLiveLocation();
+
+loadUser();
+
+loadAlertCount();
+
+loadAlerts();
+
+}
+
+</script>
+
+</body>
+</html>
