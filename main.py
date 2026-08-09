@@ -1,5 +1,4 @@
 import json
-from turtle import title
 from urllib import response
 from fastapi import UploadFile, File
 from PIL import Image
