@@ -3488,7 +3488,7 @@ let chatUserId = null;
 let chatUserName = "";
 let sendingMessage = false;
 
-const API = "http://127.0.0.1:8000";
+const API = "https://kisan-ai-api-lezf.onrender.com";
 // ----------------------------
 // Show Login
 // ----------------------------
@@ -3550,7 +3550,7 @@ return;
 
 
 let response = await fetch(
-"http://127.0.0.1:8000/register",
+"https://kisan-ai-api-lezf.onrender.com/register",
 {
 method:"POST",
 
@@ -3602,7 +3602,7 @@ let password=document.getElementById("loginPassword").value.trim();
 
 
 let response = await fetch(
-"http://127.0.0.1:8000/login",
+"https://kisan-ai-api-lezf.onrender.com/login",
 {
 
 method:"POST",
@@ -4258,7 +4258,7 @@ async function loadNotificationPage(){
 
         let response = await fetch(
 
-            `http://127.0.0.1:8000/rain-alert/${user.id}`,
+            `https://kisan-ai-api-lezf.onrender.com/rain-alert/${user.id}`,
 
             {
                 method:"GET",
@@ -4557,7 +4557,7 @@ console.log(e);
 async function loadWeather(lat, lon) {
 
     let response = await fetch(
-        "http://127.0.0.1:8000/weather/" + lat + "/" + lon
+        "https://kisan-ai-api-lezf.onrender.com/weather/" + lat + "/" + lon
     );
 
     let data = await response.json();
@@ -4862,7 +4862,7 @@ function toggleForecast(i){
 async function loadLocationName(lat, lon){
 
     let response = await fetch(
-        "http://127.0.0.1:8000/location/" + lat + "/" + lon
+        "https://kisan-ai-api-lezf.onrender.com/location/" + lat + "/" + lon
     );
 
     let data = await response.json();
@@ -4902,7 +4902,7 @@ async function loadMandi(){
 
 
         let response = await fetch(
-            `http://127.0.0.1:8000/mandi/${crop}/${state}`
+            `https://kisan-ai-api-lezf.onrender.com/mandi/${crop}/${state}`
         );
 
 
@@ -4983,7 +4983,7 @@ async function loadCropGuide(){
 
     let response = await fetch(
 
-        `http://127.0.0.1:8000/crop-guide/${user.id}/${encodeURIComponent(crop)}`
+        `https://kisan-ai-api-lezf.onrender.com/crop-guide/${user.id}/${encodeURIComponent(crop)}`
 
     );
 
@@ -5874,7 +5874,7 @@ document.getElementById("schemeState").value;
 
 let response = await fetch(
 
-"http://127.0.0.1:8000/schemes/"+state
+"https://kisan-ai-api-lezf.onrender.com/schemes/"+state
 
 );
 
@@ -5972,7 +5972,7 @@ let user = JSON.parse(localStorage.getItem("user"));
 let crop = document.getElementById("homeCropSelect").value;
 
 let response = await fetch(
-"http://127.0.0.1:8000/update-home-crop",
+"https://kisan-ai-api-lezf.onrender.com/update-home-crop",
 {
 method:"POST",
 headers:{
@@ -6042,7 +6042,7 @@ async function loadAlerts(){
 
         let response = await fetch(
 
-            `http://127.0.0.1:8000/alerts/${user.id}`,
+            `https://kisan-ai-api-lezf.onrender.com/alerts/${user.id}`,
 
             {
                 method:"GET",
@@ -6180,7 +6180,7 @@ if(!user){
 
 
 let res = await fetch(
-`http://127.0.0.1:8000/alerts/${user.id}`
+`https://kisan-ai-api-lezf.onrender.com/alerts/${user.id}`
 );
 
 
@@ -6296,7 +6296,7 @@ async function loadNotificationPopup(){
 
         let response = await fetch(
 
-            `http://127.0.0.1:8000/alerts/${user.id}`,
+            `https://kisan-ai-api-lezf.onrender.com/alerts/${user.id}`,
 
             {
                 cache:"no-store"
@@ -6425,7 +6425,7 @@ async function loadNotificationCount(){
     try{
 
         let response = await fetch(
-            `http://127.0.0.1:8000/rain-alert/${user.id}`,
+            `https://kisan-ai-api-lezf.onrender.com/rain-alert/${user.id}`,
             {
                 cache:"no-store"
             }
@@ -6922,7 +6922,7 @@ return;
 
 let response=await fetch(
 
-"http://127.0.0.1:8000/profile/"+user.id
+"https://kisan-ai-api-lezf.onrender.com/profile/"+user.id
 
 );
 
