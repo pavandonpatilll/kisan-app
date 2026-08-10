@@ -470,21 +470,70 @@ body{
         <!-- USERS -->
 
         <section
-            id="users"
-            class="adminSection"
+    id="users"
+    class="adminSection"
+>
+
+    <h1>👨‍🌾 Registered Farmers</h1>
+
+    <div class="panel">
+
+        <div
+            style="
+            overflow-x:auto;
+            "
         >
 
-            <h1>👨‍🌾 Users</h1>
+            <table
+                style="
+                width:100%;
+                border-collapse:collapse;
+                "
+            >
 
-            <div class="panel">
+                <thead>
 
-                <p>
-                    Registered farmer users will appear here.
-                </p>
+                    <tr>
 
-            </div>
+                        <th style="padding:12px;text-align:left;">
+                            ID
+                        </th>
 
-        </section>
+                        <th style="padding:12px;text-align:left;">
+                            Name
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Mobile
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Village
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Crop
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Language
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="usersTableBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
 
 
         <!-- MANDI -->
@@ -844,6 +893,20 @@ function showSection(id){
 
     }
 
+
+    if(id === "users"){
+
+        loadUsers();
+
+    }
+
+
+    if(id === "dashboard"){
+
+        loadDashboard();
+
+    }
+
 }
 
 
@@ -895,6 +958,77 @@ window.addEventListener(
     }
 );
 
+async function loadUsers(){
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/admin/users"
+            );
+
+        const data =
+            await response.json();
+
+        if(!data.status){
+
+            return;
+        }
+
+        const tbody =
+            document.getElementById(
+                "usersTableBody"
+            );
+
+        tbody.innerHTML = "";
+
+        data.users.forEach(user => {
+
+            tbody.innerHTML += `
+
+                <tr>
+
+                    <td style="padding:12px;border-top:1px solid #eee;">
+                        ${user.id}
+                    </td>
+
+                    <td style="padding:12px;border-top:1px solid #eee;">
+                        ${user.name || "-"}
+                    </td>
+
+                    <td style="padding:12px;border-top:1px solid #eee;">
+                        ${user.mobile || "-"}
+                    </td>
+
+                    <td style="padding:12px;border-top:1px solid #eee;">
+                        ${user.village || "-"}
+                    </td>
+
+                    <td style="padding:12px;border-top:1px solid #eee;">
+                        ${user.crop || "-"}
+                    </td>
+
+                    <td style="padding:12px;border-top:1px solid #eee;">
+                        ${user.language || "-"}
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+    }
+    catch(error){
+
+        console.error(
+            "Users loading error:",
+            error
+        );
+
+    }
+
+}
 
 </script>
 

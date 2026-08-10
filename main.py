@@ -422,6 +422,45 @@ def admin_dashboard():
     }
 
 # ==========================
+# ADMIN USERS
+# ==========================
+
+@app.get("/admin/users")
+def admin_users():
+
+    cursor.execute("""
+        SELECT
+            id,
+            name,
+            mobile,
+            village,
+            crop,
+            language
+        FROM users
+        ORDER BY id DESC
+    """)
+
+    rows = cursor.fetchall()
+
+    users = []
+
+    for row in rows:
+
+        users.append({
+            "id": row[0],
+            "name": row[1],
+            "mobile": row[2],
+            "village": row[3],
+            "crop": row[4],
+            "language": row[5]
+        })
+
+    return {
+        "status": True,
+        "users": users
+    }
+
+# ==========================
 # Register API
 # ==========================
 
