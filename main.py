@@ -235,6 +235,47 @@ try:
 except Exception as e:
     print("Language column:", e)
 
+
+# ==========================
+# ADMIN TABLE
+# ==========================
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admins(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    username TEXT UNIQUE,
+
+    password TEXT
+
+)
+""")
+
+conn.commit()
+
+
+# Default Admin
+# Username: admin
+# Password: admin123
+
+admin_password = hashlib.sha256(
+    "admin123".encode()
+).hexdigest()
+
+try:
+
+    cursor.execute(
+        "INSERT INTO admins (username, password) VALUES (?, ?)",
+        ("admin", admin_password)
+    )
+
+    conn.commit()
+
+except sqlite3.IntegrityError:
+
+    pass
+
 # ==========================
 # Password Hash
 # ==========================
@@ -280,7 +321,71 @@ class HomeCropModel(BaseModel):
         user_id: int
         crop: str
 
-    # ==========================
+
+class AdminLoginModel(BaseModel):
+
+    username: str
+
+    password: str
+
+
+# ==========================
+# ADMIN LOGIN API
+# ==========================
+
+@app.post("/admin/login")
+def admin_login(data: AdminLoginModel):
+
+    password_hash = hashlib.sha256(
+        data.password.encode()
+    ).hexdigest()
+
+
+    cursor.execute(
+        """
+        SELECT
+            id,
+            username
+        FROM admins
+        WHERE username = ?
+        AND password = ?
+        """,
+        (
+            data.username,
+            password_hash
+        )
+    )
+
+
+    admin = cursor.fetchone()
+
+
+    if not admin:
+
+        return {
+            "status": False,
+            "message": "Invalid username or password"
+        }
+
+
+    return {
+
+        "status": True,
+
+        "message": "Admin login successful",
+
+        "admin": {
+
+            "id": admin[0],
+
+            "username": admin[1]
+
+        }
+
+    }
+
+
+# ==========================
 # Register API
 # ==========================
 

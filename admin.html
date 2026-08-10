@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Kisan AI Admin Panel</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f7f4;
+    color:#222;
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+#loginPage{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#e8f5e9,#c8e6c9);
+}
+
+.loginBox{
+    width:100%;
+    max-width:400px;
+    margin:20px;
+    padding:35px 30px;
+    background:white;
+    border-radius:20px;
+    box-shadow:0 12px 40px rgba(0,0,0,.15);
+}
+
+.logo{
+    text-align:center;
+    font-size:48px;
+}
+
+.loginBox h1{
+    text-align:center;
+    color:#2e7d32;
+    margin:10px 0 5px;
+}
+
+.loginBox .sub{
+    text-align:center;
+    color:#777;
+    margin-bottom:25px;
+}
+
+.input{
+    width:100%;
+    padding:13px;
+    margin-bottom:15px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    font-size:16px;
+    outline:none;
+}
+
+.input:focus{
+    border-color:#43a047;
+}
+
+.loginBtn{
+    width:100%;
+    padding:14px;
+    border:0;
+    border-radius:10px;
+    background:#2e7d32;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.loginBtn:hover{
+    background:#1b5e20;
+}
+
+#error{
+    display:none;
+    color:#d32f2f;
+    text-align:center;
+    margin-top:15px;
+}
+
+
+/* =========================
+   ADMIN
+========================= */
+
+#adminPage{
+    display:none;
+}
+
+.header{
+    height:65px;
+    background:#2e7d32;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 25px;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.header h2{
+    font-size:21px;
+}
+
+.logoutBtn{
+    background:white;
+    color:#2e7d32;
+    border:0;
+    padding:9px 15px;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+    position:fixed;
+    left:0;
+    top:65px;
+    bottom:0;
+    width:230px;
+    background:white;
+    border-right:1px solid #ddd;
+    padding:20px 12px;
+}
+
+.sidebar button{
+    width:100%;
+    padding:13px;
+    margin-bottom:8px;
+    border:0;
+    border-radius:9px;
+    background:white;
+    text-align:left;
+    font-size:15px;
+    cursor:pointer;
+}
+
+.sidebar button:hover{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+
+/* =========================
+   CONTENT
+========================= */
+
+.content{
+    margin-left:230px;
+    padding:25px;
+}
+
+.content h1{
+    margin-bottom:20px;
+    color:#2e7d32;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:
+        repeat(4,1fr);
+    gap:18px;
+}
+
+.statCard{
+    background:white;
+    padding:22px;
+    border-radius:15px;
+    box-shadow:0 3px 15px rgba(0,0,0,.07);
+}
+
+.statCard .icon{
+    font-size:30px;
+}
+
+.statCard h3{
+    margin-top:10px;
+    color:#555;
+}
+
+.statCard p{
+    font-size:28px;
+    font-weight:bold;
+    margin-top:5px;
+    color:#2e7d32;
+}
+
+
+/* =========================
+   SECTIONS
+========================= */
+
+.adminSection{
+    display:none;
+}
+
+.adminSection.active{
+    display:block;
+}
+
+.panel{
+    background:white;
+    padding:22px;
+    border-radius:15px;
+    box-shadow:0 3px 15px rgba(0,0,0,.07);
+}
+
+.panel input,
+.panel textarea,
+.panel select{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+.actionBtn{
+    background:#2e7d32;
+    color:white;
+    border:0;
+    padding:11px 18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:800px){
+
+    .sidebar{
+        width:200px;
+    }
+
+    .content{
+        margin-left:200px;
+        padding:15px;
+    }
+
+    .stats{
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:550px){
+
+    .sidebar{
+        position:relative;
+        top:0;
+        width:100%;
+        height:auto;
+        border-right:0;
+        border-bottom:1px solid #ddd;
+    }
+
+    .content{
+        margin-left:0;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     LOGIN
+========================= -->
+
+<div id="loginPage">
+
+    <div class="loginBox">
+
+        <div class="logo">
+            🌾
+        </div>
+
+        <h1>Kisan AI</h1>
+
+        <p class="sub">
+            Admin Panel
+        </p>
+
+
+        <input
+            id="adminUsername"
+            class="input"
+            type="text"
+            placeholder="Username"
+        >
+
+
+        <input
+            id="adminPassword"
+            class="input"
+            type="password"
+            placeholder="Password"
+        >
+
+
+        <button
+            class="loginBtn"
+            onclick="adminLogin()"
+        >
+            Login
+        </button>
+
+
+        <p id="error">
+            Invalid username or password
+        </p>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================
+     ADMIN PAGE
+========================= -->
+
+<div id="adminPage">
+
+
+    <div class="header">
+
+        <h2>
+            🌾 Kisan AI Admin
+        </h2>
+
+        <button
+            class="logoutBtn"
+            onclick="adminLogout()"
+        >
+            Logout
+        </button>
+
+    </div>
+
+
+    <div class="sidebar">
+
+        <button onclick="showSection('dashboard')">
+            📊 Dashboard
+        </button>
+
+        <button onclick="showSection('users')">
+            👨‍🌾 Users
+        </button>
+
+        <button onclick="showSection('mandi')">
+            🌾 Mandi Rates
+        </button>
+
+        <button onclick="showSection('news')">
+            📰 News
+        </button>
+
+        <button onclick="showSection('crops')">
+            🌱 Crop Guide
+        </button>
+
+        <button onclick="showSection('disease')">
+            🦠 Disease Data
+        </button>
+
+        <button onclick="showSection('notifications')">
+            🔔 Notifications
+        </button>
+
+    </div>
+
+
+    <main class="content">
+
+
+        <!-- DASHBOARD -->
+
+        <section
+            id="dashboard"
+            class="adminSection active"
+        >
+
+            <h1>
+                Dashboard
+            </h1>
+
+            <div class="stats">
+
+                <div class="statCard">
+                    <div class="icon">👨‍🌾</div>
+                    <h3>Total Users</h3>
+                    <p id="totalUsers">0</p>
+                </div>
+
+                <div class="statCard">
+                    <div class="icon">🌾</div>
+                    <h3>Mandi Rates</h3>
+                    <p id="totalMandi">0</p>
+                </div>
+
+                <div class="statCard">
+                    <div class="icon">📰</div>
+                    <h3>News</h3>
+                    <p id="totalNews">0</p>
+                </div>
+
+                <div class="statCard">
+                    <div class="icon">🦠</div>
+                    <h3>Disease Records</h3>
+                    <p id="totalDisease">0</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- USERS -->
+
+        <section
+            id="users"
+            class="adminSection"
+        >
+
+            <h1>👨‍🌾 Users</h1>
+
+            <div class="panel">
+
+                <p>
+                    Registered farmer users will appear here.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- MANDI -->
+
+        <section
+            id="mandi"
+            class="adminSection"
+        >
+
+            <h1>🌾 Mandi Rates</h1>
+
+            <div class="panel">
+
+                <input
+                    id="mandiCrop"
+                    placeholder="Crop"
+                >
+
+                <input
+                    id="mandiLocation"
+                    placeholder="Location"
+                >
+
+                <input
+                    id="mandiMin"
+                    placeholder="Minimum Price"
+                    type="number"
+                >
+
+                <input
+                    id="mandiMax"
+                    placeholder="Maximum Price"
+                    type="number"
+                >
+
+                <input
+                    id="mandiAvg"
+                    placeholder="Average Price"
+                    type="number"
+                >
+
+                <button class="actionBtn">
+                    Add Mandi Rate
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- NEWS -->
+
+        <section
+            id="news"
+            class="adminSection"
+        >
+
+            <h1>📰 News</h1>
+
+            <div class="panel">
+
+                <input
+                    id="newsTitle"
+                    placeholder="News Title"
+                >
+
+                <textarea
+                    id="newsDescription"
+                    rows="5"
+                    placeholder="News Description"
+                ></textarea>
+
+                <button class="actionBtn">
+                    Add News
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- CROP -->
+
+        <section
+            id="crops"
+            class="adminSection"
+        >
+
+            <h1>🌱 Crop Guide</h1>
+
+            <div class="panel">
+
+                <input
+                    placeholder="Crop Name"
+                >
+
+                <textarea
+                    rows="6"
+                    placeholder="Crop information..."
+                ></textarea>
+
+                <button class="actionBtn">
+                    Add Crop Guide
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- DISEASE -->
+
+        <section
+            id="disease"
+            class="adminSection"
+        >
+
+            <h1>🦠 Disease Data</h1>
+
+            <div class="panel">
+
+                <input
+                    placeholder="Disease Name"
+                >
+
+                <input
+                    placeholder="Crop"
+                >
+
+                <textarea
+                    rows="6"
+                    placeholder="Treatment / Medicine..."
+                ></textarea>
+
+                <button class="actionBtn">
+                    Add Disease Data
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- NOTIFICATIONS -->
+
+        <section
+            id="notifications"
+            class="adminSection"
+        >
+
+            <h1>🔔 Notifications</h1>
+
+            <div class="panel">
+
+                <textarea
+                    rows="5"
+                    placeholder="Notification message..."
+                ></textarea>
+
+                <button class="actionBtn">
+                    Send Notification
+                </button>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+
+<script>
+
+const API_URL =
+    "https://kisan-ai-api-lezf.onrender.com";
+
+
+/* =========================
+   ADMIN LOGIN
+========================= */
+
+async function adminLogin(){
+
+    const username =
+        document
+        .getElementById("adminUsername")
+        .value
+        .trim();
+
+    const password =
+        document
+        .getElementById("adminPassword")
+        .value
+        .trim();
+
+
+    if(!username || !password){
+
+        showError(
+            "Username and password required"
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/admin/login",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+                        username:username,
+                        password:password
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(data.status){
+
+            localStorage.setItem(
+                "adminLoggedIn",
+                "true"
+            );
+
+            document
+            .getElementById("loginPage")
+            .style.display="none";
+
+            document
+            .getElementById("adminPage")
+            .style.display="block";
+
+        }
+        else{
+
+            showError(
+                data.message ||
+                "Invalid username or password"
+            );
+
+        }
+
+    }
+    catch(error){
+
+        showError(
+            "Server connection failed"
+        );
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =========================
+   ERROR
+========================= */
+
+function showError(message){
+
+    const error =
+        document.getElementById("error");
+
+    error.innerText =
+        message;
+
+    error.style.display =
+        "block";
+
+}
+
+
+/* =========================
+   SECTION
+========================= */
+
+function showSection(id){
+
+    document
+    .querySelectorAll(".adminSection")
+    .forEach(
+        section =>
+            section.classList.remove("active")
+    );
+
+
+    const section =
+        document.getElementById(id);
+
+    if(section){
+
+        section.classList.add("active");
+
+    }
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+function adminLogout(){
+
+    localStorage.removeItem(
+        "adminLoggedIn"
+    );
+
+    document
+    .getElementById("adminPage")
+    .style.display="none";
+
+    document
+    .getElementById("loginPage")
+    .style.display="flex";
+
+}
+
+
+/* =========================
+   AUTO LOGIN
+========================= */
+
+window.addEventListener(
+    "load",
+    function(){
+
+        if(
+            localStorage.getItem(
+                "adminLoggedIn"
+            ) === "true"
+        ){
+
+            document
+            .getElementById("loginPage")
+            .style.display="none";
+
+            document
+            .getElementById("adminPage")
+            .style.display="block";
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
