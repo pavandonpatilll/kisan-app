@@ -3624,73 +3624,60 @@ alert(data.message);
 
 async function loginUser(){
 
-let mobile=document.getElementById("loginMobile").value.trim();
+    let mobile = document.getElementById("loginMobile").value.trim();
+    let password = document.getElementById("loginPassword").value.trim();
 
-let password=document.getElementById("loginPassword").value.trim();
+    let response = await fetch(
+        "https://kisan-ai-api-lezf.onrender.com/login",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                mobile:mobile,
+                password:password
+            })
+        }
+    );
 
+    let data = await response.json();
 
-let response = await fetch(
-"https://kisan-ai-api-lezf.onrender.com/login",
-{
+    if(data.status){
 
-method:"POST",
+        localStorage.setItem(
+            "user",
+            JSON.stringify(data.user)
+        );
 
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-
-mobile:mobile,
-
-password:password
-
-})
-
-});
-
-
-let data = await response.json();
-
-
-if(data.status){
-
-
-localStorage.setItem(
-"user",
-JSON.stringify(data.user)
-);
+        localStorage.setItem(
+            "userId",
+            data.user.id
+        );
 
 
-// ADD THIS LINE ✅
+        document.getElementById("loginSection").style.display="none";
 
-localStorage.setItem(
-"userId",
-data.user.id
-);
+        document.getElementById("homeSection").style.display="block";
 
 
+        // ⭐ Selected language Home par apply karo
+        applyLanguage();
 
-document.getElementById("loginSection").style.display="none";
 
+        loadDiseaseSummary();
 
-document.getElementById("homeSection").style.display="block";
-loadDiseaseSummary();
+        document.getElementById("farmerName").innerHTML =
+            data.user.name;
 
-document.getElementById("farmerName").innerHTML=data.user.name;
+    }
+    else{
 
+        alert(data.message);
+
+    }
 
 }
-
-else{
-
-alert(data.message);
-
-}
-
-
-}
-
 
 // ----------------------------
 // Logout
@@ -6859,11 +6846,12 @@ const translations = {
 
 function applyLanguage(){
 
+    // Default language = Marathi
     const lang =
-        localStorage.getItem("appLanguage") || "en";
+        localStorage.getItem("appLanguage") || "mr";
 
     const t =
-        translations[lang] || translations.en;
+        translations[lang] || translations.mr;
 
 
     document.getElementById("txtWeather").innerText =
@@ -6914,6 +6902,7 @@ function applyLanguage(){
 
     document.getElementById("navProfile").innerText =
         t.profile;
+
 }
 
 
@@ -6925,6 +6914,7 @@ document.addEventListener(
 
     }
 );
+
 
 function getSelectedLanguage(){
 
