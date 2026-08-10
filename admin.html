@@ -727,13 +727,19 @@ async function adminLogin(){
                 "true"
             );
 
+
             document
             .getElementById("loginPage")
             .style.display="none";
 
+
             document
             .getElementById("adminPage")
             .style.display="block";
+
+
+            // Dashboard ka real data load karo
+            loadDashboard();
 
         }
         else{
@@ -753,6 +759,44 @@ async function adminLogin(){
         );
 
         console.error(error);
+
+    }
+
+}
+
+async function loadDashboard(){
+
+    try{
+
+        const response = await fetch(
+            API_URL + "/admin/dashboard"
+        );
+
+        const data = await response.json();
+
+        if(data.status){
+
+            document.getElementById("totalUsers").innerText =
+                data.totalUsers;
+
+            document.getElementById("totalMandi").innerText =
+                data.totalMandi;
+
+            document.getElementById("totalNews").innerText =
+                data.totalNews;
+
+            document.getElementById("totalDisease").innerText =
+                data.totalDisease;
+
+        }
+
+    }
+    catch(error){
+
+        console.error(
+            "Dashboard error:",
+            error
+        );
 
     }
 
@@ -850,6 +894,7 @@ window.addEventListener(
 
     }
 );
+
 
 </script>
 

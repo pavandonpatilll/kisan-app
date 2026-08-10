@@ -384,6 +384,42 @@ def admin_login(data: AdminLoginModel):
 
     }
 
+# ==========================
+# ADMIN DASHBOARD
+# ==========================
+
+@app.get("/admin/dashboard")
+def admin_dashboard():
+
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM disease_history")
+    total_disease = cursor.fetchone()[0]
+
+    # Agar mandi/news tables abhi nahi hain
+    total_mandi = 0
+    total_news = 0
+
+    try:
+        cursor.execute("SELECT COUNT(*) FROM mandi")
+        total_mandi = cursor.fetchone()[0]
+    except:
+        pass
+
+    try:
+        cursor.execute("SELECT COUNT(*) FROM news")
+        total_news = cursor.fetchone()[0]
+    except:
+        pass
+
+    return {
+        "status": True,
+        "totalUsers": total_users,
+        "totalMandi": total_mandi,
+        "totalNews": total_news,
+        "totalDisease": total_disease
+    }
 
 # ==========================
 # Register API
