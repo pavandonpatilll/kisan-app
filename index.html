@@ -553,6 +553,21 @@ cursor:pointer;
 
 }
 
+
+.sideMenuTop{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.closeMenuBtn{
+    border:none;
+    background:transparent;
+    font-size:25px;
+    cursor:pointer;
+    padding:5px 8px;
+}
+
 .profileBox{
 
 background:white;
@@ -2336,39 +2351,52 @@ Login
 
 </header>
 
+
 <div id="sideMenu">
 
-<h2>
-🌾 Kisan AI
-</h2>
+    <div class="sideMenuTop">
+
+        <h2>
+            🌾 Kisan AI
+        </h2>
+
+        <button
+            class="closeMenuBtn"
+            onclick="openMenu()"
+        >
+            ✕
+        </button>
+
+    </div>
 
 
-<p onclick="goHome()">
-🏠 Home
-</p>
+    <p onclick="goHome()">
+        🏠 Home
+    </p>
 
 
-<p onclick="openPage('profilePage')">
-👤 Profile
-</p>
+    <p onclick="openPage('profilePage')">
+        👤 Profile
+    </p>
 
 
-<p onclick="openPage('schemePage')">
-🏛 Schemes
-</p>
+    <p onclick="openPage('schemePage')">
+        🏛 Schemes
+    </p>
 
 
-<p onclick="openPage('newsPage')">
-📰 News
-</p>
+    <p onclick="openPage('newsPage')">
+        📰 News
+    </p>
 
 
-<p onclick="logout()">
-🚪 Logout
-</p>
+    <p onclick="logout()">
+        🚪 Logout
+    </p>
 
 
 </div>
+
 
 <div class="welcomeCard">
 
@@ -4444,13 +4472,44 @@ if(user){
 
     }
 
+
+
 function openMenu(){
 
-document
-.getElementById("sideMenu")
-.classList.toggle("active");
+    document
+    .getElementById("sideMenu")
+    .classList.toggle("active");
 
 }
+
+
+// Side menu ke bahar click karne par close
+document.addEventListener("click", function(event){
+
+    const sideMenu = document.getElementById("sideMenu");
+    const menuBtn = document.querySelector(".menuBtn");
+
+    if(!sideMenu || !menuBtn) return;
+
+
+    // Menu open hai
+    if(sideMenu.classList.contains("active")){
+
+        // Agar click menu ke andar nahi
+        // aur menu button par bhi nahi
+        if(
+            !sideMenu.contains(event.target) &&
+            !menuBtn.contains(event.target)
+        ){
+
+            sideMenu.classList.remove("active");
+
+        }
+
+    }
+
+});
+
 
 function getLiveLocation(){
 
