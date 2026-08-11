@@ -237,6 +237,24 @@ except Exception as e:
 
 
 # ==========================
+# MANDI TABLE
+# ==========================
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS mandi(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    crop TEXT,
+    location TEXT,
+    min_price REAL,
+    max_price REAL,
+    avg_price REAL,
+    date TEXT
+)
+""")
+
+conn.commit()
+
+# ==========================
 # ADMIN TABLE
 # ==========================
 
@@ -328,6 +346,13 @@ class AdminLoginModel(BaseModel):
 
     password: str
 
+class MandiModel(BaseModel):
+
+    crop: str
+    location: str
+    min_price: float
+    max_price: float
+    avg_price: float
 
 # ==========================
 # ADMIN LOGIN API
@@ -458,6 +483,81 @@ def admin_users():
     return {
         "status": True,
         "users": users
+    }
+
+
+# ==========================
+# ADMIN ADD MANDI
+# ==========================
+
+@app.post("/admin/mandi")
+def add_mandi(data: MandiModel):
+
+    cursor.execute("""
+        INSERT INTO mandi(
+            crop,
+            location,
+            min_price,
+            max_price,
+            avg_price,
+            date
+        )
+        VALUES(?,?,?,?,?,?)
+    """, (
+        data.crop,
+        data.location,
+        data.min_price,
+        data.max_price,
+        data.avg_price,
+        datetime.now().strftime("%Y-%m-%d")
+    ))
+
+    conn.commit()
+
+    return {
+        "status": True,
+        "message": "Mandi rate added successfully"
+    }
+
+# ==========================
+# ADMIN MANDI LIST
+# ==========================
+
+@app.get("/admin/mandi")
+def get_admin_mandi():
+
+    cursor.execute("""
+        SELECT
+            id,
+            crop,
+            location,
+            min_price,
+            max_price,
+            avg_price,
+            date
+        FROM mandi
+        ORDER BY id DESC
+    """)
+
+    rows = cursor.fetchall()
+
+    mandi = []
+
+    for row in rows:
+
+        mandi.append({
+            "id": row[0],
+            "crop": row[1],
+            "location": row[2],
+            "min_price": row[3],
+            "max_price": row[4],
+            "avg_price": row[5],
+            "date": row[6]
+        })
+
+    return {
+        "status": True,
+        "mandi": mandi
     }
 
 # ==========================
@@ -2223,50 +2323,87 @@ Do not mix languages unnecessarily.
 
         }
     
+
+# ==========================
+# MANDI RATES
+# ==========================
+
 @app.get("/mandi/{crop}/{state}")
 def get_mandi(crop: str, state: str):
-    try:
-        url = "https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24"
-        params = {
-            "api-key": MANDI_API_KEY,
-            "format": "json",
-            "limit": 5,
-            "filters[State]": state,
-            "filters[Commodity]": crop,
-        }
 
-        response = requests.get(
-            url,
-            params=params,
-            timeout=(5, 120),
+    try:
+
+        cursor.execute(
+            """
+            SELECT
+                id,
+                crop,
+                location,
+                min_price,
+                max_price,
+                avg_price,
+                date
+            FROM mandi
+            WHERE LOWER(crop) = LOWER(?)
+            AND LOWER(location) = LOWER(?)
+            ORDER BY id DESC
+            """,
+            (
+                crop,
+                state
+            )
         )
 
-        if response.status_code != 200:
-            return {
-                "status": False,
-                "code": response.status_code,
-                "response": response.text,
-            }
+        rows = cursor.fetchall()
 
-        data = response.json()
+
+        records = []
+
+
+        for row in rows:
+
+            records.append({
+
+                "id": row[0],
+
+                "Commodity": row[1],
+
+                "State": row[2],
+
+                "Min_Price": row[3],
+
+                "Max_Price": row[4],
+
+                "Modal_Price": row[5],
+
+                "Date": row[6]
+
+            })
+
+
         return {
+
             "status": True,
+
             "crop": crop,
+
             "state": state,
-            "records": data.get("records", []),
+
+            "records": records
+
         }
 
-    except requests.exceptions.Timeout:
-        return {
-            "status": False,
-            "message": "Mandi server slow, try again",
-        }
 
     except Exception as e:
+
         return {
+
             "status": False,
-            "message": str(e),
+
+            "message": str(e)
+
         }
+
 
 @app.get("/schemes/{state}")
 def get_schemes(state:str):

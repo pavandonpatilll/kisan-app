@@ -536,53 +536,71 @@ body{
 </section>
 
 
-        <!-- MANDI -->
+<!-- MANDI -->
 
-        <section
-            id="mandi"
-            class="adminSection"
+<section
+    id="mandi"
+    class="adminSection"
+>
+
+    <h1>🌾 Mandi Rates</h1>
+
+    <div class="panel">
+
+        <input
+            id="mandiCrop"
+            placeholder="Crop Name"
         >
 
-            <h1>🌾 Mandi Rates</h1>
+        <input
+            id="mandiLocation"
+            placeholder="Location / State"
+        >
 
-            <div class="panel">
+        <input
+            id="mandiMin"
+            placeholder="Minimum Price"
+            type="number"
+        >
 
-                <input
-                    id="mandiCrop"
-                    placeholder="Crop"
-                >
+        <input
+            id="mandiMax"
+            placeholder="Maximum Price"
+            type="number"
+        >
 
-                <input
-                    id="mandiLocation"
-                    placeholder="Location"
-                >
+        <input
+            id="mandiAvg"
+            placeholder="Average Price"
+            type="number"
+        >
 
-                <input
-                    id="mandiMin"
-                    placeholder="Minimum Price"
-                    type="number"
-                >
+        <button
+            class="actionBtn"
+            onclick="addMandiRate()"
+        >
+            ➕ Add Mandi Rate
+        </button>
 
-                <input
-                    id="mandiMax"
-                    placeholder="Maximum Price"
-                    type="number"
-                >
+    </div>
 
-                <input
-                    id="mandiAvg"
-                    placeholder="Average Price"
-                    type="number"
-                >
 
-                <button class="actionBtn">
-                    Add Mandi Rate
-                </button>
+    <br>
 
-            </div>
 
-        </section>
+    <div class="panel">
 
+        <h2>📋 Added Mandi Rates</h2>
+
+        <div id="mandiList">
+
+            Loading...
+
+        </div>
+
+    </div>
+
+</section>
 
         <!-- NEWS -->
 
@@ -887,6 +905,7 @@ function showSection(id){
     const section =
         document.getElementById(id);
 
+
     if(section){
 
         section.classList.add("active");
@@ -904,6 +923,13 @@ function showSection(id){
     if(id === "dashboard"){
 
         loadDashboard();
+
+    }
+
+
+    if(id === "mandi"){
+
+        loadMandiRates();
 
     }
 
@@ -957,6 +983,225 @@ window.addEventListener(
 
     }
 );
+
+async function addMandiRate(){
+
+    const crop =
+        document.getElementById("mandiCrop").value.trim();
+
+    const location =
+        document.getElementById("mandiLocation").value.trim();
+
+    const minPrice =
+        document.getElementById("mandiMin").value;
+
+    const maxPrice =
+        document.getElementById("mandiMax").value;
+
+    const avgPrice =
+        document.getElementById("mandiAvg").value;
+
+
+    if(
+        !crop ||
+        !location ||
+        !minPrice ||
+        !maxPrice ||
+        !avgPrice
+    ){
+
+        alert("Please fill all fields");
+
+        return;
+
+    }
+
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/admin/mandi",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        crop:crop,
+
+                        location:location,
+
+                        min_price:
+                            Number(minPrice),
+
+                        max_price:
+                            Number(maxPrice),
+
+                        avg_price:
+                            Number(avgPrice)
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(data.status){
+
+            alert(
+                "🌾 Mandi rate added successfully"
+            );
+
+
+            document.getElementById(
+                "mandiCrop"
+            ).value = "";
+
+            document.getElementById(
+                "mandiLocation"
+            ).value = "";
+
+            document.getElementById(
+                "mandiMin"
+            ).value = "";
+
+            document.getElementById(
+                "mandiMax"
+            ).value = "";
+
+            document.getElementById(
+                "mandiAvg"
+            ).value = "";
+
+
+            loadMandiRates();
+
+        }
+        else{
+
+            alert(
+                data.message ||
+                "Failed to add mandi rate"
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert(
+            "Server connection failed"
+        );
+
+    }
+
+}
+
+async function loadMandiRates(){
+
+    const list =
+        document.getElementById(
+            "mandiList"
+        );
+
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/admin/mandi"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(
+            !data.status ||
+            !data.mandi ||
+            data.mandi.length === 0
+        ){
+
+            list.innerHTML =
+                "<p>No mandi rates added yet.</p>";
+
+            return;
+
+        }
+
+
+        let html = "";
+
+
+        data.mandi.forEach(item => {
+
+            html += `
+
+                <div style="
+                    border:1px solid #ddd;
+                    padding:15px;
+                    margin:10px 0;
+                    border-radius:10px;
+                ">
+
+                    <h3>
+                        🌾 ${item.crop}
+                    </h3>
+
+                    <p>
+                        📍 ${item.location}
+                    </p>
+
+                    <p>
+                        🔻 Minimum:
+                        ₹${item.min_price}
+                    </p>
+
+                    <p>
+                        🔺 Maximum:
+                        ₹${item.max_price}
+                    </p>
+
+                    <p>
+                        💰 Average:
+                        ₹${item.avg_price}
+                    </p>
+
+                    <small>
+                        📅 ${item.date}
+                    </small>
+
+                </div>
+
+            `;
+
+        });
+
+
+        list.innerHTML = html;
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        list.innerHTML =
+            "<p>Unable to load mandi rates.</p>";
+
+    }
+
+}
 
 async function loadUsers(){
 
