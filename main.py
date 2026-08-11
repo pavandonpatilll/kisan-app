@@ -346,13 +346,7 @@ class AdminLoginModel(BaseModel):
 
     password: str
 
-class MandiModel(BaseModel):
 
-    crop: str
-    location: str
-    min_price: float
-    max_price: float
-    avg_price: float
 
 # ==========================
 # ADMIN LOGIN API
@@ -490,34 +484,88 @@ def admin_users():
 # ADMIN ADD MANDI
 # ==========================
 
+class MandiModel(BaseModel):
+
+    crop: str
+    location: str
+    min_price: float
+    max_price: float
+    avg_price: float
+
+
 @app.post("/admin/mandi")
 def add_mandi(data: MandiModel):
 
-    cursor.execute("""
-        INSERT INTO mandi(
-            crop,
-            location,
-            min_price,
-            max_price,
-            avg_price,
-            date
+    try:
+
+        cursor.execute(
+            """
+            INSERT INTO mandi(
+                crop,
+                location,
+                min_price,
+                max_price,
+                avg_price,
+                date
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                data.crop.strip(),
+                data.location.strip(),
+                data.min_price,
+                data.max_price,
+                data.avg_price,
+                datetime.now().strftime("%Y-%m-%d")
+            )
         )
-        VALUES(?,?,?,?,?,?)
-    """, (
-        data.crop,
-        data.location,
-        data.min_price,
-        data.max_price,
-        data.avg_price,
-        datetime.now().strftime("%Y-%m-%d")
-    ))
 
-    conn.commit()
+        conn.commit()
 
-    return {
-        "status": True,
-        "message": "Mandi rate added successfully"
-    }
+
+        # Verify immediately
+        cursor.execute(
+            """
+            SELECT
+                id,
+                crop,
+                location,
+                min_price,
+                max_price,
+                avg_price,
+                date
+            FROM mandi
+            ORDER BY id DESC
+            LIMIT 1
+            """
+        )
+
+        row = cursor.fetchone()
+
+
+        return {
+            "status": True,
+            "message": "Mandi rate added successfully",
+            "saved": {
+                "id": row[0],
+                "crop": row[1],
+                "location": row[2],
+                "min_price": row[3],
+                "max_price": row[4],
+                "avg_price": row[5],
+                "date": row[6]
+            }
+        }
+
+
+    except Exception as e:
+
+        conn.rollback()
+
+        return {
+            "status": False,
+            "message": str(e)
+        }
 
 # ==========================
 # ADMIN MANDI LIST

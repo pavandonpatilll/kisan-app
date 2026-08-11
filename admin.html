@@ -576,11 +576,11 @@ body{
         >
 
         <button
-            class="actionBtn"
-            onclick="addMandiRate()"
-        >
-            ➕ Add Mandi Rate
-        </button>
+    class="actionBtn"
+    onclick="addMandiRate()"
+>
+    Add Mandi Rate
+</button>
 
     </div>
 
@@ -987,21 +987,37 @@ window.addEventListener(
 async function addMandiRate(){
 
     const crop =
-        document.getElementById("mandiCrop").value.trim();
+        document
+        .getElementById("mandiCrop")
+        .value
+        .trim();
 
     const location =
-        document.getElementById("mandiLocation").value.trim();
+        document
+        .getElementById("mandiLocation")
+        .value
+        .trim();
 
     const minPrice =
-        document.getElementById("mandiMin").value;
+        document
+        .getElementById("mandiMin")
+        .value
+        .trim();
 
     const maxPrice =
-        document.getElementById("mandiMax").value;
+        document
+        .getElementById("mandiMax")
+        .value
+        .trim();
 
     const avgPrice =
-        document.getElementById("mandiAvg").value;
+        document
+        .getElementById("mandiAvg")
+        .value
+        .trim();
 
 
+    // Validate
     if(
         !crop ||
         !location ||
@@ -1017,33 +1033,54 @@ async function addMandiRate(){
     }
 
 
+    const min =
+        Number(minPrice);
+
+    const max =
+        Number(maxPrice);
+
+    const avg =
+        Number(avgPrice);
+
+
+    // Number validation
+    if(
+        !Number.isFinite(min) ||
+        !Number.isFinite(max) ||
+        !Number.isFinite(avg)
+    ){
+
+        alert("Please enter valid prices");
+
+        return;
+
+    }
+
+
     try{
 
         const response =
             await fetch(
                 API_URL + "/admin/mandi",
                 {
-                    method:"POST",
+                    method: "POST",
 
-                    headers:{
+                    headers: {
                         "Content-Type":
                             "application/json"
                     },
 
-                    body:JSON.stringify({
+                    body: JSON.stringify({
 
-                        crop:crop,
+                        crop: crop,
 
-                        location:location,
+                        location: location,
 
-                        min_price:
-                            Number(minPrice),
+                        min_price: min,
 
-                        max_price:
-                            Number(maxPrice),
+                        max_price: max,
 
-                        avg_price:
-                            Number(avgPrice)
+                        avg_price: avg
 
                     })
                 }
@@ -1054,6 +1091,12 @@ async function addMandiRate(){
             await response.json();
 
 
+        console.log(
+            "ADD MANDI RESPONSE:",
+            data
+        );
+
+
         if(data.status){
 
             alert(
@@ -1061,28 +1104,36 @@ async function addMandiRate(){
             );
 
 
-            document.getElementById(
-                "mandiCrop"
-            ).value = "";
+            // Clear form
+            document
+            .getElementById("mandiCrop")
+            .value = "";
 
-            document.getElementById(
-                "mandiLocation"
-            ).value = "";
+            document
+            .getElementById("mandiLocation")
+            .value = "";
 
-            document.getElementById(
-                "mandiMin"
-            ).value = "";
+            document
+            .getElementById("mandiMin")
+            .value = "";
 
-            document.getElementById(
-                "mandiMax"
-            ).value = "";
+            document
+            .getElementById("mandiMax")
+            .value = "";
 
-            document.getElementById(
-                "mandiAvg"
-            ).value = "";
+            document
+            .getElementById("mandiAvg")
+            .value = "";
 
 
-            loadMandiRates();
+            // Reload admin mandi list
+            if(
+                typeof loadMandiRates === "function"
+            ){
+
+                loadMandiRates();
+
+            }
 
         }
         else{
@@ -1094,10 +1145,14 @@ async function addMandiRate(){
 
         }
 
+
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "ADD MANDI ERROR:",
+            error
+        );
 
         alert(
             "Server connection failed"
