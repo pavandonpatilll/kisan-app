@@ -4928,99 +4928,148 @@ async function loadLocationName(lat, lon){
 
 async function loadMandi(){
 
-    let crop =
-        document.getElementById("homeCrop").innerText.trim();
-
-    let state =
-        localStorage.getItem("userState");
-
-
-    if(crop == "--" || crop == ""){
-
-        crop = "Rice";
-
-    }
-
-
-    if(!state){
-
-        state = "Maharashtra";
-
-    }
-
-
     try{
 
-        let response = await fetch(
-            `https://kisan-ai-api-lezf.onrender.com/mandi/${encodeURIComponent(crop)}/${encodeURIComponent(state)}`
-        );
+        // Get crop
+        let cropElement =
+            document.getElementById("homeCrop");
+
+        let crop =
+            cropElement
+            ? cropElement.innerText.trim()
+            : "";
+
+        // Get state
+        let state =
+            localStorage.getItem("userState") ||
+            "Maharashtra";
 
 
-        let data = await response.json();
-
-
-        console.log("MANDI DATA", data);
-
-
+        // Default crop
         if(
-            data.status &&
-            data.records &&
-            data.records.length > 0
+            !crop ||
+            crop === "--" ||
+            crop.toLowerCase().includes("loading")
         ){
 
-            let mandi = data.records[0];
+            crop = "Rice";
 
-            
-            document.getElementById("marketName").innerHTML =
-                "🌾 " + mandi.State;
+        }
 
-            document.getElementById("priceDate").innerHTML =
-                "📅 " + mandi.Date;
+
+        console.log("MANDI CROP:", crop);
+        console.log("MANDI STATE:", state);
+
+
+        // API call
+        let response =
+            await fetch(
+                `https://kisan-ai-api-lezf.onrender.com/mandi/${encodeURIComponent(crop)}/${encodeURIComponent(state)}`
+            );
+
+
+        let data =
+            await response.json();
+
+
+        console.log("MANDI DATA:", data);
+
+
+        // No data
+        if(
+            !data.status ||
+            !data.records ||
+            data.records.length === 0
+        ){
 
             document.getElementById("mandiCrop").innerHTML =
-                "🌾 " + mandi.Commodity;
-
+                "🌾 " + crop;
 
             document.getElementById("mandiLocation").innerHTML =
-                "📍 " + mandi.State;
+                "📍 " + state;
 
+            document.getElementById("marketName").innerHTML =
+                "🌾 Mandi Rate";
 
-            document.getElementById("todayPrice").innerHTML =
-                "₹ " + mandi.Modal_Price;
-
-
-            document.getElementById("maxPrice").innerHTML =
-                "₹ " + mandi.Max_Price;
-
-
-            document.getElementById("minPrice").innerHTML =
-                "₹ " + mandi.Min_Price;
-
-
-            document.getElementById("avgPrice").innerHTML =
-                "₹ " + mandi.Modal_Price;
-
-        }
-        else{
+            document.getElementById("priceDate").innerHTML =
+                "📅 No Data";
 
             document.getElementById("todayPrice").innerHTML =
-                "No Data";
+                "₹ --";
 
             document.getElementById("maxPrice").innerHTML =
-                "No Data";
+                "--";
 
             document.getElementById("minPrice").innerHTML =
-                "No Data";
+                "--";
 
             document.getElementById("avgPrice").innerHTML =
-                "No Data";
+                "--";
+
+            return;
 
         }
+
+
+        // First mandi record
+        let mandi =
+            data.records[0];
+
+
+        // Crop
+        document.getElementById("mandiCrop").innerHTML =
+            "🌾 " +
+            (mandi.Commodity || crop);
+
+
+        // Location
+        document.getElementById("mandiLocation").innerHTML =
+            "📍 " +
+            (mandi.State || state);
+
+
+        // Mandi
+        document.getElementById("marketName").innerHTML =
+            "🌾 Mandi Rate";
+
+
+        // Date
+        document.getElementById("priceDate").innerHTML =
+            "📅 " +
+            (mandi.Date || "Today");
+
+
+        // Today / Modal price
+        document.getElementById("todayPrice").innerHTML =
+            "₹ " +
+            (mandi.Modal_Price ?? "--");
+
+
+        // Maximum
+        document.getElementById("maxPrice").innerHTML =
+            "₹ " +
+            (mandi.Max_Price ?? "--");
+
+
+        // Minimum
+        document.getElementById("minPrice").innerHTML =
+            "₹ " +
+            (mandi.Min_Price ?? "--");
+
+
+        // Average
+        document.getElementById("avgPrice").innerHTML =
+            "₹ " +
+            (mandi.Modal_Price ?? "--");
+
 
     }
     catch(error){
 
-        console.log("MANDI ERROR:", error);
+        console.error(
+            "MANDI ERROR:",
+            error
+        );
 
     }
 
