@@ -2094,6 +2094,137 @@ transform:translateY(-2px);
 
 }
 
+.mandiHeader{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.mandiHeader h1{
+    margin-bottom:6px;
+}
+
+.mandiHeader p{
+    margin:0;
+    color:#666;
+}
+
+
+.mandiList{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+
+.mandiCard{
+    background:#ffffff;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    border:1px solid #eeeeee;
+}
+
+
+.mandiTop{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+}
+
+
+.mandiTop h2{
+    margin:0 0 5px 0;
+    font-size:20px;
+}
+
+
+.mandiTop p{
+    margin:0;
+    color:#777;
+}
+
+
+.mandiDate{
+    font-size:12px;
+    color:#777;
+    white-space:nowrap;
+}
+
+
+.mandiMainPrice{
+    font-size:32px;
+    font-weight:800;
+    margin:18px 0;
+}
+
+
+.mandiMainPrice span{
+    font-size:13px;
+    font-weight:normal;
+    color:#777;
+}
+
+
+.mandiPrices{
+    display:grid;
+    grid-template-columns:
+        repeat(3,1fr);
+    gap:10px;
+}
+
+
+.mandiPrices div{
+    background:#f7f7f7;
+    padding:12px 8px;
+    border-radius:12px;
+    text-align:center;
+}
+
+
+.mandiPrices span{
+    display:block;
+    font-size:12px;
+    color:#777;
+    margin-bottom:5px;
+}
+
+
+.mandiPrices strong{
+    font-size:16px;
+}
+
+
+.mandiFooter{
+    margin-top:15px;
+    padding-top:12px;
+    border-top:1px solid #eeeeee;
+    color:#777;
+    font-size:13px;
+}
+
+
+.mandiLoading,
+.mandiEmpty{
+    text-align:center;
+    padding:35px 15px;
+    color:#777;
+}
+
+
+@media(max-width:600px){
+
+    .mandiTop{
+        flex-direction:column;
+    }
+
+    .mandiPrices{
+        grid-template-columns:
+            repeat(3,1fr);
+    }
+
+}
+
 </style>
 
 </head>
@@ -2878,71 +3009,24 @@ Loading...
 
 <section id="mandiPage" class="featurePage">
 
-    <h1>💰 Live Mandi Rates</h1>
+    <div class="mandiHeader">
 
-    <div class="weatherCard">
+        <h1>💰 Live Mandi Rates</h1>
 
-        <h2 id="mandiCrop">
-            🌾 Loading Crop...
-        </h2>
-
-        <h3 id="mandiLocation">
-            📍 Loading Location...
-        </h3>
-
-        <h1 id="todayPrice">
-            ₹ --
-        </h1>
-
-        <p id="marketName">
-            🌾 Mandi Rate
+        <p id="mandiState">
+            📍 Maharashtra
         </p>
 
-        <p id="priceDate">
-            📅 Loading Date...
-        </p>
+    </div>
 
 
-        <div class="weatherInfo">
+    <div
+        id="mandiList"
+        class="mandiList"
+    >
 
-            <div>
-
-                📈
-
-                <p>Maximum</p>
-
-                <span id="maxPrice">
-                    --
-                </span>
-
-            </div>
-
-
-            <div>
-
-                📉
-
-                <p>Minimum</p>
-
-                <span id="minPrice">
-                    --
-                </span>
-
-            </div>
-
-
-            <div>
-
-                ⚖️
-
-                <p>Average</p>
-
-                <span id="avgPrice">
-                    --
-                </span>
-
-            </div>
-
+        <div class="mandiLoading">
+            🌾 Loading Mandi Rates...
         </div>
 
     </div>
@@ -2969,7 +3053,7 @@ Loading...
 
 <textarea 
 id="farmerQuestion"
-placeholder="Apna farming sawal likhe..."
+placeholder="शेतकरी भाऊ 👨‍🌾 आपल्या शेतीबद्दल प्रश्न विचारा..."
 style="
 width:100%;
 height:120px;
@@ -2977,7 +3061,7 @@ padding:15px;
 border-radius:10px;
 font-size:16px;
 ">
-सोयाबीनच्या पिकाची पाने पिवळी पडत आहेत; काय करावे?</textarea>
+</textarea>
 
 
 
@@ -4928,142 +5012,172 @@ async function loadLocationName(lat, lon){
 
 async function loadMandi(){
 
+    let state =
+        localStorage.getItem("userState");
+
+
+    if(!state){
+
+        state = "Maharashtra";
+
+    }
+
+
+    document.getElementById(
+        "mandiState"
+    ).innerText =
+        "📍 " + state;
+
+
+    const list =
+        document.getElementById(
+            "mandiList"
+        );
+
+
+    list.innerHTML = `
+        <div class="mandiLoading">
+            🌾 Loading Mandi Rates...
+        </div>
+    `;
+
+
     try{
 
-        // Get crop
-        let cropElement =
-            document.getElementById("homeCrop");
-
-        let crop =
-            cropElement
-            ? cropElement.innerText.trim()
-            : "";
-
-        // Get state
-        let state =
-            localStorage.getItem("userState") ||
-            "Maharashtra";
-
-
-        // Default crop
-        if(
-            !crop ||
-            crop === "--" ||
-            crop.toLowerCase().includes("loading")
-        ){
-
-            crop = "Rice";
-
-        }
-
-
-        console.log("MANDI CROP:", crop);
-        console.log("MANDI STATE:", state);
-
-
-        // API call
-        let response =
+        const response =
             await fetch(
-                `https://kisan-ai-api-lezf.onrender.com/mandi/${encodeURIComponent(crop)}/${encodeURIComponent(state)}`
+                `https://kisan-ai-api-lezf.onrender.com/mandi-all/${encodeURIComponent(state)}`
             );
 
 
-        let data =
+        const data =
             await response.json();
 
 
         console.log(
-    "MANDI DATA:",
-    JSON.stringify(data, null, 2)
-);
+            "ALL MANDI DATA:",
+            data
+        );
 
 
-        // No data
         if(
-            !data.status ||
-            !data.records ||
-            data.records.length === 0
+            data.status &&
+            data.records &&
+            data.records.length > 0
         ){
 
-            document.getElementById("mandiCrop").innerHTML =
-                "🌾 " + crop;
+            list.innerHTML = "";
 
-            document.getElementById("mandiLocation").innerHTML =
-                "📍 " + state;
 
-            document.getElementById("marketName").innerHTML =
-                "🌾 Mandi Rate";
+            data.records.forEach(
+                function(mandi){
 
-            document.getElementById("priceDate").innerHTML =
-                "📅 No Data";
+                    list.innerHTML += `
 
-            document.getElementById("todayPrice").innerHTML =
-                "₹ --";
+                    <div class="mandiCard">
 
-            document.getElementById("maxPrice").innerHTML =
-                "--";
+                        <div class="mandiTop">
 
-            document.getElementById("minPrice").innerHTML =
-                "--";
+                            <div>
 
-            document.getElementById("avgPrice").innerHTML =
-                "--";
+                                <h2>
+                                    🌾 ${mandi.Commodity}
+                                </h2>
 
-            return;
+                                <p>
+                                    📍 ${mandi.State}
+                                </p>
+
+                            </div>
+
+                            <div class="mandiDate">
+
+                                📅 ${mandi.Date}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mandiMainPrice">
+
+                            ₹ ${mandi.Modal_Price}
+
+                            <span>
+                                / quintal
+                            </span>
+
+                        </div>
+
+
+                        <div class="mandiPrices">
+
+                            <div>
+
+                                <span>📉 Minimum</span>
+
+                                <strong>
+                                    ₹ ${mandi.Min_Price}
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>⚖️ Average</span>
+
+                                <strong>
+                                    ₹ ${mandi.Modal_Price}
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>📈 Maximum</span>
+
+                                <strong>
+                                    ₹ ${mandi.Max_Price}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mandiFooter">
+
+                            🌾 Mandi Rate
+
+                        </div>
+
+                    </div>
+
+                    `;
+
+                }
+            );
 
         }
+        else{
 
+            list.innerHTML = `
 
-        // First mandi record
-        let mandi =
-            data.records[0];
+                <div class="mandiEmpty">
 
+                    🌾 No Mandi Rates Available
 
-        // Crop
-        document.getElementById("mandiCrop").innerHTML =
-            "🌾 " +
-            (mandi.Commodity || crop);
+                    <p>
+                        Admin will update today's rates soon.
+                    </p>
 
+                </div>
 
-        // Location
-        document.getElementById("mandiLocation").innerHTML =
-            "📍 " +
-            (mandi.State || state);
+            `;
 
-
-        // Mandi
-        document.getElementById("marketName").innerHTML =
-            "🌾 Mandi Rate";
-
-
-        // Date
-        document.getElementById("priceDate").innerHTML =
-            "📅 " +
-            (mandi.Date || "Today");
-
-
-        // Today / Modal price
-        document.getElementById("todayPrice").innerHTML =
-            "₹ " +
-            (mandi.Modal_Price ?? "--");
-
-
-        // Maximum
-        document.getElementById("maxPrice").innerHTML =
-            "₹ " +
-            (mandi.Max_Price ?? "--");
-
-
-        // Minimum
-        document.getElementById("minPrice").innerHTML =
-            "₹ " +
-            (mandi.Min_Price ?? "--");
-
-
-        // Average
-        document.getElementById("avgPrice").innerHTML =
-            "₹ " +
-            (mandi.Modal_Price ?? "--");
+        }
 
 
     }
@@ -5073,6 +5187,21 @@ async function loadMandi(){
             "MANDI ERROR:",
             error
         );
+
+
+        list.innerHTML = `
+
+            <div class="mandiEmpty">
+
+                ⚠️ Unable to load Mandi Rates
+
+                <p>
+                    Please try again later.
+                </p>
+
+            </div>
+
+        `;
 
     }
 

@@ -2452,7 +2452,60 @@ def get_mandi(crop: str, state: str):
 
         }
 
+@app.get("/mandi-all/{state}")
+def get_all_mandi(state: str):
 
+    try:
+
+        cursor.execute(
+            """
+            SELECT
+                id,
+                crop,
+                location,
+                min_price,
+                max_price,
+                avg_price,
+                date
+            FROM mandi
+            WHERE LOWER(location) = LOWER(?)
+            ORDER BY id DESC
+            """,
+            (state,)
+        )
+
+        rows = cursor.fetchall()
+
+        records = []
+
+        for row in rows:
+
+            records.append({
+
+                "id": row[0],
+                "Commodity": row[1],
+                "State": row[2],
+                "Min_Price": row[3],
+                "Max_Price": row[4],
+                "Modal_Price": row[5],
+                "Date": row[6]
+
+            })
+
+        return {
+            "status": True,
+            "state": state,
+            "records": records
+        }
+
+    except Exception as e:
+
+        return {
+            "status": False,
+            "message": str(e)
+        }
+
+        
 @app.get("/schemes/{state}")
 def get_schemes(state:str):
 
