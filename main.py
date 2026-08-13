@@ -294,6 +294,23 @@ except sqlite3.IntegrityError:
 
     pass
 
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admin_news(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    title TEXT NOT NULL,
+
+    description TEXT NOT NULL,
+
+    date TEXT
+
+)
+""")
+
+conn.commit()
+
 # ==========================
 # Password Hash
 # ==========================
@@ -346,6 +363,12 @@ class AdminLoginModel(BaseModel):
 
     password: str
 
+
+class AdminNewsModel(BaseModel):
+
+    title: str
+
+    description: str
 
 
 # ==========================
@@ -2505,7 +2528,7 @@ def get_all_mandi(state: str):
             "message": str(e)
         }
 
-        
+
 @app.get("/schemes/{state}")
 def get_schemes(state:str):
 
@@ -4032,6 +4055,57 @@ def agri_news(user_id: int):
 
         }
 
+
+@app.post("/admin/news")
+def add_admin_news(data: AdminNewsModel):
+
+    try:
+
+        title = data.title.strip()
+        description = data.description.strip()
+
+        if not title or not description:
+
+            return {
+                "status": False,
+                "message": "Title and description required"
+            }
+
+
+        cursor.execute(
+            """
+            INSERT INTO admin_news(
+                title,
+                description,
+                date
+            )
+            VALUES (?, ?, ?)
+            """,
+            (
+                title,
+                description,
+                datetime.now().strftime("%Y-%m-%d")
+            )
+        )
+
+        conn.commit()
+
+
+        return {
+            "status": True,
+            "message": "News added successfully"
+        }
+
+
+    except Exception as e:
+
+        conn.rollback()
+
+        return {
+            "status": False,
+            "message": str(e)
+        }
+    
 
 @app.get("/farmers")
 def get_farmers():

@@ -604,33 +604,36 @@ body{
 
         <!-- NEWS -->
 
-        <section
-            id="news"
-            class="adminSection"
+<section
+    id="news"
+    class="adminSection"
+>
+
+    <h1>📰 News</h1>
+
+    <div class="panel">
+
+        <input
+            id="newsTitle"
+            placeholder="News Title"
         >
 
-            <h1>📰 News</h1>
+        <textarea
+            id="newsDescription"
+            rows="5"
+            placeholder="News Description"
+        ></textarea>
 
-            <div class="panel">
+        <button
+    class="actionBtn"
+    onclick="addNews()"
+>
+    Add News
+</button>
 
-                <input
-                    id="newsTitle"
-                    placeholder="News Title"
-                >
+    </div>
 
-                <textarea
-                    id="newsDescription"
-                    rows="5"
-                    placeholder="News Description"
-                ></textarea>
-
-                <button class="actionBtn">
-                    Add News
-                </button>
-
-            </div>
-
-        </section>
+</section>
 
 
         <!-- CROP -->
@@ -1257,6 +1260,108 @@ async function loadMandiRates(){
     }
 
 }
+
+async function addNews(){
+
+    const title =
+        document
+        .getElementById("newsTitle")
+        .value
+        .trim();
+
+    const description =
+        document
+        .getElementById("newsDescription")
+        .value
+        .trim();
+
+
+    if(!title || !description){
+
+        alert(
+            "Please enter news title and description"
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/admin/news",
+                {
+                    method: "POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        title: title,
+
+                        description: description
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "ADD NEWS:",
+            data
+        );
+
+
+        if(data.status){
+
+            alert(
+                "📰 News added successfully"
+            );
+
+
+            document
+            .getElementById("newsTitle")
+            .value = "";
+
+            document
+            .getElementById("newsDescription")
+            .value = "";
+
+        }
+        else{
+
+            alert(
+                data.message ||
+                "Failed to add news"
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(
+            "ADD NEWS ERROR:",
+            error
+        );
+
+        alert(
+            "Server connection failed"
+        );
+
+    }
+
+}
+
 
 async function loadUsers(){
 
