@@ -5441,6 +5441,7 @@ async function scanDisease(){
         document.getElementById("cameraImage").files[0] ||
         document.getElementById("galleryImage").files[0];
 
+
     if(!file){
 
         alert("Please select an image.");
@@ -5449,12 +5450,18 @@ async function scanDisease(){
 
     }
 
-    // Image Preview
+
+    // ==========================
+    // IMAGE PREVIEW
+    // ==========================
+
     let reader = new FileReader();
+
 
     reader.onload = function(e){
 
-        let img = document.getElementById("previewImage");
+        let img =
+            document.getElementById("previewImage");
 
         img.src = e.target.result;
 
@@ -5462,52 +5469,90 @@ async function scanDisease(){
 
     };
 
+
     reader.readAsDataURL(file);
 
 
+    // ==========================
+    // FORM DATA
+    // ==========================
 
     let formData = new FormData();
 
-    formData.append("file", file);
-
-    let user = JSON.parse(localStorage.getItem("user"));
-
-    formData.append("user_id", user.id);
-
+    formData.append(
+        "file",
+        file
+    );
 
 
-    document.getElementById("scanResult").innerHTML =
-    "🔍 AI is analyzing image...";
+    let user =
+        JSON.parse(
+            localStorage.getItem("user")
+        );
 
+
+    if(!user || !user.id){
+
+        alert("User not found.");
+
+        return;
+
+    }
+
+
+    formData.append(
+        "user_id",
+        user.id
+    );
+
+
+    document
+    .getElementById("scanResult")
+    .innerHTML =
+        "🔍 AI is analyzing image...";
 
 
     try{
 
-        let response = await fetch(
+        let response =
+            await fetch(
 
-            API + "/disease-scan",
+                API + "/disease-scan",
 
-            {
-                method:"POST",
-                body:formData
-            }
+                {
+                    method:"POST",
+                    body:formData
+                }
 
+            );
+
+
+        let data =
+            await response.json();
+
+
+        console.log(
+            "DISEASE SCAN DATA:",
+            data
         );
-
-        let data = await response.json();
-
-        console.log(data);
-
 
 
         if(data.status){
 
-            let badge = "🟢 Healthy Plant";
+            // ==========================
+            // DISEASE BADGE
+            // ==========================
 
-            let badgeClass = "badgeGreen";
+            let badge =
+                "🟢 Healthy Plant";
 
-            let diseaseText = data.disease.toLowerCase();
+            let badgeClass =
+                "badgeGreen";
 
+
+            let diseaseText =
+                data.disease
+                .toLowerCase();
 
 
             if(
@@ -5520,31 +5565,44 @@ async function scanDisease(){
 
             ){
 
-                badge = "🟢 Healthy Plant";
+                badge =
+                    "🟢 Healthy Plant";
 
-                badgeClass = "badgeGreen";
+                badgeClass =
+                    "badgeGreen";
 
             }
-
             else{
 
-                badge = "🔴 Disease Detected";
+                badge =
+                    "🔴 Disease Detected";
 
-                badgeClass = "badgeRed";
+                badgeClass =
+                    "badgeRed";
 
             }
 
 
+            // ==========================
+            // SEVERITY
+            // ==========================
 
-            let severityColor = "#2e7d32";
+            let severityColor =
+                "#2e7d32";
+
 
             if(data.severity){
 
-                let sev = data.severity.toLowerCase();
+                let sev =
+                    data.severity.toLowerCase();
 
-                if(sev.includes("high")){
 
-                    severityColor = "#d32f2f";
+                if(
+                    sev.includes("high")
+                ){
+
+                    severityColor =
+                        "#d32f2f";
 
                 }
 
@@ -5556,108 +5614,221 @@ async function scanDisease(){
 
                 ){
 
-                    severityColor = "#f9a825";
+                    severityColor =
+                        "#f9a825";
 
                 }
 
             }
 
 
+            // ==========================
+            // RESULT
+            // ==========================
 
-            document.getElementById("scanResult").innerHTML = `
+            document
+            .getElementById("scanResult")
+            .innerHTML = `
 
-<div class="${badgeClass}">
+                <div class="${badgeClass}">
 
-${badge}
+                    ${badge}
 
-<br>
+                    <br>
 
-🎯 Confidence : ${data.confidence}
+                    🎯 Confidence :
+                    ${data.confidence}
 
-</div>
-
-
-<div class="aiCard">
-<div class="aiTitle">🌾 Crop</div>
-<div class="aiValue">${data.crop}</div>
-</div>
-
-
-<div class="aiCard">
-<div class="aiTitle">🦠 Disease</div>
-<div class="aiValue">${data.disease}</div>
-</div>
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">⚠ Severity</div>
-<div class="aiValue" style="color:${severityColor};font-weight:bold;">
-${data.severity}
-</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        🌾 Crop
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.crop}
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">🍃 Affected Part</div>
-<div class="aiValue">${data.affected}</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        🦠 Disease
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.disease}
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">❓ Reason</div>
-<div class="aiValue">${data.reason}</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        ⚠ Severity
+                    </div>
+
+                    <div
+                        class="aiValue"
+                        style="
+                            color:${severityColor};
+                            font-weight:bold;
+                        "
+                    >
+                        ${data.severity}
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">📋 Symptoms</div>
-<div class="aiValue">${data.symptoms}</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        🍃 Affected Part
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.affected}
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">💊 Chemical Medicine</div>
-<div class="aiValue">${data.medicine}</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        ❓ Reason
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.reason}
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">🌿 Organic Treatment</div>
-<div class="aiValue">${data.organic}</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        📋 Symptoms
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.symptoms}
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">⏳ Recovery Time</div>
-<div class="aiValue">${data.recovery}</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        💊 Chemical Medicine
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.medicine}
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">📉 Estimated Yield Loss</div>
-<div class="aiValue">${data.yield_loss}</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        🌿 Organic Treatment
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.organic}
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">🛡 Prevention</div>
-<div class="aiValue">${data.prevention}</div>
-</div>
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        📚 Admin Treatment
+                    </div>
+
+                    <div class="aiValue">
+                        ${
+                            data.admin_treatment ||
+                            "No additional admin treatment available."
+                        }
+                    </div>
+
+                </div>
 
 
-<div class="aiCard">
-<div class="aiTitle">🤖 AI Recommendation</div>
-<div class="aiValue">${data.ai}</div>
-</div>
+                <div class="aiCard">
 
-`;
+                    <div class="aiTitle">
+                        ⏳ Recovery Time
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.recovery}
+                    </div>
+
+                </div>
+
+
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        📉 Estimated Yield Loss
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.yield_loss}
+                    </div>
+
+                </div>
+
+
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        🛡 Prevention
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.prevention}
+                    </div>
+
+                </div>
+
+
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        🤖 AI Recommendation
+                    </div>
+
+                    <div class="aiValue">
+                        ${data.ai}
+                    </div>
+
+                </div>
+
+            `;
 
         }
 
         else{
 
-            document.getElementById("scanResult").innerHTML =
-            "❌ " + data.message;
+            document
+            .getElementById("scanResult")
+            .innerHTML =
+                "❌ " + data.message;
 
         }
 
@@ -5665,10 +5836,16 @@ ${data.severity}
 
     catch(error){
 
-        console.log(error);
+        console.log(
+            "Disease Scan Error:",
+            error
+        );
 
-        document.getElementById("scanResult").innerHTML =
-        "❌ Server Error";
+
+        document
+        .getElementById("scanResult")
+        .innerHTML =
+            "❌ Server Error";
 
     }
 

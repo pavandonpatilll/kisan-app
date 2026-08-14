@@ -1821,10 +1821,9 @@ async def disease_scan(
 
         cursor.execute("""
         SELECT latitude, longitude, language
-          FROM users
-          WHERE id=?
-         """,(user_id,))
-
+        FROM users
+        WHERE id=?
+        """, (user_id,))
 
         location = cursor.fetchone()
 
@@ -1832,7 +1831,11 @@ async def disease_scan(
         latitude = None
         longitude = None
 
-        language = location[2] if location and location[2] else "en"
+        language = (
+            location[2]
+            if location and location[2]
+            else "en"
+        )
 
         weather_info = "Weather data unavailable"
 
@@ -1843,22 +1846,19 @@ async def disease_scan(
             longitude = location[1]
 
 
-
         # ==========================
         # WEATHER DATA
         # ==========================
 
-        if latitude and longitude:
+        if latitude is not None and longitude is not None:
 
             try:
 
                 weather_url = (
-
                     f"https://api.open-meteo.com/v1/forecast?"
                     f"latitude={latitude}"
                     f"&longitude={longitude}"
                     "&current=temperature_2m,relative_humidity_2m"
-
                 )
 
                 weather_response = requests.get(
@@ -1871,28 +1871,30 @@ async def disease_scan(
                 current = weather["current"]
 
                 weather_info = f"""
-
 Temperature:
 {current['temperature_2m']} C
 
 Humidity:
 {current['relative_humidity_2m']} %
-
 """
+
 
             except Exception as e:
 
-                print("Weather API Failed:", e)
+                print(
+                    "Weather API Failed:",
+                    e
+                )
 
                 weather_info = """
-
 Temperature:
 Unknown
 
 Humidity:
 Unknown
-
 """
+
+
         # ==========================
         # GEMINI AI
         # ==========================
@@ -1904,9 +1906,7 @@ Unknown
 
         for model_name in GEMINI_MODELS:
 
-
             try:
-
 
                 print(
                     "Trying Model:",
@@ -1916,11 +1916,11 @@ Unknown
 
                 response = client.models.generate_content(
 
-
                     model=model_name,
 
-contents=[
-f"""
+                    contents=[
+
+                        f"""
 
 You are India's best agriculture scientist.
 
@@ -1968,8 +1968,10 @@ Yield loss estimate.
 Each answer one short sentence.
 
 """,
-image
-]
+
+                        image
+
+                    ]
 
                 )
 
@@ -1979,13 +1981,10 @@ image
                     model_name
                 )
 
-
                 break
 
 
-
             except Exception as e:
-
 
                 print(
                     "FAILED:",
@@ -1995,180 +1994,234 @@ image
                 last_error = str(e)
 
 
-
-
         if response is None:
 
-
             return {
-
-                "status":False,
-
-                "message":last_error
-
+                "status": False,
+                "message": last_error
             }
-
-
 
 
         text = response.text.strip()
 
 
+        # ==========================
+        # INVALID IMAGE
+        # ==========================
 
         if text.lower().startswith(
             "invalid image"
         ):
 
-
             return {
-
-                "status":False,
-
+                "status": False,
                 "message":
-                "Please upload crop image."
-
+                    "Please upload crop image."
             }
-
-
 
 
         # ==========================
         # RESULT FORMAT
         # ==========================
 
-
         result = {
 
+            "crop": "--",
 
-            "crop":"--",
+            "disease": "--",
 
-            "disease":"--",
+            "confidence": "--",
 
-            "confidence":"--",
+            "severity": "--",
 
-            "severity":"--",
+            "affected": "--",
 
-            "affected":"--",
+            "reason": "--",
 
-            "reason":"--",
+            "symptoms": "--",
 
-            "symptoms":"--",
+            "medicine": "--",
 
-            "medicine":"--",
+            "organic": "--",
 
-            "organic":"--",
+            "recovery": "--",
 
-            "recovery":"--",
+            "yield_loss": "--",
 
-            "yield_loss":"--",
+            "prevention": "--",
 
-            "prevention":"--",
-
-            "ai":"--"
+            "ai": "--"
 
         }
 
 
+        # ==========================
+        # PARSE AI RESPONSE
+        # ==========================
 
         for line in text.split("\n"):
 
-
-            line=line.strip()
+            line = line.strip()
 
 
             if line.startswith("Crop:"):
 
-                result["crop"]=line.replace(
-                    "Crop:",""
+                result["crop"] = line.replace(
+                    "Crop:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Disease:"):
 
-                result["disease"]=line.replace(
-                    "Disease:",""
+                result["disease"] = line.replace(
+                    "Disease:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Confidence:"):
 
-                result["confidence"]=line.replace(
-                    "Confidence:",""
+                result["confidence"] = line.replace(
+                    "Confidence:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Severity:"):
 
-                result["severity"]=line.replace(
-                    "Severity:",""
+                result["severity"] = line.replace(
+                    "Severity:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Affected Part:"):
 
-                result["affected"]=line.replace(
-                    "Affected Part:",""
+                result["affected"] = line.replace(
+                    "Affected Part:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Reason:"):
 
-                result["reason"]=line.replace(
-                    "Reason:",""
+                result["reason"] = line.replace(
+                    "Reason:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Symptoms:"):
 
-                result["symptoms"]=line.replace(
-                    "Symptoms:",""
+                result["symptoms"] = line.replace(
+                    "Symptoms:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Chemical Medicine:"):
 
-                result["medicine"]=line.replace(
-                    "Chemical Medicine:",""
+                result["medicine"] = line.replace(
+                    "Chemical Medicine:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Organic Treatment:"):
 
-                result["organic"]=line.replace(
-                    "Organic Treatment:",""
+                result["organic"] = line.replace(
+                    "Organic Treatment:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Recovery Time:"):
 
-                result["recovery"]=line.replace(
-                    "Recovery Time:",""
+                result["recovery"] = line.replace(
+                    "Recovery Time:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Yield Loss:"):
 
-                result["yield_loss"]=line.replace(
-                    "Yield Loss:",""
+                result["yield_loss"] = line.replace(
+                    "Yield Loss:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("Prevention:"):
 
-                result["prevention"]=line.replace(
-                    "Prevention:",""
+                result["prevention"] = line.replace(
+                    "Prevention:",
+                    "",
+                    1
                 ).strip()
 
 
             elif line.startswith("AI Recommendation:"):
 
-                result["ai"]=line.replace(
-                    "AI Recommendation:",""
+                result["ai"] = line.replace(
+                    "AI Recommendation:",
+                    "",
+                    1
                 ).strip()
 
 
+        # ==========================
+        # ADMIN DISEASE DATA
+        # ==========================
 
-               # ==========================
+        admin_treatment = ""
+
+
+        try:
+
+            cursor.execute("""
+                SELECT treatment
+                FROM admin_disease_data
+                WHERE LOWER(disease) = LOWER(?)
+                AND LOWER(crop) = LOWER(?)
+                ORDER BY id DESC
+                LIMIT 1
+            """, (
+                result["disease"],
+                result["crop"]
+            ))
+
+
+            admin_row = cursor.fetchone()
+
+
+            if admin_row:
+
+                admin_treatment = (
+                    admin_row[0] or ""
+                )
+
+
+        except Exception as e:
+
+            print(
+                "ADMIN DISEASE LOOKUP ERROR:",
+                str(e)
+            )
+
+
+        # ==========================
         # SAVE HISTORY
         # ==========================
 
@@ -2176,53 +2229,75 @@ image
 
         INSERT INTO disease_history(
 
-        user_id,
-        crop,
-        disease,
-        confidence,
-        severity,
-        affected,
-        reason,
-        symptoms,
-        medicine,
-        organic,
-        recovery,
-        yield_loss,
-        prevention,
-        ai,
-        weather,
-        date
+            user_id,
+            crop,
+            disease,
+            confidence,
+            severity,
+            affected,
+            reason,
+            symptoms,
+            medicine,
+            organic,
+            recovery,
+            yield_loss,
+            prevention,
+            ai,
+            weather,
+            date
 
         )
 
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-
-        """,
-
-        (
-
-        user_id,
-        result["crop"],
-        result["disease"],
-        result["confidence"],
-        result["severity"],
-        result["affected"],
-        result["reason"],
-        result["symptoms"],
-        result["medicine"],
-        result["organic"],
-        result["recovery"],
-        result["yield_loss"],
-        result["prevention"],
-        result["ai"],
-        weather_info,
-        datetime.now().strftime("%d-%m-%Y %H:%M")
-
+        VALUES(
+            ?,?,?,?,?,?,?,?,?,?,
+            ?,?,?,?,?,?
         )
 
-        )
+        """, (
+
+            user_id,
+
+            result["crop"],
+
+            result["disease"],
+
+            result["confidence"],
+
+            result["severity"],
+
+            result["affected"],
+
+            result["reason"],
+
+            result["symptoms"],
+
+            result["medicine"],
+
+            result["organic"],
+
+            result["recovery"],
+
+            result["yield_loss"],
+
+            result["prevention"],
+
+            result["ai"],
+
+            weather_info,
+
+            datetime.now().strftime(
+                "%d-%m-%Y %H:%M"
+            )
+
+        ))
+
 
         conn.commit()
+
+
+        # ==========================
+        # FINAL RESPONSE
+        # ==========================
 
         return {
 
@@ -2230,11 +2305,20 @@ image
 
             **result,
 
-            "weather": weather_info
+            "weather": weather_info,
+
+            "admin_treatment":
+                admin_treatment
 
         }
 
+
     except Exception as e:
+
+        print(
+            "DISEASE SCAN ERROR:",
+            str(e)
+        )
 
         return {
 
