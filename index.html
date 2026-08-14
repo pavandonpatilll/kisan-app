@@ -3133,155 +3133,216 @@ Loading AI Advice...
 
 <section id="cropGuidePage" class="featurePage">
 
-<h1>🌱 Smart Crop Guide</h1>
-
-<div class="cropGuideCard">
-
-<div class="cropHeader">
-
-<div>
-
-<h2 id="guideCrop">
-🌾 Loading Crop...
-</h2>
-
-<h3 class="cropLocation" id="guideLocation">
-📍 Loading Location...
-</h3>
-
-</div>
-
-<div class="cropEmoji">
-🌱
-</div>
-
-</div>
+    <h1>🌱 Smart Crop Guide</h1>
 
 
-<div class="guideBox">
-
-<h3>🌾 Select Crop</h3>
-
-<select id="guideCropSelect" onchange="loadCropGuide()">
-
-<option value="">Choose Crop</option>
-
-<option>Rice (Paddy)</option>
-<option>Wheat</option>
-<option>Soybean</option>
-<option>Cotton</option>
-<option>Maize</option>
-<option>Sugarcane</option>
-<option>Groundnut</option>
-<option>Onion</option>
-<option>Potato</option>
-<option>Tomato</option>
-<option>Chilli</option>
-<option>Tur (Pigeon Pea)</option>
-<option>Gram (Chana)</option>
-<option>Moong</option>
-<option>Urad</option>
-<option>Jowar</option>
-<option>Bajra</option>
-<option>Ragi</option>
-<option>Sunflower</option>
-<option>Mustard</option>
-<option>Sesame (Til)</option>
-<option>Coriander</option>
-<option>Cumin (Jeera)</option>
-<option>Garlic</option>
-<option>Ginger</option>
-<option>Banana</option>
-<option>Mango</option>
-<option>Grapes</option>
-<option>Orange</option>
-<option>Pomegranate</option>
-<option>Papaya</option>
-<option>Other</option>
-
-</select>
-
-<br><br>
-
-<input
-type="text"
-id="otherCrop"
-placeholder="✍️ Enter crop name"
-style="display:none;width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;">
-
-</div>
+    <div class="cropGuideCard">
 
 
-<div class="guideBox stageBox">
+        <!-- CROP HEADER -->
 
-<h3>🌱 Crop Stage</h3>
+        <div class="cropHeader">
 
-<p id="guideStage">
-Loading...
-</p>
+            <div>
 
-</div>
+                <h2 id="guideCrop">
+                    🌾 Loading Crop...
+                </h2>
 
+                <h3
+                    class="cropLocation"
+                    id="guideLocation"
+                >
+                    📍 Loading Location...
+                </h3>
 
-<div class="guideBox waterBox">
-
-<h3>💧 Irrigation Advice</h3>
-
-<p id="guideWater">
-Loading...
-</p>
-
-</div>
+            </div>
 
 
-<div class="guideBox fertilizerBox">
+            <div class="cropEmoji">
+                🌱
+            </div>
 
-<h3>🌿 Fertilizer Advice</h3>
-
-<p id="guideFertilizer">
-Loading...
-</p>
-
-</div>
+        </div>
 
 
-<div class="guideBox weatherBox">
 
-<h3>🌦 Weather Advice</h3>
+        <!-- CROP SELECT -->
 
-<p id="guideWeather">
-Loading...
-</p>
+        <div class="guideBox">
 
-</div>
+            <h3>🌾 Select Crop</h3>
+
+            <select
+                id="guideCropSelect"
+                onchange="loadCropGuide()"
+            >
+
+                <option value="">
+                    Choose Crop
+                </option>
+
+                <option>Rice (Paddy)</option>
+                <option>Wheat</option>
+                <option>Soybean</option>
+                <option>Cotton</option>
+                <option>Maize</option>
+                <option>Sugarcane</option>
+                <option>Groundnut</option>
+                <option>Onion</option>
+                <option>Potato</option>
+                <option>Tomato</option>
+                <option>Chilli</option>
+                <option>Tur (Pigeon Pea)</option>
+                <option>Gram (Chana)</option>
+                <option>Moong</option>
+                <option>Urad</option>
+                <option>Jowar</option>
+                <option>Bajra</option>
+                <option>Ragi</option>
+                <option>Sunflower</option>
+                <option>Mustard</option>
+                <option>Sesame (Til)</option>
+                <option>Coriander</option>
+                <option>Cumin (Jeera)</option>
+                <option>Garlic</option>
+                <option>Ginger</option>
+                <option>Banana</option>
+                <option>Mango</option>
+                <option>Grapes</option>
+                <option>Orange</option>
+                <option>Pomegranate</option>
+                <option>Papaya</option>
+                <option>Other</option>
+
+            </select>
 
 
-<div class="guideBox pestBox">
-
-<h3>🐛 Pest Alert</h3>
-
-<p id="guidePest">
-Loading...
-</p>
-
-</div>
+            <br><br>
 
 
-<div class="guideBox aiBox">
+            <input
+                type="text"
+                id="otherCrop"
+                placeholder="✍️ Enter crop name"
+                style="
+                    display:none;
+                    width:100%;
+                    padding:12px;
+                    border-radius:10px;
+                    border:1px solid #ccc;
+                "
+            >
 
-<h3>🤖 AI Recommendation</h3>
+        </div>
 
-<p id="guideAI">
-Loading...
-</p>
 
-</div>
 
-</div>
+        <!-- ADMIN CROP GUIDE -->
 
-<button onclick="goHome()">
-🏠 Back Home
-</button>
+        <div class="guideBox">
+
+            <h3>📚 Farmer Crop Guide</h3>
+
+            <p id="adminCropGuide">
+                Select a crop to view farmer guide.
+            </p>
+
+        </div>
+
+
+
+        <!-- CROP STAGE -->
+
+        <div class="guideBox stageBox">
+
+            <h3>🌱 Crop Stage</h3>
+
+            <p id="guideStage">
+                Loading...
+            </p>
+
+        </div>
+
+
+
+        <!-- IRRIGATION -->
+
+        <div class="guideBox waterBox">
+
+            <h3>💧 Irrigation Advice</h3>
+
+            <p id="guideWater">
+                Loading...
+            </p>
+
+        </div>
+
+
+
+        <!-- FERTILIZER -->
+
+        <div class="guideBox fertilizerBox">
+
+            <h3>🌿 Fertilizer Advice</h3>
+
+            <p id="guideFertilizer">
+                Loading...
+            </p>
+
+        </div>
+
+
+
+        <!-- WEATHER -->
+
+        <div class="guideBox weatherBox">
+
+            <h3>🌦 Weather Advice</h3>
+
+            <p id="guideWeather">
+                Loading...
+            </p>
+
+        </div>
+
+
+
+        <!-- PEST -->
+
+        <div class="guideBox pestBox">
+
+            <h3>🐛 Pest Alert</h3>
+
+            <p id="guidePest">
+                Loading...
+            </p>
+
+        </div>
+
+
+
+        <!-- AI -->
+
+        <div class="guideBox aiBox">
+
+            <h3>🤖 AI Recommendation</h3>
+
+            <p id="guideAI">
+                Loading...
+            </p>
+
+        </div>
+
+
+    </div>
+
+
+
+    <button onclick="goHome()">
+        🏠 Back Home
+    </button>
+
 
 </section>
 
@@ -5209,55 +5270,170 @@ async function loadMandi(){
 
 async function loadCropGuide(){
 
-    let user = JSON.parse(localStorage.getItem("user"));
+    try{
 
-    let crop = document.getElementById("guideCropSelect").value;
+        let user =
+            JSON.parse(
+                localStorage.getItem("user")
+            );
 
-    if(crop=="Other"){
 
-        crop=document.getElementById("otherCrop").value.trim();
+        if(!user || !user.id){
+
+            alert("User not found");
+
+            return;
+
+        }
+
+
+        let crop =
+            document
+            .getElementById("guideCropSelect")
+            .value;
+
+
+        if(crop == "Other"){
+
+            crop =
+                document
+                .getElementById("otherCrop")
+                .value
+                .trim();
+
+        }
+
+
+        if(!crop){
+
+            crop = "General Crop";
+
+        }
+
+
+        const response =
+            await fetch(
+
+                `https://kisan-ai-api-lezf.onrender.com/crop-guide/${user.id}/${encodeURIComponent(crop)}`
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "CROP GUIDE DATA:",
+            data
+        );
+
+
+        if(data.status){
+
+            // Crop
+            document
+            .getElementById("guideCrop")
+            .innerHTML =
+                "🌾 " + data.crop;
+
+
+            // Location
+            document
+            .getElementById("guideLocation")
+            .innerHTML =
+                "📍 " + data.location;
+
+
+            // Stage
+            document
+            .getElementById("guideStage")
+            .innerHTML =
+                data.stage;
+
+
+            // Irrigation
+            document
+            .getElementById("guideWater")
+            .innerHTML =
+                data.irrigation;
+
+
+            // Fertilizer
+            document
+            .getElementById("guideFertilizer")
+            .innerHTML =
+                data.fertilizer;
+
+
+            // Weather
+            document
+            .getElementById("guideWeather")
+            .innerHTML =
+                data.weather;
+
+
+            // Pest
+            document
+            .getElementById("guidePest")
+            .innerHTML =
+                data.pest;
+
+
+            // AI Advice
+            document
+            .getElementById("guideAI")
+            .innerHTML =
+                data.ai;
+
+
+            // --------------------------------
+            // ADMIN CROP GUIDE
+            // --------------------------------
+
+            const adminGuide =
+                document
+                .getElementById(
+                    "adminCropGuide"
+                );
+
+
+            if(adminGuide){
+
+                adminGuide.innerText =
+                    data.admin_guide ||
+                    "No additional crop guide available.";
+
+            }
+
+
+        }
+        else{
+
+            alert(
+                data.message ||
+                "Crop guide failed"
+            );
+
+        }
 
     }
+    catch(error){
 
-    if(!crop){
+        console.error(
+            "Crop Guide Error:",
+            error
+        );
 
-        crop="General Crop";
 
-    }
-
-    let response = await fetch(
-
-        `https://kisan-ai-api-lezf.onrender.com/crop-guide/${user.id}/${encodeURIComponent(crop)}`
-
-    );
-
-    let data = await response.json();
-
-    if(data.status){
-
-        document.getElementById("guideCrop").innerHTML="🌾 "+data.crop;
-
-        document.getElementById("guideLocation").innerHTML="📍 "+data.location;
-
-        document.getElementById("guideStage").innerHTML=data.stage;
-
-        document.getElementById("guideWater").innerHTML=data.irrigation;
-
-        document.getElementById("guideFertilizer").innerHTML=data.fertilizer;
-
-        document.getElementById("guideWeather").innerHTML=data.weather;
-
-        document.getElementById("guidePest").innerHTML=data.pest;
-
-        document.getElementById("guideAI").innerHTML=data.ai;
-
-    }else{
-
-        alert(data.message);
+        alert(
+            "Server connection failed"
+        );
 
     }
 
 }
+
 
 async function scanDisease(){
 
