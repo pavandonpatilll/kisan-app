@@ -1199,10 +1199,15 @@ def location_name(lat:float, lon:float):
 
         }
 
+
 @app.get("/crop-guide/{user_id}/{crop}")
 def crop_guide(user_id: int, crop: str):
 
     try:
+
+        # --------------------------------
+        # USER DATA
+        # --------------------------------
 
         cursor.execute("""
             SELECT village, latitude, longitude, language
@@ -1226,6 +1231,36 @@ def crop_guide(user_id: int, crop: str):
 
         if crop.strip() == "":
             crop = "General Crop"
+
+
+        # --------------------------------
+        # ADMIN CROP GUIDE
+        # --------------------------------
+
+        admin_information = ""
+
+        try:
+
+            cursor.execute("""
+                SELECT information
+                FROM admin_crop_guides
+                WHERE LOWER(crop) = LOWER(?)
+                ORDER BY id DESC
+                LIMIT 1
+            """, (crop,))
+
+            admin_row = cursor.fetchone()
+
+            if admin_row:
+
+                admin_information = admin_row[0] or ""
+
+        except Exception as e:
+
+            print(
+                "ADMIN CROP GUIDE ERROR:",
+                str(e)
+            )
 
 
         # --------------------------------
@@ -1299,10 +1334,12 @@ Use natural farmer-friendly Hindi.
             )
 
 
-            weather = weather_response.json()
+            weather_response.raise_for_status()
+
+            weather_data = weather_response.json()
 
 
-            current = weather["current"]
+            current = weather_data["current"]
 
 
             temperature = current["temperature_2m"]
@@ -1310,7 +1347,6 @@ Use natural farmer-friendly Hindi.
             humidity = current["relative_humidity_2m"]
 
             wind = current["wind_speed_10m"]
-
 
             code = current["weather_code"]
 
@@ -1366,15 +1402,21 @@ Use natural farmer-friendly Hindi.
 
             try:
 
-                index = weather["hourly"]["time"].index(
+                index = weather_data[
+                    "hourly"
+                ][
+                    "time"
+                ].index(
                     current["time"]
                 )
 
-                rain = weather[
+
+                rain = weather_data[
                     "hourly"
                 ][
                     "precipitation_probability"
                 ][index]
+
 
             except Exception:
 
@@ -1401,11 +1443,17 @@ IMPORTANT LANGUAGE RULE:
 
 {language_instruction}
 
+
 Farmer Details
 
 Crop: {crop}
 
 Village: {village}
+
+
+ADMIN CROP GUIDE INFORMATION
+
+{admin_information if admin_information else "No admin guide available for this crop."}
 
 
 Today's Live Weather
@@ -1423,7 +1471,14 @@ Rain Chance: {rain} %
 
 Give practical farming advice for this farmer.
 
-Consider the crop and today's live weather.
+Consider:
+
+1. The selected crop.
+2. The Admin Crop Guide Information if available.
+3. Today's live weather.
+4. Rain probability.
+5. Practical farming conditions.
+
 
 Reply ONLY exactly in this format:
 
@@ -1495,7 +1550,6 @@ IMPORTANT:
                     "Failed:",
                     model_name
                 )
-
 
                 last_error = str(e)
 
@@ -1606,6 +1660,10 @@ IMPORTANT:
 
             "location": village,
 
+            # ADMIN GUIDE
+            "admin_guide": admin_information,
+
+            # LIVE WEATHER
             "temperature": temperature,
 
             "humidity": humidity,
@@ -1616,6 +1674,7 @@ IMPORTANT:
 
             "rain_probability": rain,
 
+            # AI
             "stage": stage,
 
             "irrigation": irrigation,
@@ -1693,7 +1752,7 @@ def add_admin_crop_guide(data: AdminCropGuideModel):
             "message": str(e)
         }
 
-        
+
 @app.get("/ai-test")
 def ai_test():
 
