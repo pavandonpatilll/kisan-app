@@ -433,35 +433,100 @@ def admin_login(data: AdminLoginModel):
 @app.get("/admin/dashboard")
 def admin_dashboard():
 
-    cursor.execute("SELECT COUNT(*) FROM users")
-    total_users = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM disease_history")
-    total_disease = cursor.fetchone()[0]
-
-    # Agar mandi/news tables abhi nahi hain
-    total_mandi = 0
-    total_news = 0
-
     try:
-        cursor.execute("SELECT COUNT(*) FROM mandi")
-        total_mandi = cursor.fetchone()[0]
-    except:
-        pass
 
-    try:
-        cursor.execute("SELECT COUNT(*) FROM news")
-        total_news = cursor.fetchone()[0]
-    except:
-        pass
+        # ==========================
+        # USERS
+        # ==========================
 
-    return {
-        "status": True,
-        "totalUsers": total_users,
-        "totalMandi": total_mandi,
-        "totalNews": total_news,
-        "totalDisease": total_disease
-    }
+        cursor.execute(
+            "SELECT COUNT(*) FROM users"
+        )
+
+        total_users = cursor.fetchone()[0]
+
+
+        # ==========================
+        # DISEASE
+        # ==========================
+
+        cursor.execute(
+            "SELECT COUNT(*) FROM disease_history"
+        )
+
+        total_disease = cursor.fetchone()[0]
+
+
+        # ==========================
+        # MANDI
+        # ==========================
+
+        total_mandi = 0
+
+        try:
+
+            cursor.execute(
+                "SELECT COUNT(*) FROM mandi"
+            )
+
+            total_mandi = cursor.fetchone()[0]
+
+        except Exception:
+
+            total_mandi = 0
+
+
+        # ==========================
+        # ADMIN NEWS
+        # ==========================
+
+        total_news = 0
+
+        try:
+
+            cursor.execute(
+                "SELECT COUNT(*) FROM admin_news"
+            )
+
+            total_news = cursor.fetchone()[0]
+
+        except Exception:
+
+            total_news = 0
+
+
+        # ==========================
+        # RESPONSE
+        # ==========================
+
+        return {
+
+            "status": True,
+
+            "totalUsers":
+                total_users,
+
+            "totalMandi":
+                total_mandi,
+
+            "totalNews":
+                total_news,
+
+            "totalDisease":
+                total_disease
+
+        }
+
+
+    except Exception as e:
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
 
 # ==========================
 # ADMIN USERS
@@ -3881,6 +3946,135 @@ def agri_news(user_id: int):
 
 
         # ==========================
+        # FINAL NEWS LIST
+        # ==========================
+
+        news = []
+
+
+        # ==========================
+        # ADMIN NEWS
+        # ==========================
+
+        admin_news_list = []
+
+        try:
+
+            cursor.execute("""
+                SELECT
+                    id,
+                    title,
+                    description,
+                    date
+                FROM admin_news
+                ORDER BY id DESC
+                LIMIT 20
+            """)
+
+            admin_rows = cursor.fetchall()
+
+
+            for row in admin_rows:
+
+                admin_title = row[1]
+
+                admin_description = row[2]
+
+                admin_date = row[3]
+
+
+                # ==========================
+                # AI CATEGORY
+                # ==========================
+
+                category = classify_news(
+                    admin_title,
+                    admin_description
+                )
+
+
+                # ==========================
+                # FARMER MEANING
+                # ==========================
+
+                farmer_meaning = get_farmer_meaning(
+                    admin_title,
+                    admin_description,
+                    language
+                )
+
+
+                # ==========================
+                # ICON
+                # ==========================
+
+                icon = "🌱"
+
+                if category == "Weather":
+
+                    icon = "🌧️"
+
+                elif category == "Market":
+
+                    icon = "💰"
+
+                elif category == "Disease":
+
+                    icon = "🐛"
+
+                elif category == "Government":
+
+                    icon = "🏛️"
+
+
+                # ==========================
+                # ADD ADMIN NEWS
+                # ==========================
+
+                admin_news_list.append({
+
+                    "title":
+                        admin_title,
+
+                    "description":
+                        admin_description,
+
+                    "category":
+                        category,
+
+                    "icon":
+                        icon,
+
+                    "farmer_meaning":
+                        farmer_meaning,
+
+                    "source":
+                        "Kisan AI",
+
+                    "date":
+                        admin_date
+
+                })
+
+
+        except Exception as e:
+
+            print(
+                "ADMIN NEWS ERROR:",
+                e
+            )
+
+
+        # ==========================
+        # ADD ADMIN NEWS FIRST
+        # ==========================
+
+        news.extend(
+            admin_news_list
+        )
+
+
+        # ==========================
         # NEWS API
         # ==========================
 
@@ -3892,16 +4086,23 @@ def agri_news(user_id: int):
             "&language=en"
         )
 
+
         response = requests.get(
             url,
             timeout=10
         )
 
+
         response.raise_for_status()
+
 
         data = response.json()
 
-        print("NEWS API RESPONSE")
+
+        print(
+            "NEWS API RESPONSE"
+        )
+
         print(data)
 
 
@@ -3911,12 +4112,26 @@ def agri_news(user_id: int):
 
         if "results" not in data:
 
+            print(
+                "NEWS API ERROR:",
+                data
+            )
+
+            # Admin news available ho to
+            # API fail hone par bhi return karo
+
             return {
-                "status": False,
-                "message": data.get(
-                    "message",
-                    "News API Error"
-                )
+
+                "status": True,
+
+                "location": village,
+
+                "language": language,
+
+                "total": len(news),
+
+                "news": news
+
             }
 
 
@@ -3925,19 +4140,17 @@ def agri_news(user_id: int):
             []
         )
 
-        if not isinstance(results, list):
 
-            return {
-                "status": False,
-                "message": "Invalid news format"
-            }
+        if not isinstance(
+            results,
+            list
+        ):
 
-
-        news = []
+            results = []
 
 
         # ==========================
-        # PROCESS NEWS
+        # PROCESS LIVE API NEWS
         # ==========================
 
         for item in results[:10]:
@@ -3945,6 +4158,7 @@ def agri_news(user_id: int):
             title = item.get(
                 "title"
             ) or "Agriculture News"
+
 
             description = item.get(
                 "description"
@@ -3963,7 +4177,6 @@ def agri_news(user_id: int):
 
             # ==========================
             # FARMER MEANING
-            # SELECTED LANGUAGE
             # ==========================
 
             farmer_meaning = get_farmer_meaning(
@@ -3979,44 +4192,56 @@ def agri_news(user_id: int):
 
             icon = "🌱"
 
+
             if category == "Weather":
+
                 icon = "🌧️"
 
             elif category == "Market":
+
                 icon = "💰"
 
             elif category == "Disease":
+
                 icon = "🐛"
 
             elif category == "Government":
+
                 icon = "🏛️"
 
 
             # ==========================
-            # ADD NEWS
+            # ADD LIVE NEWS
             # ==========================
 
             news.append({
 
-                "title": title,
+                "title":
+                    title,
 
-                "description": description,
+                "description":
+                    description,
 
-                "category": category,
+                "category":
+                    category,
 
-                "icon": icon,
+                "icon":
+                    icon,
 
-                "farmer_meaning": farmer_meaning,
+                "farmer_meaning":
+                    farmer_meaning,
 
-                "source": item.get(
-                    "source_id",
-                    "News"
-                ),
+                "source":
+                    item.get(
+                        "source_id",
+                        "News"
+                    ),
 
-                "date": item.get(
-                    "pubDate",
-                    ""
-                )
+                "date":
+                    item.get(
+                        "pubDate",
+                        ""
+                    )
 
             })
 
@@ -4047,6 +4272,11 @@ def agri_news(user_id: int):
             e
         )
 
+
+        # ==========================
+        # FINAL ERROR
+        # ==========================
+
         return {
 
             "status": False,
@@ -4055,7 +4285,7 @@ def agri_news(user_id: int):
 
         }
 
-
+    
 @app.post("/admin/news")
 def add_admin_news(data: AdminNewsModel):
 
