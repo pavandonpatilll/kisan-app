@@ -311,6 +311,24 @@ CREATE TABLE IF NOT EXISTS admin_news(
 
 conn.commit()
 
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admin_crop_guides(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    crop TEXT NOT NULL,
+
+    information TEXT NOT NULL,
+
+    date TEXT
+
+)
+""")
+
+conn.commit()
+
+
 # ==========================
 # Password Hash
 # ==========================
@@ -370,6 +388,12 @@ class AdminNewsModel(BaseModel):
 
     description: str
 
+
+class AdminCropGuideModel(BaseModel):
+
+    crop: str
+
+    information: str
 
 # ==========================
 # ADMIN LOGIN API
@@ -1624,6 +1648,52 @@ IMPORTANT:
         }
     
 
+
+@app.post("/admin/crop-guide")
+def add_admin_crop_guide(data: AdminCropGuideModel):
+
+    try:
+
+        crop = data.crop.strip()
+        information = data.information.strip()
+
+        if not crop or not information:
+
+            return {
+                "status": False,
+                "message": "Crop name and information required"
+            }
+
+        cursor.execute("""
+            INSERT INTO admin_crop_guides(
+                crop,
+                information,
+                date
+            )
+            VALUES (?, ?, ?)
+        """, (
+            crop,
+            information,
+            datetime.now().strftime("%Y-%m-%d")
+        ))
+
+        conn.commit()
+
+        return {
+            "status": True,
+            "message": "Crop guide added successfully"
+        }
+
+    except Exception as e:
+
+        conn.rollback()
+
+        return {
+            "status": False,
+            "message": str(e)
+        }
+
+        
 @app.get("/ai-test")
 def ai_test():
 

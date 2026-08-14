@@ -638,31 +638,36 @@ body{
 
         <!-- CROP -->
 
-        <section
-            id="crops"
-            class="adminSection"
+       <section
+    id="crops"
+    class="adminSection"
+>
+
+    <h1>🌱 Crop Guide</h1>
+
+    <div class="panel">
+
+        <input
+            id="adminCropName"
+            placeholder="Crop Name"
         >
 
-            <h1>🌱 Crop Guide</h1>
+        <textarea
+            id="adminCropInformation"
+            rows="6"
+            placeholder="Crop information..."
+        ></textarea>
 
-            <div class="panel">
+        <button
+            class="actionBtn"
+            onclick="addCropGuide()"
+        >
+            Add Crop Guide
+        </button>
 
-                <input
-                    placeholder="Crop Name"
-                >
+    </div>
 
-                <textarea
-                    rows="6"
-                    placeholder="Crop information..."
-                ></textarea>
-
-                <button class="actionBtn">
-                    Add Crop Guide
-                </button>
-
-            </div>
-
-        </section>
+</section>
 
 
         <!-- DISEASE -->
@@ -1351,6 +1356,107 @@ async function addNews(){
 
         console.error(
             "ADD NEWS ERROR:",
+            error
+        );
+
+        alert(
+            "Server connection failed"
+        );
+
+    }
+
+}
+
+
+async function addCropGuide(){
+
+    const crop =
+        document
+        .getElementById("adminCropName")
+        .value
+        .trim();
+
+    const information =
+        document
+        .getElementById("adminCropInformation")
+        .value
+        .trim();
+
+
+    if(!crop || !information){
+
+        alert(
+            "Please fill all fields"
+        );
+
+        return;
+    }
+
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/admin/crop-guide",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        crop: crop,
+
+                        information:
+                            information
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(data.status){
+
+            alert(
+                "🌱 Crop guide added successfully"
+            );
+
+
+            document
+            .getElementById(
+                "adminCropName"
+            )
+            .value = "";
+
+
+            document
+            .getElementById(
+                "adminCropInformation"
+            )
+            .value = "";
+
+        }
+        else{
+
+            alert(
+                data.message ||
+                "Failed to add crop guide"
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(
+            "CROP GUIDE ERROR:",
             error
         );
 
