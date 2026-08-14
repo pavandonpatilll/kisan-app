@@ -672,35 +672,38 @@ body{
 
         <!-- DISEASE -->
 
-        <section
-            id="disease"
-            class="adminSection"
+       <section id="disease" class="adminSection">
+
+    <h1>🦠 Disease Data</h1>
+
+    <div class="panel">
+
+        <input
+            id="adminDiseaseName"
+            placeholder="Disease Name"
         >
 
-            <h1>🦠 Disease Data</h1>
+        <input
+            id="adminDiseaseCrop"
+            placeholder="Crop"
+        >
 
-            <div class="panel">
+        <textarea
+            id="adminDiseaseTreatment"
+            rows="6"
+            placeholder="Treatment / Medicine..."
+        ></textarea>
 
-                <input
-                    placeholder="Disease Name"
-                >
+        <button
+            class="actionBtn"
+            onclick="addDiseaseData()"
+        >
+            Add Disease Data
+        </button>
 
-                <input
-                    placeholder="Crop"
-                >
+    </div>
 
-                <textarea
-                    rows="6"
-                    placeholder="Treatment / Medicine..."
-                ></textarea>
-
-                <button class="actionBtn">
-                    Add Disease Data
-                </button>
-
-            </div>
-
-        </section>
+</section>
 
 
         <!-- NOTIFICATIONS -->
@@ -1457,6 +1460,119 @@ async function addCropGuide(){
 
         console.error(
             "CROP GUIDE ERROR:",
+            error
+        );
+
+        alert(
+            "Server connection failed"
+        );
+
+    }
+
+}
+
+
+async function addDiseaseData(){
+
+    const disease =
+        document
+        .getElementById("adminDiseaseName")
+        .value
+        .trim();
+
+    const crop =
+        document
+        .getElementById("adminDiseaseCrop")
+        .value
+        .trim();
+
+    const treatment =
+        document
+        .getElementById("adminDiseaseTreatment")
+        .value
+        .trim();
+
+
+    if(!disease || !crop || !treatment){
+
+        alert("Please fill all fields");
+
+        return;
+    }
+
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/admin/disease",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        disease: disease,
+
+                        crop: crop,
+
+                        treatment: treatment
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(data.status){
+
+            alert(
+                "🦠 Disease data added successfully"
+            );
+
+
+            document
+            .getElementById(
+                "adminDiseaseName"
+            )
+            .value = "";
+
+
+            document
+            .getElementById(
+                "adminDiseaseCrop"
+            )
+            .value = "";
+
+
+            document
+            .getElementById(
+                "adminDiseaseTreatment"
+            )
+            .value = "";
+
+        }
+        else{
+
+            alert(
+                data.message ||
+                "Failed to add disease data"
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(
+            "Disease Admin Error:",
             error
         );
 

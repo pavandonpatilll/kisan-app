@@ -328,6 +328,24 @@ CREATE TABLE IF NOT EXISTS admin_crop_guides(
 
 conn.commit()
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admin_disease_data(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    disease TEXT NOT NULL,
+
+    crop TEXT NOT NULL,
+
+    treatment TEXT NOT NULL,
+
+    date TEXT
+
+)
+""")
+
+conn.commit()
+
 
 # ==========================
 # Password Hash
@@ -395,6 +413,14 @@ class AdminCropGuideModel(BaseModel):
 
     information: str
 
+
+class AdminDiseaseModel(BaseModel):
+
+    disease: str
+
+    crop: str
+
+    treatment: str
 # ==========================
 # ADMIN LOGIN API
 # ==========================
@@ -2217,6 +2243,56 @@ image
             "message": str(e)
 
         }
+
+
+@app.post("/admin/disease")
+def add_admin_disease(data: AdminDiseaseModel):
+
+    try:
+
+        disease = data.disease.strip()
+        crop = data.crop.strip()
+        treatment = data.treatment.strip()
+
+        if not disease or not crop or not treatment:
+
+            return {
+                "status": False,
+                "message": "Please fill all fields"
+            }
+
+        cursor.execute("""
+            INSERT INTO admin_disease_data(
+                disease,
+                crop,
+                treatment,
+                date
+            )
+            VALUES (?, ?, ?, ?)
+        """, (
+            disease,
+            crop,
+            treatment,
+            datetime.now().strftime("%Y-%m-%d")
+        ))
+
+        conn.commit()
+
+        return {
+            "status": True,
+            "message": "Disease data added successfully"
+        }
+
+    except Exception as e:
+
+        conn.rollback()
+
+        return {
+            "status": False,
+            "message": str(e)
+        }
+
+
 
 @app.get("/disease-history/{user_id}")
 def disease_history(user_id: int):
