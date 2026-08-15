@@ -735,6 +735,61 @@ body{
 </section>
 
 
+<!-- GOVERNMENT SCHEMES -->
+
+<section id="schemes" class="adminSection">
+
+    <h1>🏛️ Government Schemes</h1>
+
+    <div class="panel">
+
+        <input
+            id="schemeName"
+            type="text"
+            placeholder="🏛️ Scheme Name"
+        >
+
+        <textarea
+            id="schemeDescription"
+            rows="4"
+            placeholder="📝 Scheme Description"
+        ></textarea>
+
+        <input
+            id="schemeBenefit"
+            type="text"
+            placeholder="💰 Benefit"
+        >
+
+        <input
+            id="schemeEligibility"
+            type="text"
+            placeholder="👨‍🌾 Eligibility"
+        >
+
+        <input
+            id="schemeState"
+            type="text"
+            placeholder="📍 State (Maharashtra)"
+        >
+
+        <input
+            id="schemeUrl"
+            type="url"
+            placeholder="🌐 Apply URL"
+        >
+
+        <button
+            class="actionBtn"
+            onclick="addGovernmentScheme()"
+        >
+            ➕ Add Government Scheme
+        </button>
+
+    </div>
+
+</section>
+
     </main>
 
 </div>
@@ -1660,6 +1715,123 @@ async function sendNotification(){
     }
 
 }
+
+
+async function addGovernmentScheme(){
+
+    const name =
+        document.getElementById("schemeName").value.trim();
+
+    const description =
+        document.getElementById("schemeDescription").value.trim();
+
+    const benefit =
+        document.getElementById("schemeBenefit").value.trim();
+
+    const eligibility =
+        document.getElementById("schemeEligibility").value.trim();
+
+    const state =
+        document.getElementById("schemeState").value.trim();
+
+    const url =
+        document.getElementById("schemeUrl").value.trim();
+
+
+    if(
+        !name ||
+        !description ||
+        !benefit ||
+        !eligibility ||
+        !state ||
+        !url
+    ){
+
+        alert("⚠️ Please fill all scheme fields.");
+
+        return;
+
+    }
+
+
+    try{
+
+        const response = await fetch(
+
+            API_URL + "/admin/scheme",
+
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    name:name,
+
+                    description:description,
+
+                    benefit:benefit,
+
+                    eligibility:eligibility,
+
+                    state:state,
+
+                    apply_url:url
+
+                })
+
+            }
+
+        );
+
+
+        const data =
+            await response.json();
+
+
+        if(data.status){
+
+            alert(
+                "🏛️ Government Scheme added successfully!"
+            );
+
+
+            document.getElementById("schemeName").value = "";
+            document.getElementById("schemeDescription").value = "";
+            document.getElementById("schemeBenefit").value = "";
+            document.getElementById("schemeEligibility").value = "";
+            document.getElementById("schemeState").value = "";
+            document.getElementById("schemeUrl").value = "";
+
+        }
+        else{
+
+            alert(
+                data.message ||
+                "Failed to add scheme."
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(
+            "Scheme Error:",
+            error
+        );
+
+        alert(
+            "❌ Server connection failed."
+        );
+
+    }
+
+}
+
 
 async function loadUsers(){
 

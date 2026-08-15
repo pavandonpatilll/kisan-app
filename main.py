@@ -361,6 +361,31 @@ CREATE TABLE IF NOT EXISTS notifications(
 conn.commit()
 
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admin_schemes(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    name TEXT NOT NULL,
+
+    description TEXT NOT NULL,
+
+    benefit TEXT NOT NULL,
+
+    eligibility TEXT NOT NULL,
+
+    state TEXT NOT NULL,
+
+    apply_url TEXT NOT NULL,
+
+    date TEXT NOT NULL
+
+)
+""")
+
+conn.commit()
+
+
 # ==========================
 # Password Hash
 # ==========================
@@ -440,6 +465,17 @@ class AdminDiseaseModel(BaseModel):
 class NotificationModel(BaseModel):
 
     message: str
+
+class SchemeModel(BaseModel):
+
+    name: str
+    description: str
+    benefit: str
+    eligibility: str
+    state: str
+    apply_url: str
+
+
 # ==========================
 # ADMIN LOGIN API
 # ==========================
@@ -3046,98 +3082,240 @@ def get_all_mandi(state: str):
 
 
 @app.get("/schemes/{state}")
-def get_schemes(state:str):
+def get_schemes(state: str):
 
     try:
 
+        # ==========================
+        # EXISTING GOVERNMENT SCHEMES
+        # ==========================
+
         schemes = {
 
+            "Maharashtra": [
 
-        "Maharashtra":[
+                {
+                    "name":
+                        "🌾 PM Kisan Samman Nidhi",
 
+                    "description":
+                        "Eligible land holding farmer families receive financial support from Government of India.",
 
-        {
-        "name":"🌾 PM Kisan Samman Nidhi",
+                    "benefit":
+                        "₹6000 per year (3 installments)",
 
-        "description":
-        "Eligible land holding farmer families receive financial support from Government of India.",
+                    "eligibility":
+                        "Land holding farmers",
 
-        "benefit":
-        "₹6000 per year (3 installments)",
-
-        "eligibility":
-        "Land holding farmers",
-
-        "apply":
-        "https://pmkisan.gov.in/"
-        },
-
-
-        {
-        "name":"🌱 MahaDBT Farmer Scheme",
-
-        "description":
-        "Agriculture department subsidy schemes for seeds, machinery, irrigation and farming equipment.",
-
-        "benefit":
-        "Agriculture equipment and input subsidy",
-
-        "eligibility":
-        "Maharashtra farmers",
-
-        "apply":
-        "https://mahadbt.maharashtra.gov.in/"
-        },
+                    "apply":
+                        "https://pmkisan.gov.in/"
+                },
 
 
-        {
-        "name":"💧 Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana",
+                {
+                    "name":
+                        "🌱 MahaDBT Farmer Scheme",
 
-        "description":
-        "Support scheme for agricultural development activities.",
+                    "description":
+                        "Agriculture department subsidy schemes for seeds, machinery, irrigation and farming equipment.",
 
-        "benefit":
-        "Agriculture improvement assistance",
+                    "benefit":
+                        "Agriculture equipment and input subsidy",
 
-        "eligibility":
-        "Eligible Maharashtra farmers",
+                    "eligibility":
+                        "Maharashtra farmers",
 
-        "apply":
-        "https://mahadbt.maharashtra.gov.in/"
+                    "apply":
+                        "https://mahadbt.maharashtra.gov.in/"
+                },
+
+
+                {
+                    "name":
+                        "💧 Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana",
+
+                    "description":
+                        "Support scheme for agricultural development activities.",
+
+                    "benefit":
+                        "Agriculture improvement assistance",
+
+                    "eligibility":
+                        "Eligible Maharashtra farmers",
+
+                    "apply":
+                        "https://mahadbt.maharashtra.gov.in/"
+                }
+
+            ]
+
         }
 
 
-        ]
+        # ==========================
+        # ADMIN ADDED SCHEMES
+        # ==========================
 
-        }
+        admin_schemes = []
 
 
-        return {
+        try:
 
-            "status":True,
+            cursor.execute("""
+                SELECT
+                    name,
+                    description,
+                    benefit,
+                    eligibility,
+                    apply_url
+                FROM admin_schemes
+                WHERE LOWER(TRIM(state))
+                      = LOWER(TRIM(?))
+                ORDER BY id DESC
+            """, (state,))
 
-            "schemes":schemes.get(
+
+            rows = cursor.fetchall()
+
+
+            for row in rows:
+
+                admin_schemes.append({
+
+                    "name":
+                        row[0],
+
+                    "description":
+                        row[1],
+
+                    "benefit":
+                        row[2],
+
+                    "eligibility":
+                        row[3],
+
+                    "apply":
+                        row[4]
+
+                })
+
+
+        except Exception as e:
+
+            print(
+                "ADMIN SCHEME LOAD ERROR:",
+                str(e)
+            )
+
+
+        # ==========================
+        # COMBINE EXISTING
+        # + ADMIN SCHEMES
+        # ==========================
+
+        final_schemes = (
+
+            schemes.get(
                 state,
                 []
             )
 
-        }
+            +
 
+            admin_schemes
+
+        )
+
+
+        # ==========================
+        # FINAL RESPONSE
+        # ==========================
+
+        return {
+
+            "status": True,
+
+            "state": state,
+
+            "total": len(final_schemes),
+
+            "schemes": final_schemes
+
+        }
 
 
     except Exception as e:
 
+        print(
+            "SCHEME API ERROR:",
+            str(e)
+        )
+
 
         return {
 
-            "status":False,
+            "status": False,
 
-            "message":str(e)
+            "message": str(e)
 
         }
 
 
+@app.post("/admin/scheme")
+def add_admin_scheme(data: SchemeModel):
 
+    try:
+
+        cursor.execute("""
+            INSERT INTO admin_schemes(
+                name,
+                description,
+                benefit,
+                eligibility,
+                state,
+                apply_url,
+                date
+            )
+            VALUES(?,?,?,?,?,?,?)
+        """, (
+
+            data.name,
+            data.description,
+            data.benefit,
+            data.eligibility,
+            data.state,
+            data.apply_url,
+            datetime.now().strftime("%d-%m-%Y %H:%M")
+
+        ))
+
+        conn.commit()
+
+        return {
+
+            "status": True,
+
+            "message":
+                "Government scheme added successfully"
+
+        }
+
+    except Exception as e:
+
+        print(
+            "ADMIN SCHEME ERROR:",
+            str(e)
+        )
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
+
+    
 @app.post("/update-home-crop")
 def update_home_crop(data: HomeCropModel):
 
