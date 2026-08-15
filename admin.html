@@ -708,27 +708,31 @@ body{
 
         <!-- NOTIFICATIONS -->
 
-        <section
-            id="notifications"
-            class="adminSection"
+<section
+    id="notifications"
+    class="adminSection"
+>
+
+    <h1>🔔 Notifications</h1>
+
+    <div class="panel">
+
+        <textarea
+            id="notificationMessage"
+            rows="5"
+            placeholder="🔔 Notification message..."
+        ></textarea>
+
+        <button
+            class="actionBtn"
+            onclick="sendNotification()"
         >
+            📢 Send Notification
+        </button>
 
-            <h1>🔔 Notifications</h1>
+    </div>
 
-            <div class="panel">
-
-                <textarea
-                    rows="5"
-                    placeholder="Notification message..."
-                ></textarea>
-
-                <button class="actionBtn">
-                    Send Notification
-                </button>
-
-            </div>
-
-        </section>
+</section>
 
 
     </main>
@@ -1584,6 +1588,78 @@ async function addDiseaseData(){
 
 }
 
+async function sendNotification(){
+
+    const message =
+        document.getElementById("notificationMessage").value.trim();
+
+
+    if(!message){
+
+        alert("🔔 Please enter notification message.");
+
+        return;
+
+    }
+
+
+    try{
+
+        const response = await fetch(
+
+            API_URL + "/admin/notification",
+
+            {
+                method: "POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body: JSON.stringify({
+                    message: message
+                })
+            }
+
+        );
+
+
+        const data = await response.json();
+
+
+        if(data.status){
+
+            alert("📢 Notification sent successfully!");
+
+            document.getElementById(
+                "notificationMessage"
+            ).value = "";
+
+        }
+        else{
+
+            alert(
+                data.message ||
+                "Failed to send notification"
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(
+            "Notification Error:",
+            error
+        );
+
+        alert(
+            "❌ Server connection failed"
+        );
+
+    }
+
+}
 
 async function loadUsers(){
 

@@ -346,6 +346,20 @@ CREATE TABLE IF NOT EXISTS admin_disease_data(
 
 conn.commit()
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS notifications(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    message TEXT NOT NULL,
+
+    date TEXT NOT NULL
+
+)
+""")
+
+conn.commit()
+
 
 # ==========================
 # Password Hash
@@ -421,6 +435,11 @@ class AdminDiseaseModel(BaseModel):
     crop: str
 
     treatment: str
+
+
+class NotificationModel(BaseModel):
+
+    message: str
 # ==========================
 # ADMIN LOGIN API
 # ==========================
@@ -745,6 +764,111 @@ def get_admin_mandi():
         "status": True,
         "mandi": mandi
     }
+
+
+class NotificationModel(BaseModel):
+    message: str
+
+
+@app.post("/admin/notification")
+def add_notification(data: NotificationModel):
+
+    try:
+
+        message = data.message.strip()
+
+        if not message:
+
+            return {
+                "status": False,
+                "message": "Notification message is required"
+            }
+
+        cursor.execute("""
+            INSERT INTO notifications(
+                message,
+                date
+            )
+            VALUES(?,?)
+        """, (
+            message,
+            datetime.now().strftime("%d-%m-%Y %H:%M")
+        ))
+
+        conn.commit()
+
+        return {
+            "status": True,
+            "message": "Notification sent successfully"
+        }
+
+    except Exception as e:
+
+        print("NOTIFICATION ERROR:", str(e))
+
+        return {
+            "status": False,
+            "message": str(e)
+        }
+
+
+@app.get("/notifications/{user_id}")
+def get_notifications(user_id: int):
+
+    try:
+
+        cursor.execute("""
+            SELECT
+                id,
+                message,
+                date
+            FROM notifications
+            ORDER BY id DESC
+            LIMIT 20
+        """)
+
+        rows = cursor.fetchall()
+
+
+        notifications = []
+
+        for row in rows:
+
+            notifications.append({
+
+                "id": row[0],
+
+                "message": row[1],
+
+                "date": row[2]
+
+            })
+
+
+        return {
+
+            "status": True,
+
+            "notifications": notifications
+
+        }
+
+
+    except Exception as e:
+
+        print(
+            "GET NOTIFICATIONS ERROR:",
+            str(e)
+        )
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
+
 
 # ==========================
 # Register API

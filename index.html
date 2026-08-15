@@ -4410,16 +4410,48 @@ async function loadNotificationPage(){
         return;
     }
 
+
     let box =
         document.getElementById("notificationContent");
 
+
     box.innerHTML =
-        "🔄 AI is checking today's farming alerts...";
+        "🔄 Loading farmer notifications...";
 
 
     try{
 
-        let response = await fetch(
+        // ==========================
+        // ADMIN NOTIFICATIONS
+        // ==========================
+
+        let adminResponse = await fetch(
+
+            `https://kisan-ai-api-lezf.onrender.com/notifications/${user.id}`,
+
+            {
+                method:"GET",
+                cache:"no-store"
+            }
+
+        );
+
+
+        let adminData =
+            await adminResponse.json();
+
+
+        console.log(
+            "ADMIN NOTIFICATIONS:",
+            adminData
+        );
+
+
+        // ==========================
+        // AI WEATHER ALERT
+        // ==========================
+
+        let rainResponse = await fetch(
 
             `https://kisan-ai-api-lezf.onrender.com/rain-alert/${user.id}`,
 
@@ -4431,131 +4463,232 @@ async function loadNotificationPage(){
         );
 
 
-        let data = await response.json();
+        let rainData =
+            await rainResponse.json();
 
 
-        console.log("RAIN ALERT DATA:", data);
+        console.log(
+            "RAIN ALERT DATA:",
+            rainData
+        );
 
 
-        if(!data.status){
+        let html = "";
 
-            box.innerHTML =
-                "⚠️ " + (data.message || "Unable to load alerts.");
 
-            return;
+        // ==========================
+        // ADMIN NOTIFICATIONS
+        // ==========================
+
+        if(
+            adminData.status &&
+            adminData.notifications &&
+            adminData.notifications.length > 0
+        ){
+
+            html += `
+
+                <h3 style="
+                    margin-top:10px;
+                    margin-bottom:15px;
+                ">
+                    📢 Important Updates
+                </h3>
+
+            `;
+
+
+            adminData.notifications.forEach(
+
+                function(notification){
+
+                    html += `
+
+                    <div class="aiCard">
+
+                        <div class="aiTitle">
+                            📢 Kisan AI Notification
+                        </div>
+
+                        <div class="aiValue">
+
+                            ${notification.message}
+
+                            <br><br>
+
+                            <small>
+                                📅 ${notification.date}
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    `;
+
+                }
+
+            );
 
         }
 
 
-        box.innerHTML = `
+        // ==========================
+        // AI WEATHER NOTIFICATION
+        // ==========================
 
-            <div class="aiCard">
+        if(rainData.status){
 
-                <div class="aiTitle">
-                    🌦 Weather Alert
-                </div>
+            html += `
 
-                <div class="aiValue">
-
-                    ${data.weather || "Weather unavailable"}
-
-                    <br><br>
-
-                    🌡 Temperature:
-                    ${data.temperature ?? "--"} °C
-
-                    <br>
-
-                    💧 Humidity:
-                    ${data.humidity ?? "--"} %
-
-                    <br>
-
-                    🌧 Rain Probability:
-                    ${data.rain_probability ?? 0} %
-
-                    <br><br>
-
-                    <b>🤖 AI Rain Status</b>
-
-                    <br>
-
-                    ${data.rain_status || "--"}
-
-                </div>
-
-            </div>
+                <h3 style="
+                    margin-top:25px;
+                    margin-bottom:15px;
+                ">
+                    🌦 Today's Farming Alerts
+                </h3>
 
 
-            <div class="aiCard">
+                <div class="aiCard">
 
-                <div class="aiTitle">
-                    🌱 Crop Risk
-                </div>
+                    <div class="aiTitle">
+                        🌦 Weather Alert
+                    </div>
 
-                <div class="aiValue">
+                    <div class="aiValue">
 
-                    🌾 Crop:
-                    ${data.crop || "--"}
+                        ${rainData.weather || "Weather unavailable"}
 
-                    <br><br>
+                        <br><br>
 
-                    ${data.crop_risk || "--"}
+                        🌡 Temperature:
+                        ${rainData.temperature ?? "--"} °C
+
+                        <br>
+
+                        💧 Humidity:
+                        ${rainData.humidity ?? "--"} %
+
+                        <br>
+
+                        🌧 Rain Probability:
+                        ${rainData.rain_probability ?? 0} %
+
+                        <br><br>
+
+                        <b>
+                            🤖 AI Rain Status
+                        </b>
+
+                        <br>
+
+                        ${rainData.rain_status || "--"}
+
+                    </div>
 
                 </div>
 
-            </div>
 
+                <div class="aiCard">
 
-            <div class="aiCard">
+                    <div class="aiTitle">
+                        🌱 Crop Risk
+                    </div>
 
-                <div class="aiTitle">
-                    💡 Farming Advice
-                </div>
+                    <div class="aiValue">
 
-                <div class="aiValue">
+                        🌾 Crop:
+                        ${rainData.crop || "--"}
 
-                    ${data.advice || "--"}
+                        <br><br>
 
-                </div>
+                        ${rainData.crop_risk || "--"}
 
-            </div>
-
-
-            <div class="aiCard">
-
-                <div class="aiTitle">
-                    ✅ Recommended Action
-                </div>
-
-                <div class="aiValue">
-
-                    ${data.action || "--"}
+                    </div>
 
                 </div>
 
-            </div>
 
+                <div class="aiCard">
 
-            <div class="aiCard">
+                    <div class="aiTitle">
+                        💡 Farming Advice
+                    </div>
 
-                <div class="aiTitle">
-                    📍 Location
+                    <div class="aiValue">
+
+                        ${rainData.advice || "--"}
+
+                    </div>
+
                 </div>
 
-                <div class="aiValue">
 
-                    ${data.location || "--"}
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        ✅ Recommended Action
+                    </div>
+
+                    <div class="aiValue">
+
+                        ${rainData.action || "--"}
+
+                    </div>
 
                 </div>
 
-            </div>
 
-        `;
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        📍 Location
+                    </div>
+
+                    <div class="aiValue">
+
+                        ${rainData.location || "--"}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        // ==========================
+        // NOTHING AVAILABLE
+        // ==========================
+
+        if(!html){
+
+            html = `
+
+                <div class="aiCard">
+
+                    <div class="aiTitle">
+                        🔔 Notifications
+                    </div>
+
+                    <div class="aiValue">
+
+                        No new farming notifications.
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        box.innerHTML = html;
 
 
     }
-
     catch(error){
 
         console.log(
@@ -4564,15 +4697,27 @@ async function loadNotificationPage(){
         );
 
 
-        box.innerHTML =
+        box.innerHTML = `
 
-            "❌ Unable to load AI notifications.<br><br>" +
+            <div class="aiCard">
 
-            "Please try again.";
+                <div class="aiTitle">
+                    ❌ Notification Error
+                </div>
+
+                <div class="aiValue">
+                    Unable to load notifications.
+                    Please try again.
+                </div>
+
+            </div>
+
+        `;
 
     }
 
 }
+
 
 function goHome(){
 
