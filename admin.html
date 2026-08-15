@@ -149,29 +149,74 @@ body{
     left:0;
     top:65px;
     bottom:0;
+
     width:230px;
+
     background:white;
+
     border-right:1px solid #ddd;
+
     padding:20px 12px;
+
+    /* IMPORTANT */
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    box-sizing:border-box;
+
+    /* Smooth scrolling */
+    -webkit-overflow-scrolling:touch;
 }
+
+
+/* Sidebar Buttons */
 
 .sidebar button{
     width:100%;
+
     padding:13px;
+
     margin-bottom:8px;
+
     border:0;
+
     border-radius:9px;
+
     background:white;
+
     text-align:left;
+
     font-size:15px;
+
     cursor:pointer;
+
+    flex-shrink:0;
 }
+
+
+/* Hover */
 
 .sidebar button:hover{
     background:#e8f5e9;
+
     color:#2e7d32;
 }
 
+
+/* Scrollbar */
+
+.sidebar::-webkit-scrollbar{
+    width:6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+    background:#c8c8c8;
+    border-radius:10px;
+}
+
+.sidebar::-webkit-scrollbar-track{
+    background:transparent;
+}
 
 /* =========================
    CONTENT
@@ -414,14 +459,17 @@ body{
         <button onclick="showSection('disease')">
             🦠 Disease Data
         </button>
+        
+
+        <button onclick="showSection('schemes')">
+    🏛️ Government Schemes
+        </button>
 
         <button onclick="showSection('notifications')">
             🔔 Notifications
         </button>
 
-        <button onclick="showSection('schemes')">
-    🏛️ Government Schemes
-        </button>
+        
 
     </div>
 
