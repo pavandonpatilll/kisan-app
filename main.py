@@ -2187,24 +2187,62 @@ Each answer one short sentence.
 
         admin_treatment = ""
 
-
         try:
+
+            ai_crop = result["crop"].strip()
+            ai_disease = result["disease"].strip()
+
+
+            # ==========================
+            # EXACT MATCH
+            # ==========================
 
             cursor.execute("""
                 SELECT treatment
                 FROM admin_disease_data
-                WHERE LOWER(disease) = LOWER(?)
-                AND LOWER(crop) = LOWER(?)
+                WHERE LOWER(TRIM(crop)) = LOWER(TRIM(?))
+                AND LOWER(TRIM(disease)) = LOWER(TRIM(?))
                 ORDER BY id DESC
                 LIMIT 1
             """, (
-                result["disease"],
-                result["crop"]
+                ai_crop,
+                ai_disease
             ))
-
 
             admin_row = cursor.fetchone()
 
+
+            # ==========================
+            # DISEASE NAME FALLBACK
+            # ==========================
+
+            if not admin_row:
+
+                english_disease = (
+                    ai_disease
+                    .split("(")[-1]
+                    .replace(")", "")
+                    .strip()
+                )
+
+                cursor.execute("""
+                    SELECT treatment
+                    FROM admin_disease_data
+                    WHERE LOWER(TRIM(disease)) LIKE ?
+                    OR LOWER(TRIM(disease)) LIKE ?
+                    ORDER BY id DESC
+                    LIMIT 1
+                """, (
+                    "%" + ai_disease.lower() + "%",
+                    "%" + english_disease.lower() + "%"
+                ))
+
+                admin_row = cursor.fetchone()
+
+
+            # ==========================
+            # GET ADMIN TREATMENT
+            # ==========================
 
             if admin_row:
 
