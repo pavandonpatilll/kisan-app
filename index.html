@@ -7361,77 +7361,112 @@ loadCropGuide();
 
 function startVoiceSearch(){
 
-    if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+    let btn = document.getElementById("voiceBtn");
+
+    btn.innerHTML = "🎙 Listening...";
+
+
+    // ==========================
+    // ANDROID NATIVE VOICE
+    // ==========================
+
+    if(
+        window.AndroidVoice &&
+        typeof window.AndroidVoice.startNativeVoiceSearch === "function"
+    ){
+
+        window.AndroidVoice.startNativeVoiceSearch();
+
+        return;
+    }
+
+
+    // ==========================
+    // BROWSER VOICE FALLBACK
+    // ==========================
+
+    if(
+        !("webkitSpeechRecognition" in window) &&
+        !("SpeechRecognition" in window)
+    ){
 
         alert("Voice Search is not supported on this device.");
 
-        return;
+        btn.innerHTML = "🎤";
 
+        return;
     }
 
 
     const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
 
 
-    const recognition = new SpeechRecognition();
+    const recognition =
+        new SpeechRecognition();
 
 
     recognition.lang = "en-IN";
+
     recognition.interimResults = false;
+
     recognition.maxAlternatives = 1;
-
-
-    let btn = document.getElementById("voiceBtn");
-
-
-    btn.innerHTML = "🎙 Listening...";
 
 
     recognition.start();
 
 
-
     recognition.onresult = function(event){
 
+        let text =
+            event.results[0][0].transcript;
 
-        let text = event.results[0][0].transcript;
 
-
-        document.getElementById("searchInput").value = text;
+        document.getElementById(
+            "searchInput"
+        ).value = text;
 
 
         smartSearch();
-
-
     };
-
 
 
     recognition.onerror = function(event){
 
-
-        console.log("Voice Error:", event.error);
-
+        console.log(
+            "Voice Error:",
+            event.error
+        );
 
         btn.innerHTML = "🎤";
-
-
     };
-
 
 
     recognition.onend = function(){
 
-
         btn.innerHTML = "🎤";
-
-
     };
 
+}
+
+
+function setVoiceSearchResult(text){
+
+    document.getElementById(
+        "searchInput"
+    ).value = text;
+
+
+    document.getElementById(
+        "voiceBtn"
+    ).innerHTML = "🎤";
+
+
+    smartSearch();
 
 }
+
 
 function selectLanguage(lang){
 
