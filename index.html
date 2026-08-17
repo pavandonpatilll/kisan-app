@@ -2225,8 +2225,96 @@ transform:translateY(-2px);
 
 }
 
-</style>
+/* =========================
+   PREMIUM
+========================= */
 
+.premiumHeader{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.premiumHeader h1{
+    color:#2e7d32;
+}
+
+.premiumGroup{
+    margin-bottom:35px;
+}
+
+.premiumGroup h2{
+    margin-bottom:15px;
+}
+
+.premiumGrid{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fit,minmax(230px,1fr));
+
+    gap:18px;
+}
+
+.premiumCard{
+    background:white;
+    border-radius:16px;
+    padding:22px;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.08);
+
+    text-align:center;
+}
+
+.premiumCard h3{
+    margin-top:0;
+}
+
+.premiumPrice{
+    font-size:30px;
+    font-weight:bold;
+    color:#2e7d32;
+    margin:15px 0;
+}
+
+.premiumPrice span{
+    font-size:14px;
+    color:#777;
+    font-weight:normal;
+}
+
+.premiumCard button{
+    width:100%;
+    padding:12px;
+
+    border:0;
+    border-radius:10px;
+
+    background:#2e7d32;
+    color:white;
+
+    font-size:15px;
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+.premiumCard button:hover{
+    background:#1b5e20;
+}
+
+.premiumStatus{
+    margin-top:25px;
+    padding:15px;
+
+    background:#e8f5e9;
+
+    border-radius:12px;
+
+    text-align:center;
+}
+
+</style>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
@@ -2635,6 +2723,7 @@ Detecting...
 </div>
 </div>
 
+
 <div class="grid">
 
     <div class="item" onclick="openPage('weatherPage')">
@@ -2660,6 +2749,10 @@ Detecting...
         <p id="txtAIChat">AI Chat</p>
     </div>
 
+    <div class="item" onclick="openPage('premiumPage')">
+    👑
+        <p>Premium</p>
+    </div>
 
     <div class="item" onclick="openPage('advicePage')">
         🤖
@@ -2837,6 +2930,199 @@ Back Home
 </button>
 
 </section>
+
+<!-- ========================= 
+     PREMIUM PLANS 
+========================= --> 
+ 
+<section id="premiumPage" style="display:none;"> 
+ 
+    <div class="premiumHeader"> 
+ 
+        <h1>👑 Shrimant Shetkari Premium</h1> 
+ 
+        <p> 
+            Unlock advanced farming features and AI assistance. 
+        </p> 
+ 
+    </div> 
+ 
+ 
+    <!-- BASIC --> 
+ 
+    <div class="premiumGroup"> 
+ 
+        <h2>🌱 Basic Plan</h2> 
+ 
+        <div class="premiumGrid"> 
+ 
+ 
+            <div class="premiumCard"> 
+ 
+                <h3>Basic Monthly</h3> 
+ 
+                <div class="premiumPrice"> 
+                    ₹9 
+                    <span>/ month</span> 
+                </div> 
+ 
+                <p> 
+                    Basic premium farming features 
+                </p> 
+ 
+                <button 
+                    onclick="buyPlan('basic_monthly')"> 
+ 
+                    🚀 Subscribe ₹9 
+ 
+                </button> 
+ 
+            </div> 
+ 
+ 
+            <div class="premiumCard"> 
+ 
+                <h3>Basic 6 Months</h3> 
+ 
+                <div class="premiumPrice"> 
+                    ₹54 
+                    <span>/ 6 months</span> 
+                </div> 
+ 
+                <p> 
+                    Basic premium farming features 
+                </p> 
+ 
+                <button 
+                    onclick="buyPlan('basic_6months')"> 
+ 
+                    🚀 Subscribe ₹54 
+ 
+                </button> 
+ 
+            </div> 
+ 
+ 
+            <div class="premiumCard"> 
+ 
+                <h3>Basic Yearly</h3> 
+ 
+                <div class="premiumPrice"> 
+                    ₹108 
+                    <span>/ year</span> 
+                </div> 
+ 
+                <p> 
+                    Basic premium farming features 
+                </p> 
+ 
+                <button 
+                    onclick="buyPlan('basic_yearly')"> 
+ 
+                    🚀 Subscribe ₹108 
+ 
+                </button> 
+ 
+            </div> 
+ 
+        </div> 
+ 
+    </div> 
+ 
+ 
+    <!-- ADVANCED --> 
+ 
+    <div class="premiumGroup"> 
+ 
+        <h2>🚀 Advanced Plan</h2> 
+ 
+        <div class="premiumGrid"> 
+ 
+ 
+            <div class="premiumCard"> 
+ 
+                <h3>Advanced Monthly</h3> 
+ 
+                <div class="premiumPrice"> 
+                    ₹17 
+                    <span>/ month</span> 
+                </div> 
+ 
+                <p> 
+                    Advanced AI farming features 
+                </p> 
+ 
+                <button 
+                    onclick="buyPlan('advanced_monthly')"> 
+ 
+                    🚀 Subscribe ₹17 
+ 
+                </button> 
+ 
+            </div> 
+ 
+ 
+            <div class="premiumCard"> 
+ 
+                <h3>Advanced 6 Months</h3> 
+ 
+                <div class="premiumPrice"> 
+                    ₹102 
+                    <span>/ 6 months</span> 
+                </div> 
+ 
+                <p> 
+                    Advanced AI farming features 
+                </p> 
+ 
+                <button 
+                    onclick="buyPlan('advanced_6months')"> 
+ 
+                    🚀 Subscribe ₹102 
+ 
+                </button> 
+ 
+            </div> 
+ 
+ 
+            <div class="premiumCard"> 
+ 
+                <h3>Advanced Yearly</h3> 
+ 
+                <div class="premiumPrice"> 
+                    ₹204 
+                    <span>/ year</span> 
+                </div> 
+ 
+                <p> 
+                    Advanced AI farming features 
+                </p> 
+ 
+                <button 
+                    onclick="buyPlan('advanced_yearly')"> 
+ 
+                    🚀 Subscribe ₹204 
+ 
+                </button> 
+ 
+            </div> 
+ 
+        </div> 
+ 
+    </div> 
+ 
+ 
+    <!-- CURRENT STATUS --> 
+ 
+    <div 
+        id="premiumStatus" 
+        class="premiumStatus"> 
+ 
+        Checking premium status... 
+ 
+    </div> 
+ 
+</section> 
 
 <section id="searchPage" class="featurePage">
 
@@ -7681,6 +7967,281 @@ Use simple farmer-friendly English.
 Answer only in Hindi.
 Use simple farmer-friendly Hindi.
 `;
+
+}
+
+
+async function buyPlan(plan){
+
+    const userData =
+        localStorage.getItem("user");
+
+    if(!userData){
+
+        alert("Please login first.");
+
+        return;
+    }
+
+
+    const user =
+        JSON.parse(userData);
+
+
+    try{
+
+        const response =
+            await fetch(
+
+                "https://kisan-ai-h4xr.onrender.com/create-subscription",
+
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        user_id:user.id,
+
+                        plan:plan
+
+                    })
+
+                }
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!data.status){
+
+            alert(
+                data.message ||
+                "Subscription creation failed."
+            );
+
+            return;
+        }
+
+
+        const options = {
+
+            key:data.key_id,
+
+            subscription_id:
+                data.subscription_id,
+
+            name:
+                "Shrimant Shetkari",
+
+            description:
+                "Premium Farming Subscription",
+
+            handler:
+                async function(payment){
+
+                    await verifyPremiumPayment(
+
+                        payment,
+
+                        user.id
+
+                    );
+
+                },
+
+
+            modal:{
+
+                ondismiss:function(){
+
+                    console.log(
+                        "Razorpay checkout closed"
+                    );
+
+                }
+
+            },
+
+
+            theme:{
+                color:"#2e7d32"
+            }
+
+        };
+
+
+        const rzp =
+            new Razorpay(options);
+
+
+        rzp.open();
+
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert(
+            "Payment connection failed."
+        );
+
+    }
+
+}
+
+async function verifyPremiumPayment(
+    payment,
+    userId
+){
+
+    try{
+
+        const response =
+            await fetch(
+
+                "https://kisan-ai-h4xr.onrender.com/verify-subscription",
+
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        user_id:userId,
+
+                        razorpay_payment_id:
+                            payment.razorpay_payment_id,
+
+                        razorpay_subscription_id:
+                            payment.razorpay_subscription_id,
+
+                        razorpay_signature:
+                            payment.razorpay_signature
+
+                    })
+
+                }
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(data.status){
+
+            alert(
+                "🎉 Premium activated successfully!"
+            );
+
+
+            loadPremiumStatus();
+
+
+        }
+        else{
+
+            alert(
+                data.message ||
+                "Payment verification failed."
+            );
+
+        }
+
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert(
+            "Payment verification error."
+        );
+
+    }
+
+}
+
+async function loadPremiumStatus(){
+
+    const userData =
+        localStorage.getItem("user");
+
+    if(!userData){
+
+        return;
+    }
+
+
+    const user =
+        JSON.parse(userData);
+
+
+    try{
+
+        const response =
+            await fetch(
+
+                `https://kisan-ai-h4xr.onrender.com/premium-status/${user.id}`
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        const box =
+            document.getElementById(
+                "premiumStatus"
+            );
+
+
+        if(!box){
+
+            return;
+        }
+
+
+        if(
+            data.status &&
+            data.premium === true
+        ){
+
+            box.innerHTML =
+                "👑 Premium Active";
+
+        }
+        else{
+
+            box.innerHTML =
+                "🌱 Free Plan";
+
+        }
+
+
+    }
+    catch(error){
+
+        console.error(error);
+
+    }
 
 }
 

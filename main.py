@@ -33,32 +33,6 @@ razorpay_client = razorpay.Client(
     )
 )
 
-# ==========================
-# RAZORPAY PLAN IDS
-# ==========================
-
-RAZORPAY_PLANS = {
-
-    "basic_monthly":
-        "plan_TQTNYbVUVJZU8x",
-
-    "basic_6months":
-        "plan_TQTQz6LK1C5okB",
-
-    "basic_yearly":
-        "plan_TQTVr8lsra1RGb",
-
-    "advanced_monthly":
-        "plan_TQTXJ6JYggjOB9",
-
-    "advanced_6months":
-        "plan_TQTYoLVEnhRlVD",
-
-    "advanced_yearly":
-        "plan_TQTadndbEu7Uwm"
-
-}
-
 
 # ==========================
 # FastAPI
@@ -5131,7 +5105,34 @@ def get_chat(user1:int,user2:int):
     }
 
 # ==========================
-# CREATE RAZORPAY SUBSCRIPTION
+# RAZORPAY PLAN IDS
+# ==========================
+
+RAZORPAY_PLANS = {
+
+    "basic_monthly":
+        "plan_TQTNYbVUVJZU8x",
+
+    "basic_6months":
+        "plan_TQTQz6LK1C5okB",
+
+    "basic_yearly":
+        "plan_TQTVr8lsra1RGb",
+
+    "advanced_monthly":
+        "plan_TQTXJ6JYggjOB9",
+
+    "advanced_6months":
+        "plan_TQTYoLVEnhRlVD",
+
+    "advanced_yearly":
+        "plan_TQTadndbEu7Uwm"
+
+}
+
+
+# ==========================
+# CREATE SUBSCRIPTION
 # ==========================
 
 @app.post("/create-subscription")
@@ -5143,18 +5144,23 @@ def create_subscription(data: dict):
         plan_key = data.get("plan")
 
         if not user_id:
+
             return {
                 "status": False,
                 "message": "User ID required"
             }
 
+
         if plan_key not in RAZORPAY_PLANS:
+
             return {
                 "status": False,
                 "message": "Invalid plan"
             }
 
+
         plan_id = RAZORPAY_PLANS[plan_key]
+
 
         subscription = razorpay_client.subscription.create({
 
@@ -5162,9 +5168,10 @@ def create_subscription(data: dict):
 
             "customer_notify": 1,
 
-            "total_count": 1
+            "total_count": 12
 
         })
+
 
         return {
 
@@ -5181,6 +5188,7 @@ def create_subscription(data: dict):
 
         }
 
+
     except Exception as e:
 
         print(
@@ -5191,6 +5199,209 @@ def create_subscription(data: dict):
         return {
 
             "status": False,
+
+            "message": str(e)
+
+        }
+
+
+    # ==========================
+# VERIFY RAZORPAY PAYMENT
+# ==========================
+
+@app.post("/verify-subscription")
+def verify_subscription(data: dict):
+
+    try:
+
+        user_id = data.get("user_id")
+
+        payment_id = data.get("razorpay_payment_id")
+        subscription_id = data.get("razorpay_subscription_id")
+        signature = data.get("razorpay_signature")
+
+        if not user_id:
+            return {
+                "status": False,
+                "message": "User ID required"
+            }
+
+
+        if not payment_id:
+            return {
+                "status": False,
+                "message": "Payment ID missing"
+            }
+
+
+        if not subscription_id:
+            return {
+                "status": False,
+                "message": "Subscription ID missing"
+            }
+
+
+        if not signature:
+            return {
+                "status": False,
+                "message": "Signature missing"
+            }
+
+
+        razorpay_client.utility.verify_subscription_payment_signature({
+
+            "razorpay_payment_id":
+                payment_id,
+
+            "razorpay_subscription_id":
+                subscription_id,
+
+            "razorpay_signature":
+                signature
+
+        })
+
+
+        conn = sqlite3.connect(
+            "database.db"
+        )
+
+        cursor = conn.cursor()
+
+
+        cursor.execute("""
+
+            UPDATE users
+
+            SET
+                premium_plan = ?,
+                premium_expiry = ?,
+                razorpay_subscription_id = ?
+
+            WHERE id = ?
+
+        """, (
+
+            "premium",
+
+            "active",
+
+            subscription_id,
+
+            user_id
+
+        ))
+
+
+        conn.commit()
+        conn.close()
+
+
+        return {
+
+            "status": True,
+
+            "message":
+                "Premium activated successfully"
+
+        }
+
+
+    except Exception as e:
+
+        print(
+            "RAZORPAY VERIFY ERROR:",
+            str(e)
+        )
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
+
+# ==========================
+# PREMIUM STATUS
+# ==========================
+
+@app.get("/premium-status/{user_id}")
+def premium_status(user_id: int):
+
+    try:
+
+        conn = sqlite3.connect(
+            "database.db"
+        )
+
+        cursor = conn.cursor()
+
+
+        cursor.execute("""
+
+            SELECT
+                premium_plan,
+                premium_expiry
+
+            FROM users
+
+            WHERE id = ?
+
+        """, (user_id,))
+
+
+        row = cursor.fetchone()
+
+        conn.close()
+
+
+        if not row:
+
+            return {
+
+                "status": False,
+
+                "premium": False
+
+            }
+
+
+        premium_plan = row[0] or ""
+        premium_expiry = row[1] or ""
+
+
+        active = (
+
+            premium_plan != ""
+
+            and
+
+            premium_expiry != ""
+
+        )
+
+
+        return {
+
+            "status": True,
+
+            "premium": active,
+
+            "plan": premium_plan,
+
+            "expiry": premium_expiry
+
+        }
+
+
+    except Exception as e:
+
+        return {
+
+            "status": False,
+
+            "premium": False,
 
             "message": str(e)
 
