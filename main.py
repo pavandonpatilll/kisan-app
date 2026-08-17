@@ -79,76 +79,140 @@ app.add_middleware(
 # Database
 # ==========================
 
-conn = sqlite3.connect("database.db", check_same_thread=False)
+conn = sqlite3.connect(
+    "database.db",
+    check_same_thread=False
+)
+
 cursor = conn.cursor()
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS users(
 
-id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-name TEXT,
+    name TEXT,
 
-mobile TEXT UNIQUE,
+    mobile TEXT UNIQUE,
 
-village TEXT,
+    village TEXT,
 
-password TEXT,
+    password TEXT,
 
-crop TEXT,
+    crop TEXT,
 
-latitude REAL,
+    latitude REAL,
 
-longitude REAL
+    longitude REAL
 
 )
 """)
 
 conn.commit()
 
-# Add location columns if missing
+
+# ==========================
+# Add location columns
+# ==========================
 
 try:
+
     cursor.execute(
         "ALTER TABLE users ADD COLUMN latitude REAL"
     )
+
 except:
+
     pass
 
 
 try:
+
     cursor.execute(
         "ALTER TABLE users ADD COLUMN longitude REAL"
     )
+
 except:
+
     pass
+
 
 try:
-    cursor.execute("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'")
-    conn.commit()
+
+    cursor.execute(
+        "ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'"
+    )
+
 except:
+
     pass
 
+
+# ==========================
+# PREMIUM COLUMNS MIGRATION
+# ==========================
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN premium_plan TEXT DEFAULT ''
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN premium_expiry TEXT DEFAULT ''
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN razorpay_subscription_id TEXT DEFAULT ''
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
 conn.commit()
+
+
+# ==========================
+# Disease History
+# ==========================
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS disease_history(
 
-id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-user_id INTEGER,
+    user_id INTEGER,
 
-crop TEXT,
+    crop TEXT,
 
-disease TEXT,
+    disease TEXT,
 
-confidence TEXT,
+    confidence TEXT,
 
-severity TEXT,
+    severity TEXT,
 
-affected TEXT,
+    affected TEXT,
 
-date TEXT
+    date TEXT
 
 )
 """)
