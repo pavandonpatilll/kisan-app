@@ -3121,6 +3121,7 @@ Back Home
         Checking premium status... 
  
     </div> 
+
  
 </section> 
 
@@ -4201,6 +4202,7 @@ function openPage(page){
     }
 
 }
+
 
 async function loadFarmers(){
 
@@ -7993,7 +7995,7 @@ async function buyPlan(plan){
         const response =
             await fetch(
 
-                "https://kisan-ai-h4xr.onrender.com/create-subscription",
+                "https://kisan-ai-api-lezf.onrender.com/create-subscription",
 
                 {
 
@@ -8109,7 +8111,7 @@ async function verifyPremiumPayment(
         const response =
             await fetch(
 
-                "https://kisan-ai-h4xr.onrender.com/verify-subscription",
+                "https://kisan-ai-api-lezf.onrender.com/verify-subscription",
 
                 {
 
@@ -8198,7 +8200,7 @@ async function loadPremiumStatus(){
         const response =
             await fetch(
 
-                `https://kisan-ai-h4xr.onrender.com/premium-status/${user.id}`
+                `https://kisan-ai-api-lezf.onrender.com/premium-status/${user.id}`
 
             );
 
