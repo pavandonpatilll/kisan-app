@@ -9,6 +9,7 @@ from pydantic import BaseModel
 import requests
 from google import genai
 import sqlite3
+import razorpay
 import hashlib
 from datetime import datetime
 import os
@@ -17,6 +18,47 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MANDI_API_KEY = os.getenv("MANDI_API_KEY")
+
+# ==========================
+# RAZORPAY
+# ==========================
+
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+
+razorpay_client = razorpay.Client(
+    auth=(
+        RAZORPAY_KEY_ID,
+        RAZORPAY_KEY_SECRET
+    )
+)
+
+# ==========================
+# RAZORPAY PLAN IDS
+# ==========================
+
+RAZORPAY_PLANS = {
+
+    "basic_monthly":
+        "plan_TQTNYbVUVJZU8x",
+
+    "basic_6months":
+        "plan_TQTQz6LK1C5okB",
+
+    "basic_yearly":
+        "plan_TQTVr8lsra1RGb",
+
+    "advanced_monthly":
+        "plan_TQTXJ6JYggjOB9",
+
+    "advanced_6months":
+        "plan_TQTYoLVEnhRlVD",
+
+    "advanced_yearly":
+        "plan_TQTadndbEu7Uwm"
+
+}
+
 
 # ==========================
 # FastAPI
@@ -5087,3 +5129,69 @@ def get_chat(user1:int,user2:int):
         "status":True,
         "chat":data
     }
+
+# ==========================
+# CREATE RAZORPAY SUBSCRIPTION
+# ==========================
+
+@app.post("/create-subscription")
+def create_subscription(data: dict):
+
+    try:
+
+        user_id = data.get("user_id")
+        plan_key = data.get("plan")
+
+        if not user_id:
+            return {
+                "status": False,
+                "message": "User ID required"
+            }
+
+        if plan_key not in RAZORPAY_PLANS:
+            return {
+                "status": False,
+                "message": "Invalid plan"
+            }
+
+        plan_id = RAZORPAY_PLANS[plan_key]
+
+        subscription = razorpay_client.subscription.create({
+
+            "plan_id": plan_id,
+
+            "customer_notify": 1,
+
+            "total_count": 1
+
+        })
+
+        return {
+
+            "status": True,
+
+            "subscription_id":
+                subscription["id"],
+
+            "plan_id":
+                plan_id,
+
+            "key_id":
+                RAZORPAY_KEY_ID
+
+        }
+
+    except Exception as e:
+
+        print(
+            "RAZORPAY SUBSCRIPTION ERROR:",
+            str(e)
+        )
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
