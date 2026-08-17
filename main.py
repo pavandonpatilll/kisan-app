@@ -5269,8 +5269,8 @@ def create_subscription(data: dict):
         }
 
 
-    # ==========================
-# VERIFY RAZORPAY PAYMENT
+# ==========================
+# VERIFY RAZORPAY SUBSCRIPTION
 # ==========================
 
 @app.post("/verify-subscription")
@@ -5280,11 +5280,25 @@ def verify_subscription(data: dict):
 
         user_id = data.get("user_id")
 
-        payment_id = data.get("razorpay_payment_id")
-        subscription_id = data.get("razorpay_subscription_id")
-        signature = data.get("razorpay_signature")
+        payment_id = data.get(
+            "razorpay_payment_id"
+        )
+
+        subscription_id = data.get(
+            "razorpay_subscription_id"
+        )
+
+        signature = data.get(
+            "razorpay_signature"
+        )
+
+        plan_key = data.get(
+            "plan"
+        )
+
 
         if not user_id:
+
             return {
                 "status": False,
                 "message": "User ID required"
@@ -5292,6 +5306,7 @@ def verify_subscription(data: dict):
 
 
         if not payment_id:
+
             return {
                 "status": False,
                 "message": "Payment ID missing"
@@ -5299,6 +5314,7 @@ def verify_subscription(data: dict):
 
 
         if not subscription_id:
+
             return {
                 "status": False,
                 "message": "Subscription ID missing"
@@ -5306,11 +5322,24 @@ def verify_subscription(data: dict):
 
 
         if not signature:
+
             return {
                 "status": False,
                 "message": "Signature missing"
             }
 
+
+        if plan_key not in RAZORPAY_PLANS:
+
+            return {
+                "status": False,
+                "message": "Invalid plan"
+            }
+
+
+        # ==========================
+        # VERIFY SIGNATURE
+        # ==========================
 
         razorpay_client.utility.verify_subscription_payment_signature({
 
@@ -5326,6 +5355,56 @@ def verify_subscription(data: dict):
         })
 
 
+        # ==========================
+        # PLAN DURATION
+        # ==========================
+
+        if plan_key.endswith(
+            "_monthly"
+        ):
+
+            months = 1
+
+        elif plan_key.endswith(
+            "_6months"
+        ):
+
+            months = 6
+
+        elif plan_key.endswith(
+            "_yearly"
+        ):
+
+            months = 12
+
+        else:
+
+            months = 1
+
+
+        # ==========================
+        # EXPIRY DATE
+        # ==========================
+
+        from dateutil.relativedelta import relativedelta
+
+        expiry_date = (
+            datetime.now()
+            + relativedelta(months=months)
+        )
+
+
+        expiry_string = (
+            expiry_date.strftime(
+                "%Y-%m-%d"
+            )
+        )
+
+
+        # ==========================
+        # SAVE PREMIUM
+        # ==========================
+
         conn = sqlite3.connect(
             "database.db"
         )
@@ -5338,17 +5417,20 @@ def verify_subscription(data: dict):
             UPDATE users
 
             SET
+
                 premium_plan = ?,
+
                 premium_expiry = ?,
+
                 razorpay_subscription_id = ?
 
             WHERE id = ?
 
         """, (
 
-            "premium",
+            plan_key,
 
-            "active",
+            expiry_string,
 
             subscription_id,
 
@@ -5358,6 +5440,7 @@ def verify_subscription(data: dict):
 
 
         conn.commit()
+
         conn.close()
 
 
@@ -5366,7 +5449,13 @@ def verify_subscription(data: dict):
             "status": True,
 
             "message":
-                "Premium activated successfully"
+                "Premium activated successfully",
+
+            "plan":
+                plan_key,
+
+            "expiry":
+                expiry_string
 
         }
 
@@ -5405,8 +5494,12 @@ def premium_status(user_id: int):
         cursor.execute("""
 
             SELECT
+
                 premium_plan,
-                premium_expiry
+
+                premium_expiry,
+
+                razorpay_subscription_id
 
             FROM users
 
@@ -5432,29 +5525,52 @@ def premium_status(user_id: int):
 
 
         premium_plan = row[0] or ""
+
         premium_expiry = row[1] or ""
 
+        subscription_id = row[2] or ""
 
-        active = (
 
-            premium_plan != ""
+        # ==========================
+        # CHECK EXPIRY
+        # ==========================
 
-            and
+        premium_active = False
 
-            premium_expiry != ""
 
-        )
+        if premium_plan and premium_expiry:
+
+            try:
+
+                expiry_date = datetime.strptime(
+                    premium_expiry,
+                    "%Y-%m-%d"
+                )
+
+                if datetime.now() < expiry_date:
+
+                    premium_active = True
+
+            except:
+
+                premium_active = False
 
 
         return {
 
             "status": True,
 
-            "premium": active,
+            "premium":
+                premium_active,
 
-            "plan": premium_plan,
+            "plan":
+                premium_plan,
 
-            "expiry": premium_expiry
+            "expiry":
+                premium_expiry,
+
+            "subscription_id":
+                subscription_id
 
         }
 

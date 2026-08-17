@@ -2226,91 +2226,324 @@ transform:translateY(-2px);
 }
 
 /* =========================
-   PREMIUM
+   PREMIUM PAGE
 ========================= */
 
 .premiumHeader{
     text-align:center;
-    margin-bottom:25px;
+    margin:20px auto 25px;
+    padding:0 12px;
 }
 
 .premiumHeader h1{
+    margin:0;
     color:#2e7d32;
+    font-size:28px;
 }
 
-.premiumGroup{
-    margin-bottom:35px;
+.premiumHeader p{
+    color:#666;
+    margin-top:8px;
 }
 
-.premiumGroup h2{
-    margin-bottom:15px;
-}
 
-.premiumGrid{
+/* =========================
+   PLAN LAYOUT
+========================= */
+
+.premiumPlans{
+
     display:grid;
+
     grid-template-columns:
-        repeat(auto-fit,minmax(230px,1fr));
+        repeat(2,minmax(0,1fr));
 
     gap:18px;
+
+    max-width:900px;
+
+    margin:auto;
+
+    padding:0 15px 30px;
 }
 
-.premiumCard{
-    background:white;
-    border-radius:16px;
-    padding:22px;
+
+/* =========================
+   PLAN CARD
+========================= */
+
+.premiumPlan{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:18px;
 
     box-shadow:
         0 5px 20px rgba(0,0,0,.08);
 
+    border:2px solid #eee;
+
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.planHeader{
     text-align:center;
 }
 
-.premiumCard h3{
-    margin-top:0;
+.planIcon{
+    font-size:35px;
 }
 
-.premiumPrice{
-    font-size:30px;
-    font-weight:bold;
-    color:#2e7d32;
-    margin:15px 0;
+.planHeader h2{
+    margin:5px 0;
+
+    font-size:23px;
 }
 
-.premiumPrice span{
-    font-size:14px;
+.planHeader p{
+    margin:0 0 18px;
+
     color:#777;
-    font-weight:normal;
+
+    font-size:14px;
 }
 
-.premiumCard button{
-    width:100%;
-    padding:12px;
+
+/* =========================
+   FEATURES
+========================= */
+
+.planFeatureList{
+
+    border-top:1px solid #eee;
+
+    border-bottom:1px solid #eee;
+
+    padding:12px 0;
+
+    margin-bottom:12px;
+
+}
+
+.planFeatureList div{
+
+    padding:6px 0;
+
+    font-size:13px;
+
+}
+
+
+/* =========================
+   PRICE OPTION
+========================= */
+
+.priceOption{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:8px;
+
+    padding:11px 0;
+
+    border-bottom:1px solid #eee;
+
+}
+
+.priceOption:last-child{
+    border-bottom:0;
+}
+
+.priceOption h3{
+
+    margin:0 0 3px;
+
+    font-size:14px;
+
+}
+
+.priceOption strong{
+
+    font-size:21px;
+
+    color:#2e7d32;
+
+}
+
+.priceOption span{
+
+    font-size:11px;
+
+    color:#777;
+
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+.priceOption button{
 
     border:0;
-    border-radius:10px;
+
+    border-radius:9px;
+
+    padding:9px 12px;
 
     background:#2e7d32;
-    color:white;
 
-    font-size:15px;
+    color:#fff;
+
     font-weight:bold;
 
+    font-size:12px;
+
     cursor:pointer;
+
 }
 
-.premiumCard button:hover{
-    background:#1b5e20;
-}
+
+/* =========================
+   PREMIUM STATUS
+========================= */
 
 .premiumStatus{
-    margin-top:25px;
-    padding:15px;
 
-    background:#e8f5e9;
+    max-width:900px;
+
+    margin:0 auto 18px;
+
+    padding:13px 15px;
 
     border-radius:12px;
 
+    background:#e8f5e9;
+
+    color:#1b5e20;
+
     text-align:center;
+
+    font-weight:bold;
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:650px){
+
+    .premiumPlans{
+
+        grid-template-columns:
+            repeat(2,minmax(0,1fr));
+
+        gap:8px;
+
+        padding-left:7px;
+
+        padding-right:7px;
+
+    }
+
+    .premiumPlan{
+
+        padding:10px;
+
+        border-radius:14px;
+
+    }
+
+    .premiumHeader h1{
+
+        font-size:21px;
+
+    }
+
+    .premiumHeader p{
+
+        font-size:12px;
+
+    }
+
+    .planIcon{
+
+        font-size:27px;
+
+    }
+
+    .planHeader h2{
+
+        font-size:18px;
+
+    }
+
+    .planHeader p{
+
+        font-size:11px;
+
+    }
+
+    .planFeatureList div{
+
+        font-size:10px;
+
+        padding:5px 0;
+
+    }
+
+    .priceOption{
+
+        display:block;
+
+        text-align:center;
+
+        padding:9px 0;
+
+    }
+
+    .priceOption h3{
+
+        font-size:12px;
+
+    }
+
+    .priceOption strong{
+
+        font-size:18px;
+
+    }
+
+    .priceOption span{
+
+        font-size:9px;
+
+    }
+
+    .priceOption button{
+
+        width:100%;
+
+        margin-top:6px;
+
+        padding:8px 4px;
+
+        font-size:10px;
+
+    }
+
 }
 
 </style>
@@ -2935,200 +3168,251 @@ Back Home
      PREMIUM PLANS 
 ========================= --> 
  
-<section id="premiumPage" class="featurePage" style="display:none;"> 
- 
-    <div class="premiumHeader"> 
- 
-        <h1>👑 Shrimant Shetkari Premium</h1> 
- 
-        <p> 
-            Unlock advanced farming features and AI assistance. 
-        </p> 
- 
-    </div> 
- 
- 
-    <!-- BASIC --> 
- 
-    <div class="premiumGroup"> 
- 
-        <h2>🌱 Basic Plan</h2> 
- 
-        <div class="premiumGrid"> 
- 
- 
-            <div class="premiumCard"> 
- 
-                <h3>Basic Monthly</h3> 
- 
-                <div class="premiumPrice"> 
-                    ₹9 
-                    <span>/ month</span> 
-                </div> 
- 
-                <p> 
-                    Basic premium farming features 
-                </p> 
- 
-                <button 
-                    onclick="buyPlan('basic_monthly')"> 
- 
-                    🚀 Subscribe ₹9 
- 
-                </button> 
- 
-            </div> 
- 
- 
-            <div class="premiumCard"> 
- 
-                <h3>Basic 6 Months</h3> 
- 
-                <div class="premiumPrice"> 
-                    ₹54 
-                    <span>/ 6 months</span> 
-                </div> 
- 
-                <p> 
-                    Basic premium farming features 
-                </p> 
- 
-                <button 
-                    onclick="buyPlan('basic_6months')"> 
- 
-                    🚀 Subscribe ₹54 
- 
-                </button> 
- 
-            </div> 
- 
- 
-            <div class="premiumCard"> 
- 
-                <h3>Basic Yearly</h3> 
- 
-                <div class="premiumPrice"> 
-                    ₹108 
-                    <span>/ year</span> 
-                </div> 
- 
-                <p> 
-                    Basic premium farming features 
-                </p> 
- 
-                <button 
-                    onclick="buyPlan('basic_yearly')"> 
- 
-                    🚀 Subscribe ₹108 
- 
-                </button> 
- 
-            </div> 
- 
-        </div> 
- 
-    </div> 
- 
- 
-    <!-- ADVANCED --> 
- 
-    <div class="premiumGroup"> 
- 
-        <h2>🚀 Advanced Plan</h2> 
- 
-        <div class="premiumGrid"> 
- 
- 
-            <div class="premiumCard"> 
- 
-                <h3>Advanced Monthly</h3> 
- 
-                <div class="premiumPrice"> 
-                    ₹17 
-                    <span>/ month</span> 
-                </div> 
- 
-                <p> 
-                    Advanced AI farming features 
-                </p> 
- 
-                <button 
-                    onclick="buyPlan('advanced_monthly')"> 
- 
-                    🚀 Subscribe ₹17 
- 
-                </button> 
- 
-            </div> 
- 
- 
-            <div class="premiumCard"> 
- 
-                <h3>Advanced 6 Months</h3> 
- 
-                <div class="premiumPrice"> 
-                    ₹102 
-                    <span>/ 6 months</span> 
-                </div> 
- 
-                <p> 
-                    Advanced AI farming features 
-                </p> 
- 
-                <button 
-                    onclick="buyPlan('advanced_6months')"> 
- 
-                    🚀 Subscribe ₹102 
- 
-                </button> 
- 
-            </div> 
- 
- 
-            <div class="premiumCard"> 
- 
-                <h3>Advanced Yearly</h3> 
- 
-                <div class="premiumPrice"> 
-                    ₹204 
-                    <span>/ year</span> 
-                </div> 
- 
-                <p> 
-                    Advanced AI farming features 
-                </p> 
- 
-                <button 
-                    onclick="buyPlan('advanced_yearly')"> 
- 
-                    🚀 Subscribe ₹204 
- 
-                </button> 
- 
-            </div> 
- 
-        </div> 
- 
-    </div> 
- 
- 
-    <!-- CURRENT STATUS --> 
- 
-    <div 
-        id="premiumStatus" 
-        class="premiumStatus"> 
- 
-        Checking premium status... 
- 
-    </div> 
+<section id="premiumPage" class="featurePage" style="display:none;">
 
- <br>
+    <div class="premiumHeader">
+        <h1>👑 Shrimant Shetkari Premium</h1>
+        <p>Unlock advanced farming features and AI assistance.</p>
+    </div>
+
+    <div id="premiumStatus" class="premiumStatus">
+        Checking premium status...
+    </div>
+
+
+    <div class="premiumPlans">
+
+
+        <!-- =========================
+             BASIC
+        ========================== -->
+
+        <div class="premiumPlan basicPlan">
+
+            <div class="planHeader">
+                <div class="planIcon">🌱</div>
+
+                <h2>Basic</h2>
+
+                <p>
+                    Essential farming tools
+                </p>
+            </div>
+
+
+            <div class="planFeatureList">
+
+                <div>💰 Mandi Prices</div>
+
+                <div>🌾 Crop Guide</div>
+
+                <div>🦠 Disease Scan</div>
+
+                <div>🤖 AI Farming Advice</div>
+
+                <div>🌦️ Farming Weather Advice</div>
+
+                <div>📜 Disease History</div>
+
+            </div>
+
+
+            <!-- MONTHLY -->
+
+            <div class="priceOption">
+
+                <div>
+
+                    <h3>Monthly</h3>
+
+                    <strong>₹9</strong>
+
+                    <span>/ month</span>
+
+                </div>
+
+                <button
+                    id="basic_monthly_btn"
+                    onclick="buyPlan('basic_monthly')">
+
+                    Subscribe
+
+                </button>
+
+            </div>
+
+
+            <!-- 6 MONTHS -->
+
+            <div class="priceOption">
+
+                <div>
+
+                    <h3>6 Months</h3>
+
+                    <strong>₹54</strong>
+
+                    <span>/ 6 months</span>
+
+                </div>
+
+                <button
+                    id="basic_6months_btn"
+                    onclick="buyPlan('basic_6months')">
+
+                    Subscribe
+
+                </button>
+
+            </div>
+
+
+            <!-- YEARLY -->
+
+            <div class="priceOption">
+
+                <div>
+
+                    <h3>Yearly</h3>
+
+                    <strong>₹108</strong>
+
+                    <span>/ year</span>
+
+                </div>
+
+                <button
+                    id="basic_yearly_btn"
+                    onclick="buyPlan('basic_yearly')">
+
+                    Subscribe
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             ADVANCED
+        ========================== -->
+
+        <div class="premiumPlan advancedPlan">
+
+            <div class="planHeader">
+
+                <div class="planIcon">🚀</div>
+
+                <h2>Advanced</h2>
+
+                <p>
+                    Advanced AI farming tools
+                </p>
+
+            </div>
+
+
+            <div class="planFeatureList">
+
+                <div>🤖 Advanced AI Farming</div>
+
+                <div>🦠 Advanced Disease Analysis</div>
+
+                <div>🌱 Detailed Treatment Guidance</div>
+
+                <div>📊 Advanced Farming Insights</div>
+
+                <div>🔔 Premium Farming Alerts</div>
+
+            </div>
+
+
+            <!-- MONTHLY -->
+
+            <div class="priceOption">
+
+                <div>
+
+                    <h3>Monthly</h3>
+
+                    <strong>₹17</strong>
+
+                    <span>/ month</span>
+
+                </div>
+
+                <button
+                    id="advanced_monthly_btn"
+                    onclick="buyPlan('advanced_monthly')">
+
+                    Subscribe
+
+                </button>
+
+            </div>
+
+
+            <!-- 6 MONTHS -->
+
+            <div class="priceOption">
+
+                <div>
+
+                    <h3>6 Months</h3>
+
+                    <strong>₹102</strong>
+
+                    <span>/ 6 months</span>
+
+                </div>
+
+                <button
+                    id="advanced_6months_btn"
+                    onclick="buyPlan('advanced_6months')">
+
+                    Subscribe
+
+                </button>
+
+            </div>
+
+
+            <!-- YEARLY -->
+
+            <div class="priceOption">
+
+                <div>
+
+                    <h3>Yearly</h3>
+
+                    <strong>₹204</strong>
+
+                    <span>/ year</span>
+
+                </div>
+
+                <button
+                    id="advanced_yearly_btn"
+                    onclick="buyPlan('advanced_yearly')">
+
+                    Subscribe
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+<br>
 
 <button onclick="goHome()">
 🏠 Back Home
 </button>
 
-</section> 
+</section>
 
 <section id="searchPage" class="featurePage">
 
@@ -8058,6 +8342,7 @@ async function buyPlan(plan){
             description:
                 "Premium Farming Subscription",
 
+
             handler:
                 async function(payment){
 
@@ -8065,7 +8350,9 @@ async function buyPlan(plan){
 
                         payment,
 
-                        user.id
+                        user.id,
+
+                        plan
 
                     );
 
@@ -8086,7 +8373,9 @@ async function buyPlan(plan){
 
 
             theme:{
+
                 color:"#2e7d32"
+
             }
 
         };
@@ -8102,7 +8391,10 @@ async function buyPlan(plan){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Subscription Error:",
+            error
+        );
 
         alert(
             "Payment connection failed."
@@ -8112,9 +8404,11 @@ async function buyPlan(plan){
 
 }
 
+
 async function verifyPremiumPayment(
     payment,
-    userId
+    userId,
+    plan
 ){
 
     try{
@@ -8136,6 +8430,8 @@ async function verifyPremiumPayment(
                     body:JSON.stringify({
 
                         user_id:userId,
+
+                        plan:plan,
 
                         razorpay_payment_id:
                             payment.razorpay_payment_id,
@@ -8166,7 +8462,6 @@ async function verifyPremiumPayment(
 
             loadPremiumStatus();
 
-
         }
         else{
 
@@ -8181,15 +8476,19 @@ async function verifyPremiumPayment(
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Premium verification error:",
+            error
+        );
 
         alert(
-            "Payment verification error."
+            "Payment verification failed."
         );
 
     }
 
 }
+
 
 async function loadPremiumStatus(){
 
@@ -8199,6 +8498,7 @@ async function loadPremiumStatus(){
     if(!userData){
 
         return;
+
     }
 
 
@@ -8220,31 +8520,108 @@ async function loadPremiumStatus(){
             await response.json();
 
 
-        const box =
+        const statusBox =
             document.getElementById(
                 "premiumStatus"
             );
 
 
-        if(!box){
+        if(!statusBox){
 
             return;
+
         }
 
 
         if(
             data.status &&
-            data.premium === true
+            data.premium
         ){
 
-            box.innerHTML =
-                "👑 Premium Active";
+            let planName =
+                data.plan || "Premium";
+
+
+            planName =
+                planName
+                .replaceAll(
+                    "_",
+                    " "
+                );
+
+
+            planName =
+                planName.replace(
+                    /\b\w/g,
+                    function(letter){
+                        return letter.toUpperCase();
+                    }
+                );
+
+
+            statusBox.innerHTML =
+
+                "👑 " +
+                planName +
+                " — ACTIVE";
+
 
         }
         else{
 
-            box.innerHTML =
-                "🌱 Free Plan";
+            statusBox.innerHTML =
+                "🌱 Choose your Premium Plan";
+
+        }
+
+
+        // ==========================
+        // RESET ALL BUTTONS
+        // ==========================
+
+        const buttons =
+            document.querySelectorAll(
+                ".priceOption button"
+            );
+
+
+        buttons.forEach(
+            function(button){
+
+                button.disabled = false;
+
+                button.innerHTML =
+                    "Subscribe";
+
+            }
+        );
+
+
+        // ==========================
+        // ACTIVE BUTTON
+        // ==========================
+
+        if(
+            data.status &&
+            data.premium &&
+            data.plan
+        ){
+
+            const activeButton =
+                document.getElementById(
+                    data.plan + "_btn"
+                );
+
+
+            if(activeButton){
+
+                activeButton.disabled =
+                    true;
+
+                activeButton.innerHTML =
+                    "✓ Current Plan";
+
+            }
 
         }
 
@@ -8252,7 +8629,10 @@ async function loadPremiumStatus(){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Premium status error:",
+            error
+        );
 
     }
 
