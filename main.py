@@ -5111,22 +5111,22 @@ def get_chat(user1:int,user2:int):
 RAZORPAY_PLANS = {
 
     "basic_monthly":
-        "plan_TQTNYbVUVJZU8x",
+        "plan_TQkTZNdq8SiraX",
 
     "basic_6months":
-        "plan_TQTQz6LK1C5okB",
+        "plan_TQmnoRWEt7gYtw",
 
     "basic_yearly":
-        "plan_TQTVr8lsra1RGb",
+        "plan_TQmojB1Qv8V3dJ",
 
     "advanced_monthly":
-        "plan_TQTXJ6JYggjOB9",
+        "plan_TQmpJDZQhZTEvK",
 
     "advanced_6months":
-        "plan_TQTYoLVEnhRlVD",
+        "plan_TQmq0gOJO2Gv6D",
 
     "advanced_yearly":
-        "plan_TQTadndbEu7Uwm"
+        "plan_TQmqai86ouvAkp"
 
 }
 
