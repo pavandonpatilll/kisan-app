@@ -2751,7 +2751,7 @@ Detecting...
 
     <div class="item" onclick="openPage('premiumPage')">
     👑
-        <p>Premium</p>
+    <p>Premium</p>
     </div>
 
     <div class="item" onclick="openPage('advicePage')">
@@ -2935,7 +2935,7 @@ Back Home
      PREMIUM PLANS 
 ========================= --> 
  
-<section id="premiumPage" style="display:none;"> 
+<section id="premiumPage" class="featurePage" style="display:none;"> 
  
     <div class="premiumHeader"> 
  
@@ -4147,7 +4147,7 @@ function openPage(page){
 
     }
 
-     else if(page=="alertPage"){
+    else if(page=="alertPage"){
 
         loadAlerts();
 
@@ -4155,13 +4155,13 @@ function openPage(page){
 
     else if(page == "notificationPage"){
 
-    loadNotificationPage();
+        loadNotificationPage();
 
     }
 
     else if(page=="newsPage"){
 
-    loadNews();
+        loadNews();
 
     }
 
@@ -4179,7 +4179,7 @@ function openPage(page){
 
     else if(page=="kisanPage"){
 
-       loadFarmers();
+        loadFarmers();
 
     }
 
@@ -4191,13 +4191,19 @@ function openPage(page){
 
     else if(page=="historyPage"){
 
-    loadDiseaseHistory();
+        loadDiseaseHistory();
 
     }
 
     else if(page=="advicePage"){
 
-    loadFarmingAdvice();
+        loadFarmingAdvice();
+
+    }
+
+    else if(page == "premiumPage"){
+
+        loadPremiumStatus();
 
     }
 
