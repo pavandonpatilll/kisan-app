@@ -4511,18 +4511,103 @@ async function loginUser(){
 
 }
 
+// ==========================
+// CHECK SAVED LOGIN
+// ==========================
+
+function checkSavedLogin(){
+
+    const userData =
+        localStorage.getItem("user");
+
+    if(!userData){
+
+        // User logged out / first time
+        return;
+
+    }
+
+
+    try{
+
+        const user =
+            JSON.parse(userData);
+
+
+        if(
+            !user ||
+            !user.id
+        ){
+
+            localStorage.removeItem("user");
+
+            return;
+
+        }
+
+
+        // ==========================
+        // USER IS ALREADY LOGGED IN
+        // ==========================
+
+        document.getElementById(
+            "loginSection"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "homeSection"
+        ).style.display = "block";
+
+
+        // Keep user ID also available
+
+        localStorage.setItem(
+            "userId",
+            user.id
+        );
+
+
+        // Load premium status
+
+        loadPremiumStatus();
+
+
+        // If your app has profile/home loading
+        // functions, keep them here if needed.
+
+
+    }
+    catch(error){
+
+        console.error(
+            "Saved login error:",
+            error
+        );
+
+        localStorage.removeItem(
+            "user"
+        );
+
+    }
+
+}
+
 // ----------------------------
 // Logout
 // ----------------------------
 
 function logout(){
 
-localStorage.removeItem("kisanUser");
+    localStorage.removeItem("user");
 
-location.reload();
+    localStorage.removeItem("userId");
+
+    localStorage.removeItem("kisanUser");
+
+    location.reload();
 
 }
-
 
 function openPage(page){
 
@@ -9001,6 +9086,8 @@ function openFeature(
 document.addEventListener(
     "DOMContentLoaded",
     function(){
+
+        checkSavedLogin();
 
         loadPremiumStatus();
 
