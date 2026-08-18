@@ -79,8 +79,9 @@ app.add_middleware(
 # Database
 # ==========================
 
-conn = sqlite3.connect(
-    "database.db",
+DATABASE_PATH = "/var/data/database.db"
+
+conn = sqlite3.connect(DATABASE_PATH,
     check_same_thread=False
 )
 
@@ -756,7 +757,7 @@ def admin_users():
 @app.get("/admin/premium-users")
 def admin_premium_users():
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
 
     cursor = conn.cursor()
@@ -5146,7 +5147,7 @@ def add_admin_news(data: AdminNewsModel):
 @app.get("/farmers")
 def get_farmers():
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
 
@@ -5188,7 +5189,7 @@ def get_farmers():
 @app.post("/send-chat")
 def send_chat(data:dict):
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
 
@@ -5222,7 +5223,7 @@ def send_chat(data:dict):
 @app.get("/chat/{user1}/{user2}")
 def get_chat(user1:int,user2:int):
 
-    conn=sqlite3.connect("database.db")
+    conn=sqlite3.connect(DATABASE_PATH)
     cursor=conn.cursor()
 
 
@@ -5502,9 +5503,7 @@ def verify_subscription(data: dict):
         # SAVE PREMIUM
         # ==========================
 
-        conn = sqlite3.connect(
-            "database.db"
-        )
+        conn = sqlite3.connect(DATABASE_PATH)
 
         cursor = conn.cursor()
 
@@ -5581,9 +5580,7 @@ def premium_status(user_id: int):
 
     try:
 
-        conn = sqlite3.connect(
-            "database.db"
-        )
+        sqlite3.connect(DATABASE_PATH)
 
         cursor = conn.cursor()
 
