@@ -753,6 +753,103 @@ def admin_users():
     }
 
 
+@app.get("/admin/premium-users")
+def admin_premium_users():
+
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            name,
+            mobile,
+            premium_plan,
+            premium_expiry
+        FROM users
+        ORDER BY id DESC
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+
+    users = []
+
+    for row in rows:
+
+        plan = row["premium_plan"] or ""
+        expiry = row["premium_expiry"] or ""
+
+        plan_lower = plan.lower()
+
+        if not plan:
+
+            premium_status = "free"
+
+        elif "advanced" in plan_lower:
+
+            premium_status = "advanced"
+
+        elif "basic" in plan_lower:
+
+            premium_status = "basic"
+
+        else:
+
+            premium_status = "free"
+
+
+        # Expiry check
+        if expiry:
+
+            try:
+
+                expiry_date = datetime.fromisoformat(
+                    expiry
+                )
+
+                if expiry_date < datetime.now():
+
+                    premium_status = "expired"
+
+            except:
+
+                pass
+
+
+        users.append({
+
+            "id": row["id"],
+
+            "name": row["name"],
+
+            "mobile": row["mobile"],
+
+            "premium_plan":
+                plan if plan else "Free",
+
+            "premium_expiry":
+                expiry if expiry else "-",
+
+            "premium_status":
+                premium_status
+
+        })
+
+
+    return {
+
+        "status": True,
+
+        "users": users
+
+    }
+
+
 # ==========================
 # ADMIN ADD MANDI
 # ==========================

@@ -444,6 +444,10 @@ body{
             👨‍🌾 Users
         </button>
 
+        <button onclick="showSection('premiumUsers')">
+           👑 Premium Users
+        </button>
+
         <button onclick="showSection('mandi')">
             🌾 Mandi Rates
         </button>
@@ -842,6 +846,110 @@ body{
 
 </section>
 
+<!-- PREMIUM USERS -->
+
+<section id="premiumUsers" class="adminSection">
+
+    <h1>👑 Premium & Subscription Users</h1>
+
+    <div class="panel">
+
+        <div style="
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-bottom:20px;
+        ">
+
+            <button
+                class="actionBtn"
+                onclick="loadPremiumUsers('all')"
+            >
+                👥 All
+            </button>
+
+            <button
+                class="actionBtn"
+                onclick="loadPremiumUsers('free')"
+            >
+                ⚪ Free
+            </button>
+
+            <button
+                class="actionBtn"
+                onclick="loadPremiumUsers('basic')"
+            >
+                🌱 Basic
+            </button>
+
+            <button
+                class="actionBtn"
+                onclick="loadPremiumUsers('advanced')"
+            >
+                🚀 Advanced
+            </button>
+
+            <button
+                class="actionBtn"
+                onclick="loadPremiumUsers('expired')"
+            >
+                🔴 Expired
+            </button>
+
+        </div>
+
+
+        <div style="overflow-x:auto;">
+
+            <table style="
+                width:100%;
+                border-collapse:collapse;
+            ">
+
+                <thead>
+
+                    <tr>
+
+                        <th style="padding:12px;text-align:left;">
+                            ID
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Farmer
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Mobile
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Plan
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Status
+                        </th>
+
+                        <th style="padding:12px;text-align:left;">
+                            Expiry
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="premiumUsersTableBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
     </main>
 
 </div>
@@ -1038,6 +1146,12 @@ function showSection(id){
     if(id === "users"){
 
         loadUsers();
+
+    }
+
+    if(id === "premiumUsers"){
+
+    loadPremiumUsers("all");
 
     }
 
@@ -1879,6 +1993,201 @@ async function addGovernmentScheme(){
         alert(
             "❌ Server connection failed."
         );
+
+    }
+
+}
+
+
+async function loadPremiumUsers(filter = "all"){
+
+    const tbody =
+        document.getElementById(
+            "premiumUsersTableBody"
+        );
+
+    if(!tbody){
+
+        return;
+
+    }
+
+    tbody.innerHTML =
+        "<tr><td colspan='6' style='padding:20px;'>Loading...</td></tr>";
+
+
+    try{
+
+        const response =
+            await fetch(
+                API_URL + "/admin/premium-users"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!data.status){
+
+            tbody.innerHTML =
+                "<tr><td colspan='6' style='padding:20px;'>Unable to load users.</td></tr>";
+
+            return;
+
+        }
+
+
+        let users = data.users || [];
+
+
+        // ==========================
+        // FILTER
+        // ==========================
+
+        if(filter !== "all"){
+
+            users = users.filter(
+                user =>
+                    user.premium_status === filter
+            );
+
+        }
+
+
+        if(users.length === 0){
+
+            tbody.innerHTML =
+                "<tr><td colspan='6' style='padding:20px;'>No users found.</td></tr>";
+
+            return;
+
+        }
+
+
+        let html = "";
+
+
+        users.forEach(user => {
+
+            let statusText = "⚪ Free";
+
+            let statusColor = "#666";
+
+
+            if(
+                user.premium_status === "basic"
+            ){
+
+                statusText =
+                    "🌱 Basic";
+
+                statusColor =
+                    "#2e7d32";
+
+            }
+
+
+            else if(
+                user.premium_status === "advanced"
+            ){
+
+                statusText =
+                    "🚀 Advanced";
+
+                statusColor =
+                    "#1565c0";
+
+            }
+
+
+            else if(
+                user.premium_status === "expired"
+            ){
+
+                statusText =
+                    "🔴 Expired";
+
+                statusColor =
+                    "#d32f2f";
+
+            }
+
+
+            html += `
+
+                <tr>
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                    ">
+                        ${user.id}
+                    </td>
+
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                        font-weight:bold;
+                    ">
+                        ${user.name || "-"}
+                    </td>
+
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                    ">
+                        ${user.mobile || "-"}
+                    </td>
+
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                    ">
+                        ${user.premium_plan || "Free"}
+                    </td>
+
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                        color:${statusColor};
+                        font-weight:bold;
+                    ">
+                        ${statusText}
+                    </td>
+
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                    ">
+                        ${user.premium_expiry || "-"}
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+
+        tbody.innerHTML = html;
+
+    }
+    catch(error){
+
+        console.error(
+            "Premium users error:",
+            error
+        );
+
+
+        tbody.innerHTML =
+            "<tr><td colspan='6' style='padding:20px;color:red;'>Server connection failed.</td></tr>";
 
     }
 
