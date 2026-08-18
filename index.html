@@ -2959,74 +2959,150 @@ Detecting...
 
 <div class="grid">
 
-    <div class="item" onclick="openPage('weatherPage')">
-        🌦
-        <p id="txtWeather">Weather</p>
-    </div>
+    <div class="item"
+     onclick="openFeature('weather','weatherPage')">
+
+    🌦
+
+    <p id="txtWeather">
+        Weather
+    </p>
+
+</div>
 
 
-    <div class="item" onclick="openPage('kisanPage')">
-        👥
-        <p id="txtKisanConnect">Kisan Connect</p>
-    </div>
+<div class="item"
+     onclick="openFeature('kisanConnect','kisanPage')">
+
+    👥
+
+    <p id="txtKisanConnect">
+        Kisan Connect
+    </p>
+
+</div>
 
 
-    <div class="item" onclick="openPage('mandiPage')">
-        💰
-        <p id="txtMandi">Mandi</p>
-    </div>
+<div class="item"
+     onclick="openFeature('mandi','mandiPage')">
+
+    💰
+
+    <p id="txtMandi">
+        Mandi
+    </p>
+
+</div>
 
 
-    <div class="item" onclick="openPage('aiPage')">
-        🤖
-        <p id="txtAIChat">AI Chat</p>
-    </div>
+<div class="item"
+     onclick="openFeature('ai','aiPage')">
 
-    <div class="item" onclick="openPage('premiumPage')">
+    🤖
+
+    <p id="txtAIChat">
+        AI Chat
+    </p>
+
+</div>
+
+
+<!-- PREMIUM PAGE -->
+
+<div class="item"
+     onclick="openPage('premiumPage')">
+
     👑
-    <p>Premium</p>
-    </div>
 
-    <div class="item" onclick="openPage('advicePage')">
-        🤖
-        <p id="txtAIAdvice">AI Farming Advice</p>
-    </div>
+    <p>
+        Premium
+    </p>
 
-
-    <div class="item" onclick="openPage('cropGuidePage')">
-        🌱
-        <p id="txtCropGuide">Crop Guide</p>
-    </div>
+</div>
 
 
-    <div class="item" onclick="openPage('diseasePage')">
-        📷
-        <p id="txtDiseaseScan">Disease Scan</p>
-    </div>
+<div class="item"
+     onclick="openFeature('advice','advicePage')">
+
+    🤖
+
+    <p id="txtAIAdvice">
+        AI Farming Advice
+    </p>
+
+</div>
 
 
-    <div class="item" onclick="openPage('schemePage')">
-        🏛
-        <p id="txtSchemes">Schemes</p>
-    </div>
+<div class="item"
+     onclick="openFeature('cropGuide','cropGuidePage')">
+
+    🌱
+
+    <p id="txtCropGuide">
+        Crop Guide
+    </p>
+
+</div>
 
 
-    <div class="item" onclick="openPage('historyPage')">
-        📋
-        <p id="txtDiseaseHistory">Disease History</p>
-    </div>
+<div class="item"
+     onclick="openFeature('disease','diseasePage')">
+
+    📷
+
+    <p id="txtDiseaseScan">
+        Disease Scan
+    </p>
+
+</div>
 
 
-    <div class="item" onclick="openPage('newsPage')">
-        📰
-        <p id="txtNews">News</p>
-    </div>
+<div class="item"
+     onclick="openFeature('schemes','schemePage')">
+
+    🏛
+
+    <p id="txtSchemes">
+        Schemes
+    </p>
+
+</div>
 
 
-    <div class="item" onclick="openPage('profilePage')">
-        👤
-        <p id="txtProfile">Profile</p>
-    </div>
+<div class="item"
+     onclick="openFeature('history','historyPage')">
+
+    📋
+
+    <p id="txtDiseaseHistory">
+        Disease History
+    </p>
+
+</div>
+
+
+<div class="item"
+     onclick="openFeature('news','newsPage')">
+
+    📰
+
+    <p id="txtNews">
+        News
+    </p>
+
+</div>
+
+
+<div class="item"
+     onclick="openFeature('profile','profilePage')">
+
+    👤
+
+    <p id="txtProfile">
+        Profile
+    </p>
+
+</div>
 
 </div>
 
@@ -3034,38 +3110,67 @@ Detecting...
 <nav>
 
     <div onclick="goHome()">
+
         🏠
-        <p id="navHome">Home</p>
+
+        <p id="navHome">
+            Home
+        </p>
+
     </div>
 
 
     <div onclick="openPage('searchPage')">
+
         🔍
-        <p id="navSearch">Search</p>
+
+        <p id="navSearch">
+            Search
+        </p>
+
     </div>
 
 
-    <div onclick="openPage('aiPage')">
+    <div onclick="openFeature('ai','aiPage')">
+
         🤖
-        <p id="navAI">AI</p>
+
+        <p id="navAI">
+            AI
+        </p>
+
     </div>
 
 
-    <div class="navItem" onclick="openPage('alertPage')">
+    <div
+        class="navItem"
+        onclick="openPage('alertPage')">
 
         <div class="navIcon">
+
             🔔
-            <span id="alertCount">0</span>
+
+            <span id="alertCount">
+                0
+            </span>
+
         </div>
 
-        <p id="navAlerts">Alerts</p>
+        <p id="navAlerts">
+            Alerts
+        </p>
 
     </div>
 
 
-    <div onclick="openPage('profilePage')">
+    <div onclick="openFeature('profile','profilePage')">
+
         👤
-        <p id="navProfile">Profile</p>
+
+        <p id="navProfile">
+            Profile
+        </p>
+
     </div>
 
 </nav>
@@ -3315,6 +3420,8 @@ Back Home
 
 
             <div class="planFeatureList">
+
+                <div>👑 All app access free</div>
 
                 <div>🤖 Advanced AI Farming</div>
 
@@ -4373,6 +4480,7 @@ async function loginUser(){
             "user",
             JSON.stringify(data.user)
         );
+        loadPremiumStatus();
 
         localStorage.setItem(
             "userId",
@@ -8490,12 +8598,33 @@ async function verifyPremiumPayment(
 }
 
 
+// ==========================
+// PREMIUM ACCESS SYSTEM
+// ==========================
+
+let premiumInfo = {
+    premium: false,
+    plan: "",
+    expiry: ""
+};
+
+
+// ==========================
+// LOAD PREMIUM STATUS
+// ==========================
+
 async function loadPremiumStatus(){
 
     const userData =
         localStorage.getItem("user");
 
     if(!userData){
+
+        premiumInfo = {
+            premium:false,
+            plan:"",
+            expiry:""
+        };
 
         return;
 
@@ -8520,108 +8649,44 @@ async function loadPremiumStatus(){
             await response.json();
 
 
-        const statusBox =
-            document.getElementById(
-                "premiumStatus"
-            );
-
-
-        if(!statusBox){
-
-            return;
-
-        }
-
-
         if(
             data.status &&
             data.premium
         ){
 
-            let planName =
-                data.plan || "Premium";
+            premiumInfo = {
 
+                premium:true,
 
-            planName =
-                planName
-                .replaceAll(
-                    "_",
-                    " "
-                );
+                plan:data.plan || "",
 
+                expiry:data.expiry || ""
 
-            planName =
-                planName.replace(
-                    /\b\w/g,
-                    function(letter){
-                        return letter.toUpperCase();
-                    }
-                );
-
-
-            statusBox.innerHTML =
-
-                "👑 " +
-                planName +
-                " — ACTIVE";
-
+            };
 
         }
         else{
 
-            statusBox.innerHTML =
-                "🌱 Choose your Premium Plan";
+            premiumInfo = {
+
+                premium:false,
+
+                plan:"",
+                expiry:""
+
+            };
 
         }
 
 
-        // ==========================
-        // RESET ALL BUTTONS
-        // ==========================
-
-        const buttons =
-            document.querySelectorAll(
-                ".priceOption button"
-            );
-
-
-        buttons.forEach(
-            function(button){
-
-                button.disabled = false;
-
-                button.innerHTML =
-                    "Subscribe";
-
-            }
-        );
-
-
-        // ==========================
-        // ACTIVE BUTTON
-        // ==========================
+        // Update premium page also
 
         if(
-            data.status &&
-            data.premium &&
-            data.plan
+            typeof updatePremiumButtons ===
+            "function"
         ){
 
-            const activeButton =
-                document.getElementById(
-                    data.plan + "_btn"
-                );
-
-
-            if(activeButton){
-
-                activeButton.disabled =
-                    true;
-
-                activeButton.innerHTML =
-                    "✓ Current Plan";
-
-            }
+            updatePremiumButtons();
 
         }
 
@@ -8630,13 +8695,317 @@ async function loadPremiumStatus(){
     catch(error){
 
         console.error(
-            "Premium status error:",
+            "Premium Status Error:",
             error
+        );
+
+        premiumInfo = {
+
+            premium:false,
+
+            plan:"",
+            expiry:""
+
+        };
+
+    }
+
+}
+
+
+// ==========================
+// CHECK PREMIUM ACCESS
+// ==========================
+
+function checkPremiumAccess(
+    feature,
+    callback
+){
+
+    // ==========================
+    // FREE FEATURES
+    // ==========================
+
+    const freeFeatures = [
+
+        "weather",
+
+        "schemes",
+
+        "news",
+
+        "profile"
+
+    ];
+
+
+    if(
+        freeFeatures.includes(
+            feature
+        )
+    ){
+
+        callback();
+
+        return;
+
+    }
+
+
+    // ==========================
+    // ADVANCED USER
+    // ==========================
+
+    if(
+        premiumInfo.premium &&
+        premiumInfo.plan.startsWith("advanced_")
+    ){
+
+        callback();
+
+        return;
+
+    }
+
+
+    // ==========================
+    // BASIC FEATURES
+    // ==========================
+
+    const basicFeatures = [
+
+        "mandi",
+
+        "cropGuide",
+
+        "disease",
+
+        "ai",
+
+        "advice",
+
+        "history"
+
+    ];
+
+
+    if(
+        basicFeatures.includes(
+            feature
+        )
+    ){
+
+        if(
+            premiumInfo.premium &&
+            premiumInfo.plan.startsWith(
+                "basic_"
+            )
+        ){
+
+            callback();
+
+            return;
+
+        }
+
+
+        // Basic feature locked
+
+        openPremiumPage(
+            "basic"
+        );
+
+        return;
+
+    }
+
+
+    // ==========================
+    // ADVANCED FEATURES
+    // ==========================
+
+    openPremiumPage(
+        "advanced"
+    );
+
+}
+
+
+// ==========================
+// OPEN PREMIUM PAGE
+// ==========================
+
+function openPremiumPage(
+    requiredPlan = "basic"
+){
+
+    openPage(
+        "premiumPage"
+    );
+
+
+    setTimeout(
+        function(){
+
+            loadPremiumStatus();
+
+        },
+        100
+    );
+
+
+    if(
+        requiredPlan ===
+        "advanced"
+    ){
+
+        setTimeout(
+            function(){
+
+                const status =
+                    document.getElementById(
+                        "premiumStatus"
+                    );
+
+                if(status){
+
+                    status.innerHTML =
+                        "🚀 Advanced Premium is required for this feature.";
+
+                }
+
+            },
+            150
         );
 
     }
 
 }
+
+
+// ==========================
+// UPDATE PREMIUM BUTTONS
+// ==========================
+
+function updatePremiumButtons(){
+
+    const buttons =
+        document.querySelectorAll(
+            ".priceOption button"
+        );
+
+
+    buttons.forEach(
+        function(button){
+
+            button.disabled =
+                false;
+
+            button.innerHTML =
+                "Subscribe";
+
+        }
+    );
+
+
+    if(
+        !premiumInfo.premium ||
+        !premiumInfo.plan
+    ){
+
+        return;
+
+    }
+
+
+    const activeButton =
+        document.getElementById(
+            premiumInfo.plan +
+            "_btn"
+        );
+
+
+    if(activeButton){
+
+        activeButton.disabled =
+            true;
+
+        activeButton.innerHTML =
+            "✓ Current Plan";
+
+    }
+
+
+    const statusBox =
+        document.getElementById(
+            "premiumStatus"
+        );
+
+
+    if(statusBox){
+
+        let planName =
+            premiumInfo.plan
+            .replaceAll(
+                "_",
+                " "
+            );
+
+
+        planName =
+            planName.replace(
+                /\b\w/g,
+                function(letter){
+
+                    return letter.toUpperCase();
+
+                }
+            );
+
+
+        statusBox.innerHTML =
+
+            "👑 " +
+            planName +
+            " — ACTIVE";
+
+    }
+
+}
+
+
+// ==========================
+// OPEN FEATURE WITH PREMIUM CHECK
+// ==========================
+
+function openFeature(
+    feature,
+    page
+){
+
+    checkPremiumAccess(
+
+        feature,
+
+        function(){
+
+            openPage(page);
+
+        }
+
+    );
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        loadPremiumStatus();
+
+    }
+);
 
 
 async function loadProfile(){
