@@ -3121,14 +3121,13 @@ Detecting...
 
     <div onclick="openFeature('searchPage')">
 
-        🔍
+    🔍
 
-        <p id="navSearch">
-            Search
-        </p>
+    <p id="navSearch">
+        Search
+    </p>
 
     </div>
-
 
     <div onclick="openFeature('ai','aiPage')">
 
@@ -8652,7 +8651,36 @@ async function verifyPremiumPayment(
             );
 
 
-            loadPremiumStatus();
+            // Update premium status
+            await loadPremiumStatus();
+
+
+            // ==========================
+            // OPEN FEATURE USER CLICKED
+            // ==========================
+
+            const pendingFeature =
+                localStorage.getItem(
+                    "pendingPremiumFeature"
+                );
+
+
+            if(pendingFeature){
+
+                localStorage.removeItem(
+                    "pendingPremiumFeature"
+                );
+
+
+                setTimeout(function(){
+
+                    openPage(
+                        pendingFeature
+                    );
+
+                }, 500);
+
+            }
 
         }
         else{
@@ -8664,7 +8692,6 @@ async function verifyPremiumPayment(
 
         }
 
-
     }
     catch(error){
 
@@ -8672,6 +8699,7 @@ async function verifyPremiumPayment(
             "Premium verification error:",
             error
         );
+
 
         alert(
             "Payment verification failed."
@@ -9067,11 +9095,22 @@ function openFeature(
     page
 ){
 
+    localStorage.setItem(
+        "pendingPremiumFeature",
+        page
+    );
+
+
     checkPremiumAccess(
 
         feature,
 
         function(){
+
+            localStorage.removeItem(
+                "pendingPremiumFeature"
+            );
+
 
             openPage(page);
 
