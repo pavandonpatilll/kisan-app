@@ -5581,19 +5581,15 @@ def premium_status(user_id: int):
 
     try:
 
-        sqlite3.connect(DATABASE_PATH)
-
+        conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
-
 
         cursor.execute("""
 
             SELECT
 
                 premium_plan,
-
                 premium_expiry,
-
                 razorpay_subscription_id
 
             FROM users
@@ -5602,36 +5598,28 @@ def premium_status(user_id: int):
 
         """, (user_id,))
 
-
         row = cursor.fetchone()
 
         conn.close()
-
 
         if not row:
 
             return {
 
                 "status": False,
-
                 "premium": False
 
             }
 
-
         premium_plan = row[0] or ""
-
         premium_expiry = row[1] or ""
-
         subscription_id = row[2] or ""
-
 
         # ==========================
         # CHECK EXPIRY
         # ==========================
 
         premium_active = False
-
 
         if premium_plan and premium_expiry:
 
@@ -5649,7 +5637,6 @@ def premium_status(user_id: int):
             except:
 
                 premium_active = False
-
 
         return {
 
@@ -5669,15 +5656,17 @@ def premium_status(user_id: int):
 
         }
 
-
     except Exception as e:
+
+        print(
+            "PREMIUM STATUS ERROR:",
+            str(e)
+        )
 
         return {
 
             "status": False,
-
             "premium": False,
-
             "message": str(e)
 
         }
