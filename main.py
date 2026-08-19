@@ -79,6 +79,7 @@ app.add_middleware(
 # Database
 # ==========================
 
+
 DATABASE_PATH = "/var/data/database.db"
 
 conn = sqlite3.connect(DATABASE_PATH,
