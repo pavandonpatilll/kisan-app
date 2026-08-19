@@ -5274,22 +5274,22 @@ def get_chat(user1:int,user2:int):
 RAZORPAY_PLANS = {
 
     "basic_monthly":
-        "plan_TQkTZNdq8SiraX",
+        "plan_TQTNYbVUVJZU8x",
 
     "basic_6months":
-        "plan_TQmnoRWEt7gYtw",
+        "plan_TQTQz6LK1C5okB",
 
     "basic_yearly":
-        "plan_TQmojB1Qv8V3dJ",
+        "plan_TQTVr8lsra1RGb",
 
     "advanced_monthly":
-        "plan_TQmpJDZQhZTEvK",
+        "plan_TQTXJ6JYggjOB9",
 
     "advanced_6months":
-        "plan_TQmq0gOJO2Gv6D",
+        "plan_TQTYoLVEnhRlVD",
 
     "advanced_yearly":
-        "plan_TQmqai86ouvAkp"
+        "plan_TQTadndbEu7Uwm"
 
 }
 
