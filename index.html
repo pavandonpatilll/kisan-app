@@ -1696,285 +1696,304 @@ color:#33691e;
 
 }
 
-/* CHAT PAGE */
+/* =========================
+   CHAT PAGE - SAFE VERSION
+========================= */
 
 #chatPage{
 
-background:linear-gradient(
-135deg,
-#e8f5e9,
-#fff8e1
-);
+    background:linear-gradient(
+        135deg,
+        #e8f5e9,
+        #fff8e1
+    );
 
-min-height:100vh;
+    min-height:100vh;
 
-padding:15px;
+    padding:15px;
+
+    box-sizing:border-box;
 
 }
 
 
-/* Chat Header */
+/* =========================
+   CHAT HEADER
+========================= */
 
 #chatTitle{
 
-background:linear-gradient(
-90deg,
-#2e7d32,
-#66bb6a
-);
+    margin:0;
 
-color:white;
+    background:#ffffff;
 
-padding:15px;
+    color:#1f1f1f;
 
-border-radius:18px;
+    padding:16px;
 
-text-align:center;
+    border-radius:18px;
 
-box-shadow:
-0 5px 15px rgba(0,0,0,.15);
+    text-align:center;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    border:1px solid #eeeeee;
+
+    box-shadow:
+        0 4px 12px
+        rgba(0,0,0,.08);
 
 }
 
 
-
-/* Chat Box */
+/* =========================
+   CHAT BOX
+========================= */
 
 #chatBox{
 
-margin-top:15px;
+    margin-top:20px;
 
-height:420px;
+    width:100%;
 
-overflow-y:auto;
+    aspect-ratio:1 / 1;
 
-padding:15px;
+    min-height:550px;
 
-background:white;
+    max-height:800px;
 
-border-radius:20px;
+    overflow-y:auto;
 
-box-shadow:
-0 5px 20px rgba(0,0,0,.12);
+    padding:20px;
 
-}
+    box-sizing:border-box;
 
+    background:#ffffff;
 
+    border-radius:20px;
 
-/* Message Bubble */
-
-.message{
-
-background:linear-gradient(
-135deg,
-#c8e6c9,
-#e8f5e9
-);
-
-color:#1b5e20;
-
-padding:12px 15px;
-
-margin:12px 0;
-
-border-radius:18px 18px 18px 5px;
-
-font-size:15px;
-
-box-shadow:
-0 3px 8px rgba(0,0,0,.12);
+    box-shadow:
+        0 5px 20px
+        rgba(0,0,0,.10);
 
 }
-
-
-
-/* Time */
-
-.message small{
-
-color:#666;
-
-font-size:11px;
-
-}
-
-
-
-/* Input Area */
-
-.chatInput{
-
-position:fixed;
-
-bottom:15px;
-
-left:15px;
-
-right:15px;
-
-display:flex;
-
-gap:10px;
-
-background:white;
-
-padding:10px;
-
-border-radius:30px;
-
-box-shadow:
-0 5px 20px rgba(0,0,0,.18);
-
-}
-
-
-
-/* Message Input */
-
-.chatInput input{
-
-flex:1;
-
-border:none;
-
-outline:none;
-
-padding:13px 18px;
-
-border-radius:25px;
-
-background:#f1f8e9;
-
-font-size:15px;
-
-}
-
-
-
-/* Send Button */
-
-.chatInput button{
-
-width:90px;
-
-border:none;
-
-border-radius:25px;
-
-background:linear-gradient(
-135deg,
-#ff9800,
-#ff5722
-);
-
-color:white;
-
-font-weight:bold;
-
-font-size:15px;
-
-cursor:pointer;
-
-}
-
-
-
-/* Back Button */
-
-#chatPage button[onclick*="kisanPage"]{
-
-margin-top:20px;
-
-width:100%;
-
-padding:12px;
-
-border:none;
-
-border-radius:15px;
-
-background:#1565c0;
-
-color:white;
-
-font-size:16px;
-
-}
+/* =========================
+   CHAT ROW
+========================= */
 
 .chatRow{
 
-display:flex;
+    display:flex;
 
-margin:10px 0;
+    width:100%;
+
+    margin:8px 0;
 
 }
 
 
 .myMessage{
 
-justify-content:flex-end;
+    justify-content:flex-end;
 
 }
 
 
 .otherMessage{
 
-justify-content:flex-start;
+    justify-content:flex-start;
 
 }
 
 
+/* =========================
+   INSTAGRAM STYLE MESSAGE
+========================= */
 
 .messageBubble{
 
-max-width:75%;
+    max-width:78%;
 
-padding:12px 15px;
+    min-width:0;
 
-border-radius:18px;
+    padding:11px 15px;
 
-font-size:15px;
+    font-size:15px;
 
-box-shadow:
-0 3px 8px rgba(0,0,0,.12);
+    line-height:1.45;
+
+    word-break:break-word;
+
+    box-shadow:none;
 
 }
 
 
-
-/* Other Farmer */
+/* OTHER FARMER MESSAGE */
 
 .otherMessage .messageBubble{
 
-background:#ffffff;
+    background:#efefef;
 
-color:#333;
+    color:#111;
 
-border-radius:
+    border:none;
 
-18px 18px 18px 5px;
-
-border-left:4px solid #4caf50;
+    border-radius:
+        20px
+        20px
+        20px
+        6px;
 
 }
 
 
-
-/* My Message */
+/* MY MESSAGE */
 
 .myMessage .messageBubble{
 
-background:linear-gradient(
-135deg,
-#66bb6a,
-#2e7d32
-);
+    background:#2e7d32;
 
-color:white;
+    color:white;
 
-border-radius:
+    border:none;
 
-18px 18px 5px 18px;
+    border-radius:
+        20px
+        20px
+        6px
+        20px;
+
+}
+
+
+/* MESSAGE TIME */
+
+.messageBubble small{
+
+    display:block;
+
+    margin-top:4px;
+
+    font-size:10px;
+
+    opacity:.70;
+
+}
+
+
+/* =========================
+   CHAT INPUT AREA
+========================= */
+
+.chatInputArea{
+
+    position:static;
+
+    width:100%;
+
+    box-sizing:border-box;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    padding:10px;
+
+    margin-top:12px;
+
+    background:white;
+
+    border-radius:30px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(0,0,0,.15);
+
+}
+
+
+/* MESSAGE INPUT */
+
+.chatInputArea input{
+
+    flex:1;
+
+    min-width:0;
+
+    height:46px;
+
+    border:none;
+
+    outline:none;
+
+    padding:0 16px;
+
+    border-radius:25px;
+
+    background:#f2f2f2;
+
+    color:#222;
+
+    font-size:15px;
+
+}
+
+
+/* SEND BUTTON */
+
+.chatInputArea button{
+
+    width:48px;
+
+    min-width:48px;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#2e7d32;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+
+/* =========================
+   BACK BUTTON
+========================= */
+
+#chatPage button[onclick*="kisanPage"]{
+
+    margin-top:12px;
+
+    width:100%;
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:15px;
+
+    background:#1565c0;
+
+    color:white;
+
+    font-size:16px;
+
+    cursor:pointer;
 
 }
 
@@ -4257,26 +4276,68 @@ Back Home
 
 <section id="kisanPage" class="featurePage">
 
-<h1>
-👥 Kisan Connect
-</h1>
+    <h1>
+        👥 Kisan Connect
+    </h1>
+
+    <div class="kisanConnectInfo">
+
+        🌾 Connect with fellow farmers and share farming knowledge.
+
+    </div>
 
 
-<div class="comingBox">
+    <div id="farmerList">
+
+        🔄 Loading farmers...
+
+    </div>
 
 
-<h2>
-🚧 Coming Soon
-</h2>
+    <button onclick="goHome()">
+
+        🏠 Back Home
+
+    </button>
+
+</section>
+
+<section id="chatPage" class="featurePage">
+
+    <h1 id="chatTitle">
+        💬 Chat
+    </h1>
+
+    <div id="chatBox">
+    </div>
 
 
-</div>
+    <!-- TYPE MESSAGE -->
+
+    <div class="chatInputArea">
+
+        <input
+            type="text"
+            id="chatMessage"
+            placeholder="Type your message..."
+        >
+
+        <button onclick="sendChat()">
+            ➤
+        </button>
+
+    </div>
 
 
-<button onclick="goHome()">
-🏠 Back Home
-</button>
+    <!-- BACK BUTTONS -->
 
+    <button onclick="openPage('kisanPage')">
+        👥 Back to Farmers
+    </button>
+
+    <button onclick="goHome()">
+        🏠 Back Home
+    </button>
 
 </section>
 
@@ -4634,156 +4695,235 @@ function openPage(page){
 
 async function loadFarmers(){
 
-let box=document.getElementById("farmerList");
-
-box.innerHTML="🔄 Loading...";
-
-
-let res=await fetch(
-API+"/farmers"
-);
+    let box =
+        document.getElementById("farmerList");
 
 
-let data=await res.json();
+    box.innerHTML =
+        "🔄 Loading farmers...";
 
 
-let html="";
+    try{
+
+        let res =
+            await fetch(
+                API + "/farmers"
+            );
 
 
-data.farmers.forEach(f=>{
+        let data =
+            await res.json();
 
 
-html += `
-
-<div class="farmerCard">
-
-<h3>
-👨‍🌾 ${f.name}
-</h3>
-
-<p>
-🌱 Crop: ${f.crop || "Not Added"}
-</p>
-
-<p>
-📍 ${f.village}
-</p>
+        let user =
+            JSON.parse(
+                localStorage.getItem("user")
+            );
 
 
-<button onclick="openChat(${f.id}, '${f.name}')">
-💬 Chat
-</button>
+        let html = "";
 
 
-</div>
-
-`;
-
-
-});
+        let farmers =
+            data.farmers.filter(
+                f => f.id != user.id
+            );
 
 
-box.innerHTML=html;
+        if(farmers.length === 0){
 
+            box.innerHTML =
+                `
+                <div class="noFarmers">
+
+                    👨‍🌾
+
+                    <p>
+                        No other farmers found.
+                    </p>
+
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        farmers.forEach(f => {
+
+
+            html += `
+
+            <div class="farmerCard">
+
+                <h3>
+                    👨‍🌾 ${f.name}
+                </h3>
+
+                <p>
+                    🌱 Crop: ${f.crop || "Not Added"}
+                </p>
+
+                <p>
+                    📍 ${f.village || "Not Added"}
+                </p>
+
+
+                <button
+                    onclick="openChat(${f.id}, '${f.name}')"
+                >
+
+                    💬 Chat
+
+                </button>
+
+
+            </div>
+
+            `;
+
+        });
+
+
+        box.innerHTML =
+            html;
+
+
+    }
+    catch(error){
+
+        console.error(
+            "Farmer loading error:",
+            error
+        );
+
+
+        box.innerHTML =
+            "❌ Unable to load farmers.";
+
+    }
 
 }
 
-function openChat(id,name){
+function openChat(id, name){
 
-chatUserId=id;
-chatUserName=name;
+    chatUserId = id;
 
-
-openPage("chatPage");
+    chatUserName = name;
 
 
-document.getElementById("chatTitle").innerHTML=
-"💬 Chat with "+name;
+    openPage("chatPage");
 
 
-loadChat();
+    document.getElementById(
+        "chatTitle"
+    ).innerHTML =
+        "💬 Chat with " + name;
+
+
+    loadChat();
 
 }
 
 async function loadChat(){
 
+    try{
 
-let user=JSON.parse(
-localStorage.getItem("user")
-);
-
-
-let res=await fetch(
-API+"/chat/"+user.id+"/"+chatUserId
-);
+        let user =
+            JSON.parse(
+                localStorage.getItem("user")
+            );
 
 
-let data=await res.json();
+        let res =
+            await fetch(
+                API +
+                "/chat/" +
+                user.id +
+                "/" +
+                chatUserId
+            );
 
 
-let html="";
+        let data =
+            await res.json();
 
 
-data.chat.forEach(c=>{
+        let html = "";
 
 
-let user = JSON.parse(
-localStorage.getItem("user")
-);
+        data.chat.forEach(c => {
 
 
-data.chat.forEach(c=>{
+            let side = "";
 
 
-let side = "";
+            if(c.sender == user.id){
+
+                side =
+                    "myMessage";
+
+            }
+            else{
+
+                side =
+                    "otherMessage";
+
+            }
 
 
-if(c.sender == user.id){
+            html += `
 
-    side = "myMessage";
+            <div class="chatRow ${side}">
+
+                <div class="messageBubble">
+
+                    ${c.message}
+
+                    <br>
+
+                    <small>
+
+                        ${c.time}
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            `;
+
+        });
+
+
+        let chatBox =
+            document.getElementById(
+                "chatBox"
+            );
+
+
+        chatBox.innerHTML =
+            html;
+
+
+        chatBox.scrollTop =
+            chatBox.scrollHeight;
+
+
+    }
+    catch(error){
+
+        console.error(
+            "Chat loading error:",
+            error
+        );
+
+    }
 
 }
-else{
 
-    side = "otherMessage";
-
-}
-
-
-
-html += `
-
-<div class="chatRow ${side}">
-
-
-<div class="messageBubble">
-
-${c.message}
-
-<br>
-
-<small>
-${c.time}
-</small>
-
-
-</div>
-
-
-</div>
-
-`;
-
-
-});
-
-});
-
-
-document.getElementById("chatBox").innerHTML=html;
-
-
-}
 
 async function sendChat(){
 
