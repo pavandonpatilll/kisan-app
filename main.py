@@ -13,6 +13,7 @@ import razorpay
 import hashlib
 from datetime import datetime
 import os
+import uuid
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -467,6 +468,59 @@ CREATE TABLE IF NOT EXISTS admin_schemes(
 
 conn.commit()
 
+# ==========================
+# UPDATE MESSAGES TABLE
+# ==========================
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE messages
+        ADD COLUMN message_type TEXT DEFAULT 'text'
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE messages
+        ADD COLUMN image TEXT
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE messages
+        ADD COLUMN latitude REAL
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE messages
+        ADD COLUMN longitude REAL
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
+conn.commit()
 
 # ==========================
 # Password Hash
@@ -2138,6 +2192,7 @@ def ai_test():
             "status": False,
             "message": str(e)
         }
+
 
 @app.post("/disease-scan")
 async def disease_scan(
@@ -5188,27 +5243,68 @@ def get_farmers():
 
 
 @app.post("/send-chat")
-def send_chat(data:dict):
+def send_chat(data: dict):
 
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
 
+    # Purane text chat ke liye default
+    message_type = data.get(
+        "message_type",
+        "text"
+    )
+
+
+    message = data.get(
+        "message",
+        ""
+    )
+
+
+    image = data.get(
+        "image",
+        None
+    )
+
+
+    latitude = data.get(
+        "latitude",
+        None
+    )
+
+
+    longitude = data.get(
+        "longitude",
+        None
+    )
+
+
     cursor.execute("""
     INSERT INTO messages
     (
-    sender_id,
-    receiver_id,
-    message,
-    time
+        sender_id,
+        receiver_id,
+        message,
+        time,
+        message_type,
+        image,
+        latitude,
+        longitude
     )
-    VALUES(?,?,?,?)
+    VALUES(?,?,?,?,?,?,?,?)
     """,
     (
-    data["sender_id"],
-    data["receiver_id"],
-    data["message"],
-    datetime.now().strftime("%Y-%m-%d %H:%M")
+        data["sender_id"],
+        data["receiver_id"],
+        message,
+        datetime.now().strftime(
+            "%Y-%m-%d %H:%M"
+        ),
+        message_type,
+        image,
+        latitude,
+        longitude
     ))
 
 
@@ -5217,56 +5313,194 @@ def send_chat(data:dict):
 
 
     return {
-        "status":True,
-        "message":"Sent"
+        "status": True,
+        "message": "Sent"
     }
 
-@app.get("/chat/{user1}/{user2}")
-def get_chat(user1:int,user2:int):
 
-    conn=sqlite3.connect(DATABASE_PATH)
-    cursor=conn.cursor()
+
+@app.get("/chat/{user1}/{user2}")
+def get_chat(
+    user1: int,
+    user2: int
+):
+
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
 
 
     cursor.execute("""
-    SELECT sender_id,message,time
+    SELECT
+        sender_id,
+        message,
+        time,
+        message_type,
+        image,
+        latitude,
+        longitude
+
     FROM messages
-    WHERE 
-    (sender_id=? AND receiver_id=?)
+
+    WHERE
+    (
+        sender_id=?
+        AND receiver_id=?
+    )
+
     OR
-    (sender_id=? AND receiver_id=?)
+
+    (
+        sender_id=?
+        AND receiver_id=?
+    )
 
     ORDER BY id
     """,
     (
-    user1,user2,
-    user2,user1
+        user1,
+        user2,
+        user2,
+        user1
     ))
 
 
-    chats=cursor.fetchall()
+    chats = cursor.fetchall()
 
     conn.close()
 
 
-    data=[]
+    data = []
+
 
     for c in chats:
 
         data.append({
 
-        "sender":c[0],
-        "message":c[1],
-        "time":c[2]
+            "sender": c[0],
+
+            "message": c[1],
+
+            "time": c[2],
+
+            "message_type":
+                c[3] or "text",
+
+            "image":
+                c[4],
+
+            "latitude":
+                c[5],
+
+            "longitude":
+                c[6]
 
         })
 
 
     return {
-        "status":True,
-        "chat":data
+
+        "status": True,
+
+        "chat": data
+
     }
 
+
+# ==========================
+# CHAT IMAGE UPLOAD
+# ==========================
+
+CHAT_UPLOAD_DIR = "uploads/chat"
+
+os.makedirs(
+    CHAT_UPLOAD_DIR,
+    exist_ok=True
+)
+
+
+@app.post("/upload-chat-image")
+async def upload_chat_image(
+    file: UploadFile = File(...)
+):
+
+    try:
+
+        if not file.content_type:
+
+            return {
+                "status": False,
+                "message": "Invalid file"
+            }
+
+
+        if not file.content_type.startswith(
+            "image/"
+        ):
+
+            return {
+                "status": False,
+                "message": "Only images are allowed"
+            }
+
+
+        extension = os.path.splitext(
+            file.filename
+        )[1]
+
+
+        if not extension:
+
+            extension = ".jpg"
+
+
+        filename = (
+            str(uuid.uuid4())
+            + extension
+        )
+
+
+        file_path = os.path.join(
+            CHAT_UPLOAD_DIR,
+            filename
+        )
+
+
+        with open(
+            file_path,
+            "wb"
+        ) as buffer:
+
+            buffer.write(
+                await file.read()
+            )
+
+
+        return {
+
+            "status": True,
+
+            "image_url":
+                "/uploads/chat/" + filename
+
+        }
+
+
+    except Exception as e:
+
+        print(
+            "CHAT IMAGE ERROR:",
+            str(e)
+        )
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
+
+    
 # ==========================
 # RAZORPAY PLAN IDS
 # ==========================

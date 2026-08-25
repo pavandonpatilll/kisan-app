@@ -2565,6 +2565,149 @@ transform:translateY(-2px);
 
 }
 
+/* =========================
+   CHAT PHOTO
+========================= */
+
+.chatImage{
+
+    width:100%;
+
+    max-width:300px;
+
+    max-height:350px;
+
+    object-fit:cover;
+
+    display:block;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+}
+
+
+/* =========================
+   LOCATION MESSAGE
+========================= */
+
+.locationMessage{
+
+    min-width:180px;
+
+}
+
+
+.locationTitle{
+
+    font-weight:bold;
+
+    font-size:15px;
+
+}
+
+
+.locationMessage a{
+
+    display:inline-block;
+
+    margin-top:10px;
+
+    padding:8px 14px;
+
+    border-radius:20px;
+
+    background:white;
+
+    color:#31aa37;
+
+    text-decoration:none;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+}
+
+
+/* =========================
+   CHAT ACTION BUTTONS
+========================= */
+
+.chatActionBtn{
+
+    width:42px;
+
+    min-width:42px;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#f1f1f1;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+}
+
+
+.chatSendBtn{
+
+    width:48px;
+
+    min-width:48px;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#43ab49;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+
+/* Mobile adjustment */
+
+@media(max-width:600px){
+
+    .chatActionBtn{
+
+        width:38px;
+
+        min-width:38px;
+
+        height:38px;
+
+        font-size:16px;
+
+    }
+
+
+    .chatImage{
+
+        max-width:240px;
+
+        max-height:300px;
+
+    }
+
+}
+
 </style>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
@@ -4316,17 +4459,61 @@ Back Home
 
     <div class="chatInputArea">
 
-        <input
-            type="text"
-            id="chatMessage"
-            placeholder="Type your message..."
-        >
+    <!-- Hidden Photo Input -->
 
-        <button onclick="sendChat()">
-            ➤
-        </button>
+    <input
+        type="file"
+        id="chatImageInput"
+        accept="image/*"
+        style="display:none"
+        onchange="sendChatImage()"
+    >
 
-    </div>
+
+    <!-- Send Photo -->
+
+    <button
+        type="button"
+        class="chatActionBtn"
+        onclick="document.getElementById('chatImageInput').click()"
+    >
+        📷
+    </button>
+
+
+    <!-- Send Location -->
+
+    <button
+        type="button"
+        class="chatActionBtn"
+        onclick="sendLocation()"
+    >
+        📍
+    </button>
+
+
+    <!-- Text Message -->
+
+    <input
+        type="text"
+        id="chatMessage"
+        placeholder="Type your message..."
+        autocomplete="off"
+        onkeydown="if(event.key === 'Enter'){sendChat()}"
+    >
+
+
+    <!-- Send Message -->
+
+    <button
+        type="button"
+        class="chatSendBtn"
+        onclick="sendChat()"
+    >
+        ➤
+    </button>
+
+</div>
 
 
     <!-- BACK BUTTONS -->
@@ -4836,13 +5023,22 @@ async function loadChat(){
             );
 
 
+        if(!user || !chatUserId){
+
+            return;
+
+        }
+
+
         let res =
             await fetch(
+
                 API +
                 "/chat/" +
                 user.id +
                 "/" +
                 chatUserId
+
             );
 
 
@@ -4865,6 +5061,7 @@ async function loadChat(){
                     "myMessage";
 
             }
+
             else{
 
                 side =
@@ -4873,19 +5070,166 @@ async function loadChat(){
             }
 
 
+            let messageContent = "";
+
+
+            /* =========================
+               TEXT MESSAGE
+            ========================= */
+
+            if(
+
+                !c.message_type
+
+                ||
+
+                c.message_type == "text"
+
+            ){
+
+                messageContent = `
+
+                    ${c.message || ""}
+
+                `;
+
+            }
+
+
+            /* =========================
+               IMAGE MESSAGE
+            ========================= */
+
+            else if(
+
+                c.message_type == "image"
+
+            ){
+
+
+                if(c.image){
+
+
+                    let imageUrl = "";
+
+
+                    if(
+                        c.image.startsWith("http")
+                    ){
+
+                        imageUrl =
+                            c.image;
+
+                    }
+
+                    else{
+
+                        imageUrl =
+                            API + c.image;
+
+                    }
+
+
+                    messageContent = `
+
+                        <img
+
+                            src="${imageUrl}"
+
+                            class="chatImage"
+
+                            onclick="
+                                window.open(
+                                    this.src,
+                                    '_blank'
+                                )
+                            "
+
+                        >
+
+                    `;
+
+                }
+
+
+            }
+
+
+            /* =========================
+               LOCATION MESSAGE
+            ========================= */
+
+            else if(
+
+                c.message_type == "location"
+
+            ){
+
+
+                let mapUrl =
+
+                    "https://www.google.com/maps?q="
+
+                    +
+
+                    c.latitude
+
+                    +
+
+                    ","
+
+                    +
+
+                    c.longitude;
+
+
+                messageContent = `
+
+                    <div class="locationMessage">
+
+                        <div class="locationTitle">
+
+                            📍 Location Shared
+
+                        </div>
+
+
+                        <a
+
+                            href="${mapUrl}"
+
+                            target="_blank"
+
+                        >
+
+                            🗺️ Open in Maps
+
+                        </a>
+
+                    </div>
+
+                `;
+
+            }
+
+
+            /* =========================
+               CREATE MESSAGE
+            ========================= */
+
             html += `
 
             <div class="chatRow ${side}">
 
                 <div class="messageBubble">
 
-                    ${c.message}
+                    ${messageContent}
 
                     <br>
 
                     <small>
 
-                        ${c.time}
+                        ${c.time || ""}
 
                     </small>
 
@@ -4894,6 +5238,7 @@ async function loadChat(){
             </div>
 
             `;
+
 
         });
 
@@ -4913,17 +5258,20 @@ async function loadChat(){
 
 
     }
+
     catch(error){
 
         console.error(
+
             "Chat loading error:",
+
             error
+
         );
 
     }
 
 }
-
 
 async function sendChat(){
 
@@ -5004,6 +5352,338 @@ sendingMessage=false;
 
 }
 
+
+}
+
+
+async function sendChatImage(){
+
+    if(sendingMessage){
+
+        return;
+
+    }
+
+
+    let user = JSON.parse(
+        localStorage.getItem("user")
+    );
+
+
+    let input = document.getElementById(
+        "chatImageInput"
+    );
+
+
+    let file = input.files[0];
+
+
+    if(!file){
+
+        return;
+
+    }
+
+
+    sendingMessage = true;
+
+
+    try{
+
+
+        let formData = new FormData();
+
+
+        formData.append(
+            "file",
+            file
+        );
+
+
+        let uploadRes = await fetch(
+
+            API + "/upload-chat-image",
+
+            {
+
+                method:"POST",
+
+                body:formData
+
+            }
+
+        );
+
+
+        let uploadData =
+            await uploadRes.json();
+
+
+        if(!uploadData.status){
+
+            alert(
+                "Photo upload failed"
+            );
+
+            return;
+
+        }
+
+
+        let sendRes = await fetch(
+
+            API + "/send-chat",
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+                body:JSON.stringify({
+
+                    sender_id:
+                        user.id,
+
+                    receiver_id:
+                        chatUserId,
+
+                    message:"",
+
+                    message_type:
+                        "image",
+
+                    image:
+                        uploadData.image_url
+
+                })
+
+            }
+
+        );
+
+
+        let sendData =
+            await sendRes.json();
+
+
+        if(!sendData.status){
+
+            alert(
+                "Photo send failed"
+            );
+
+            return;
+
+        }
+
+
+        input.value = "";
+
+
+        await loadChat();
+
+
+    }
+
+    catch(e){
+
+        console.log(
+            "PHOTO ERROR:",
+            e
+        );
+
+
+        alert(
+            "Photo send failed"
+        );
+
+    }
+
+
+    finally{
+
+        sendingMessage = false;
+
+    }
+
+}
+
+function sendLocation(){
+
+    if(sendingMessage){
+
+        return;
+
+    }
+
+
+    if(!navigator.geolocation){
+
+        alert(
+            "Location is not supported on this device"
+        );
+
+        return;
+
+    }
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        async function(position){
+
+
+            let user = JSON.parse(
+                localStorage.getItem("user")
+            );
+
+
+            let latitude =
+                position.coords.latitude;
+
+
+            let longitude =
+                position.coords.longitude;
+
+
+            sendingMessage = true;
+
+
+            try{
+
+
+                let res = await fetch(
+
+                    API + "/send-chat",
+
+                    {
+
+                        method:"POST",
+
+                        headers:{
+
+                            "Content-Type":
+                            "application/json"
+
+                        },
+
+                        body:JSON.stringify({
+
+                            sender_id:
+                                user.id,
+
+                            receiver_id:
+                                chatUserId,
+
+                            message:
+                                "📍 Location shared",
+
+                            message_type:
+                                "location",
+
+                            latitude:
+                                latitude,
+
+                            longitude:
+                                longitude
+
+                        })
+
+                    }
+
+                );
+
+
+                let data =
+                    await res.json();
+
+
+                if(!data.status){
+
+                    alert(
+                        "Location send failed"
+                    );
+
+                    return;
+
+                }
+
+
+                await loadChat();
+
+
+            }
+
+            catch(e){
+
+                console.log(
+                    "LOCATION ERROR:",
+                    e
+                );
+
+
+                alert(
+                    "Location send failed"
+                );
+
+            }
+
+
+            finally{
+
+                sendingMessage = false;
+
+            }
+
+        },
+
+
+        function(error){
+
+            console.log(
+                "LOCATION ERROR:",
+                error
+            );
+
+
+            if(
+                error.code === 1
+            ){
+
+                alert(
+                    "Please allow location permission"
+                );
+
+            }
+
+            else{
+
+                alert(
+                    "Unable to get your location"
+                );
+
+            }
+
+        },
+
+
+        {
+
+            enableHighAccuracy:true,
+
+            timeout:15000,
+
+            maximumAge:0
+
+        }
+
+    );
 
 }
 
