@@ -1,3 +1,4 @@
+from fastapi.staticfiles import StaticFiles
 import json
 from urllib import response
 from fastapi import UploadFile, File
@@ -43,6 +44,15 @@ app = FastAPI(
     title="Kisan AI API",
     version="1.0"
 )
+
+app.mount(
+    "/uploads",
+    StaticFiles(
+        directory="uploads"
+    ),
+    name="uploads"
+)
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 client = genai.Client(
