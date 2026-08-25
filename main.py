@@ -45,6 +45,25 @@ app = FastAPI(
     version="1.0"
 )
 
+# ==========================
+# CREATE UPLOAD FOLDERS
+# ==========================
+
+os.makedirs(
+    "uploads",
+    exist_ok=True
+)
+
+os.makedirs(
+    "uploads/chat",
+    exist_ok=True
+)
+
+
+# ==========================
+# STATIC UPLOADS
+# ==========================
+
 app.mount(
     "/uploads",
     StaticFiles(
