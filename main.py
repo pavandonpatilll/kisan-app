@@ -497,54 +497,6 @@ CREATE TABLE IF NOT EXISTS admin_schemes(
  
 conn.commit() 
  
-# ========================== 
-# DELETE OLD KISAN CONNECT USERS 
-# RUN ONLY ONCE 
-# ========================== 
- 
-conn = sqlite3.connect(DATABASE_PATH) 
-cursor = conn.cursor() 
- 
-old_users = [ 
-    "pavan patil", 
-    "raniii", 
-    "Test User", 
-    "Madhura Wankhede", 
-    "mira don", 
-    "Mohan" 
-] 
- 
-for name in old_users: 
- 
-    cursor.execute( 
-        "SELECT id FROM users WHERE name=?", 
-        (name,) 
-    ) 
- 
-    user = cursor.fetchone() 
- 
-    if user: 
- 
-        user_id = user[0] 
- 
-        cursor.execute( 
-            """ 
-            DELETE FROM messages 
-            WHERE sender_id=? OR receiver_id=? 
-            """, 
-            (user_id, user_id) 
-        ) 
- 
-        cursor.execute( 
-            "DELETE FROM users WHERE id=?", 
-            (user_id,) 
-        ) 
- 
-conn.commit() 
-conn.close() 
- 
-print("OLD KISAN CONNECT USERS DELETED") 
-
 
 # ========================== 
 # UPDATE MESSAGES TABLE 
