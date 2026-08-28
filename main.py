@@ -473,82 +473,135 @@ CREATE TABLE IF NOT EXISTS notifications(
 conn.commit()
 
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS admin_schemes(
-
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    name TEXT NOT NULL,
-
-    description TEXT NOT NULL,
-
-    benefit TEXT NOT NULL,
-
-    eligibility TEXT NOT NULL,
-
-    state TEXT NOT NULL,
-
-    apply_url TEXT NOT NULL,
-
-    date TEXT NOT NULL
-
-)
-""")
-
-conn.commit()
-
-# ==========================
-# UPDATE MESSAGES TABLE
-# ==========================
-
-try:
-
-    cursor.execute("""
-        ALTER TABLE messages
-        ADD COLUMN message_type TEXT DEFAULT 'text'
-    """)
-
-except sqlite3.OperationalError:
-
-    pass
-
-
-try:
-
-    cursor.execute("""
-        ALTER TABLE messages
-        ADD COLUMN image TEXT
-    """)
-
-except sqlite3.OperationalError:
-
-    pass
-
-
-try:
-
-    cursor.execute("""
-        ALTER TABLE messages
-        ADD COLUMN latitude REAL
-    """)
-
-except sqlite3.OperationalError:
-
-    pass
-
-
-try:
-
-    cursor.execute("""
-        ALTER TABLE messages
-        ADD COLUMN longitude REAL
-    """)
-
-except sqlite3.OperationalError:
-
-    pass
+cursor.execute(""" 
+CREATE TABLE IF NOT EXISTS admin_schemes( 
+ 
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+ 
+    name TEXT NOT NULL, 
+ 
+    description TEXT NOT NULL, 
+ 
+    benefit TEXT NOT NULL, 
+ 
+    eligibility TEXT NOT NULL, 
+ 
+    state TEXT NOT NULL, 
+ 
+    apply_url TEXT NOT NULL, 
+ 
+    date TEXT NOT NULL 
+ 
+) 
+""") 
+ 
+conn.commit() 
+ 
+# ========================== 
+# DELETE OLD KISAN CONNECT USERS 
+# RUN ONLY ONCE 
+# ========================== 
+ 
+conn = sqlite3.connect(DATABASE_PATH) 
+cursor = conn.cursor() 
+ 
+old_users = [ 
+    "pavan patil", 
+    "raniii", 
+    "Test User", 
+    "Madhura Wankhede", 
+    "mira don", 
+    "Mohan" 
+] 
+ 
+for name in old_users: 
+ 
+    cursor.execute( 
+        "SELECT id FROM users WHERE name=?", 
+        (name,) 
+    ) 
+ 
+    user = cursor.fetchone() 
+ 
+    if user: 
+ 
+        user_id = user[0] 
+ 
+        cursor.execute( 
+            """ 
+            DELETE FROM messages 
+            WHERE sender_id=? OR receiver_id=? 
+            """, 
+            (user_id, user_id) 
+        ) 
+ 
+        cursor.execute( 
+            "DELETE FROM users WHERE id=?", 
+            (user_id,) 
+        ) 
+ 
+conn.commit() 
+conn.close() 
+ 
+print("OLD KISAN CONNECT USERS DELETED") 
 
 
+# ========================== 
+# UPDATE MESSAGES TABLE 
+# ========================== 
+
+# UPDATE MESSAGES ke liye connection dobara open
+conn = sqlite3.connect(DATABASE_PATH) 
+cursor = conn.cursor() 
+ 
+try: 
+ 
+    cursor.execute(""" 
+        ALTER TABLE messages 
+        ADD COLUMN message_type TEXT DEFAULT 'text' 
+    """) 
+ 
+except sqlite3.OperationalError: 
+ 
+    pass 
+ 
+ 
+try: 
+ 
+    cursor.execute(""" 
+        ALTER TABLE messages 
+        ADD COLUMN image TEXT 
+    """) 
+ 
+except sqlite3.OperationalError: 
+ 
+    pass 
+ 
+ 
+try: 
+ 
+    cursor.execute(""" 
+        ALTER TABLE messages 
+        ADD COLUMN latitude REAL 
+    """) 
+ 
+except sqlite3.OperationalError: 
+ 
+    pass 
+ 
+ 
+try: 
+ 
+    cursor.execute(""" 
+        ALTER TABLE messages 
+        ADD COLUMN longitude REAL 
+    """) 
+ 
+except sqlite3.OperationalError: 
+ 
+    pass 
+ 
+ 
 conn.commit()
 
 # ==========================
