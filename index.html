@@ -9282,6 +9282,28 @@ async function buyPlan(plan){
         }
 
 
+        // ==========================
+        // SAVE PENDING SUBSCRIPTION
+        // FOR PAYMENT RECOVERY
+        // ==========================
+
+        localStorage.setItem(
+            "pendingPremiumPayment",
+            JSON.stringify({
+
+                subscription_id:
+                    data.subscription_id,
+
+                user_id:
+                    user.id,
+
+                plan:
+                    plan
+
+            })
+        );
+
+
         const options = {
 
             key:data.key_id,
@@ -9357,7 +9379,6 @@ async function buyPlan(plan){
 
 }
 
-
 async function verifyPremiumPayment(
     payment,
     userId,
@@ -9408,13 +9429,30 @@ async function verifyPremiumPayment(
 
         if(data.status){
 
-            alert(
-                "🎉 Premium activated successfully!"
+            // ==========================
+            // PAYMENT VERIFIED
+            // REMOVE PENDING PAYMENT
+            // ==========================
+
+            localStorage.removeItem(
+                "pendingPremiumPayment"
             );
 
 
-            // Update premium status
+            // ==========================
+            // UPDATE PREMIUM STATUS
+            // ==========================
+
             await loadPremiumStatus();
+
+
+            // ==========================
+            // SUCCESS POPUP
+            // ==========================
+
+            alert(
+                "🎉 Payment Successful! Premium activated successfully!"
+            );
 
 
             // ==========================
@@ -9581,6 +9619,141 @@ async function loadPremiumStatus(){
             expiry:""
 
         };
+
+    }
+
+}
+
+// ==========================
+// RECOVER PENDING PAYMENT
+// ==========================
+
+async function recoverPendingPremiumPayment(){
+
+    const pendingData =
+        localStorage.getItem(
+            "pendingPremiumPayment"
+        );
+
+
+    if(!pendingData){
+
+        return;
+
+    }
+
+
+    try{
+
+        const pending =
+            JSON.parse(
+                pendingData
+            );
+
+
+        const response =
+            await fetch(
+
+                "https://kisan-ai-api-lezf.onrender.com/recover-premium-payment",
+
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        user_id:
+                            pending.user_id,
+
+                        subscription_id:
+                            pending.subscription_id,
+
+                        plan:
+                            pending.plan
+
+                    })
+
+                }
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(
+            data.status &&
+            data.premium
+        ){
+
+            // ==========================
+            // REMOVE PENDING PAYMENT
+            // ==========================
+
+            localStorage.removeItem(
+                "pendingPremiumPayment"
+            );
+
+
+            // ==========================
+            // UPDATE PREMIUM STATUS
+            // ==========================
+
+            await loadPremiumStatus();
+
+
+            // ==========================
+            // SHOW SUCCESS POPUP
+            // ==========================
+
+            alert(
+                "🎉 Payment Successful! Premium activated successfully!"
+            );
+
+
+            // ==========================
+            // OPEN FEATURE USER CLICKED
+            // ==========================
+
+            const pendingFeature =
+                localStorage.getItem(
+                    "pendingPremiumFeature"
+                );
+
+
+            if(pendingFeature){
+
+                localStorage.removeItem(
+                    "pendingPremiumFeature"
+                );
+
+
+                setTimeout(function(){
+
+                    openPage(
+                        pendingFeature
+                    );
+
+                }, 500);
+
+            }
+
+        }
+
+
+    }
+    catch(error){
+
+        console.error(
+            "Pending Payment Recovery Error:",
+            error
+        );
 
     }
 
@@ -9887,11 +10060,13 @@ function openFeature(
 
 document.addEventListener(
     "DOMContentLoaded",
-    function(){
+    async function(){
 
         checkSavedLogin();
 
-        loadPremiumStatus();
+        await loadPremiumStatus();
+
+        await recoverPendingPremiumPayment();
 
     }
 );

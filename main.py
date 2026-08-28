@@ -5926,13 +5926,16 @@ def verify_subscription(data: dict):
         # EXPIRY DATE
         # ==========================
 
-        from dateutil.relativedelta import relativedelta
+        from calendar import monthrange
 
-        expiry_date = (
-            datetime.now()
-            + relativedelta(months=months)
-        )
+        def add_months(base_date, months_to_add):
+            total_months = (base_date.year * 12 + base_date.month - 1) + months_to_add
+            year = total_months // 12
+            month = (total_months % 12) + 1
+            day = min(base_date.day, monthrange(year, month)[1])
+            return base_date.replace(year=year, month=month, day=day)
 
+        expiry_date = add_months(datetime.now(), months)
 
         expiry_string = (
             expiry_date.strftime(
@@ -6109,5 +6112,324 @@ def premium_status(user_id: int):
             "status": False,
             "premium": False,
             "message": str(e)
+
+        }
+
+
+# ==========================
+# RECOVER PENDING PREMIUM
+# PAYMENT
+# ==========================
+
+@app.post("/recover-premium-payment")
+def recover_premium_payment(data: dict):
+
+    try:
+
+        user_id = data.get(
+            "user_id"
+        )
+
+        subscription_id = data.get(
+            "subscription_id"
+        )
+
+        plan_key = data.get(
+            "plan"
+        )
+
+
+        if not user_id:
+
+            return {
+
+                "status": False,
+
+                "premium": False,
+
+                "message":
+                    "User ID required"
+
+            }
+
+
+        if not subscription_id:
+
+            return {
+
+                "status": False,
+
+                "premium": False,
+
+                "message":
+                    "Subscription ID required"
+
+            }
+
+
+        if plan_key not in RAZORPAY_PLANS:
+
+            return {
+
+                "status": False,
+
+                "premium": False,
+
+                "message":
+                    "Invalid plan"
+
+            }
+
+
+        # ==========================
+        # FETCH SUBSCRIPTION
+        # FROM RAZORPAY
+        # ==========================
+
+        subscription = (
+
+            razorpay_client
+            .subscription
+            .fetch(
+                subscription_id
+            )
+
+        )
+
+
+        subscription_status = (
+            subscription.get(
+                "status"
+            )
+        )
+
+
+        print(
+            "RECOVERY SUBSCRIPTION STATUS:",
+            subscription_status
+        )
+
+
+        # ==========================
+        # PAYMENT CONFIRMED
+        # ==========================
+
+        valid_statuses = [
+
+            "authenticated",
+
+            "active"
+
+        ]
+
+
+        if subscription_status not in valid_statuses:
+
+            return {
+
+                "status": True,
+
+                "premium": False,
+
+                "subscription_status":
+                    subscription_status,
+
+                "message":
+                    "Payment is not confirmed yet"
+
+            }
+
+
+        # ==========================
+        # PLAN DURATION
+        # ==========================
+
+        if plan_key.endswith(
+            "_monthly"
+        ):
+
+            months = 1
+
+
+        elif plan_key.endswith(
+            "_6months"
+        ):
+
+            months = 6
+
+
+        elif plan_key.endswith(
+            "_yearly"
+        ):
+
+            months = 12
+
+
+        else:
+
+            months = 1
+
+
+        # ==========================
+        # CALCULATE EXPIRY
+        # ==========================
+
+        from calendar import monthrange
+
+
+        def add_months(
+            base_date,
+            months_to_add
+        ):
+
+            total_months = (
+
+                base_date.year * 12
+
+                + base_date.month
+
+                - 1
+
+            ) + months_to_add
+
+
+            year = (
+                total_months // 12
+            )
+
+
+            month = (
+                total_months % 12
+            ) + 1
+
+
+            day = min(
+
+                base_date.day,
+
+                monthrange(
+                    year,
+                    month
+                )[1]
+
+            )
+
+
+            return base_date.replace(
+
+                year=year,
+
+                month=month,
+
+                day=day
+
+            )
+
+
+        expiry_date = add_months(
+
+            datetime.now(),
+
+            months
+
+        )
+
+
+        expiry_string = (
+
+            expiry_date.strftime(
+                "%Y-%m-%d"
+            )
+
+        )
+
+
+        # ==========================
+        # SAVE PREMIUM
+        # ==========================
+
+        conn = sqlite3.connect(
+            DATABASE_PATH
+        )
+
+
+        cursor = conn.cursor()
+
+
+        cursor.execute(
+
+            """
+
+            UPDATE users
+
+            SET
+
+                premium_plan = ?,
+
+                premium_expiry = ?,
+
+                razorpay_subscription_id = ?
+
+            WHERE id = ?
+
+            """,
+
+            (
+
+                plan_key,
+
+                expiry_string,
+
+                subscription_id,
+
+                user_id
+
+            )
+
+        )
+
+
+        conn.commit()
+
+        conn.close()
+
+
+        return {
+
+            "status": True,
+
+            "premium": True,
+
+            "message":
+                "Premium recovered successfully",
+
+            "plan":
+                plan_key,
+
+            "expiry":
+                expiry_string
+
+        }
+
+
+    except Exception as e:
+
+        print(
+
+            "PREMIUM RECOVERY ERROR:",
+
+            str(e)
+
+        )
+
+
+        return {
+
+            "status": False,
+
+            "premium": False,
+
+            "message":
+                str(e)
 
         }
