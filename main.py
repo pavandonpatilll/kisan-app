@@ -4,7 +4,7 @@ from urllib import response
 from fastapi import UploadFile, File
 from PIL import Image
 import io
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
@@ -12,6 +12,7 @@ from google import genai
 import sqlite3
 import razorpay
 import hashlib
+import hmac
 from datetime import datetime
 import os
 import uuid
@@ -6432,4 +6433,298 @@ def recover_premium_payment(data: dict):
             "message":
                 str(e)
 
+        }
+
+    # ==========================
+# RAZORPAY WEBHOOK
+# ==========================
+
+@app.post("/razorpay-webhook")
+async def razorpay_webhook(request: Request):
+
+    try:
+
+        body = await request.body()
+
+        webhook_signature = request.headers.get(
+            "X-Razorpay-Signature"
+        )
+
+        webhook_secret = os.getenv(
+            "RAZORPAY_WEBHOOK_SECRET"
+        )
+
+        if not webhook_signature:
+            return {
+                "status": False,
+                "message": "Webhook signature missing"
+            }
+
+        if not webhook_secret:
+            return {
+                "status": False,
+                "message": "Webhook secret not configured"
+            }
+
+        # ==========================
+        # VERIFY WEBHOOK SIGNATURE
+        # ==========================
+
+        expected_signature = hmac.new(
+            webhook_secret.encode(),
+            body,
+            hashlib.sha256
+        ).hexdigest()
+
+        if not hmac.compare_digest(
+            expected_signature,
+            webhook_signature
+        ):
+
+            return {
+                "status": False,
+                "message": "Invalid webhook signature"
+            }
+
+        # ==========================
+        # READ EVENT
+        # ==========================
+
+        payload = json.loads(body)
+
+        event = payload.get(
+            "event"
+        )
+
+        print(
+            "RAZORPAY WEBHOOK EVENT:",
+            event
+        )
+
+        # ==========================
+        # RECURRING PAYMENT SUCCESS
+        # ==========================
+
+        if event == "subscription.charged":
+
+            subscription_entity = (
+                payload
+                .get("payload", {})
+                .get("subscription", {})
+                .get("entity", {})
+            )
+
+            subscription_id = (
+                subscription_entity.get("id")
+            )
+
+            notes = (
+                subscription_entity.get("notes", {})
+            )
+
+            user_id = notes.get(
+                "user_id"
+            )
+
+            plan_key = notes.get(
+                "selected_plan"
+            )
+
+            print(
+                "WEBHOOK SUBSCRIPTION:",
+                subscription_id
+            )
+
+            print(
+                "WEBHOOK USER:",
+                user_id
+            )
+
+            print(
+                "WEBHOOK PLAN:",
+                plan_key
+            )
+
+            if not user_id:
+
+                return {
+                    "status": True,
+                    "message":
+                        "Webhook received but user ID missing"
+                }
+
+            if not plan_key:
+
+                return {
+                    "status": True,
+                    "message":
+                        "Webhook received but plan missing"
+                }
+
+            # ==========================
+            # PLAN DURATION
+            # ==========================
+
+            if plan_key.endswith(
+                "_monthly"
+            ):
+
+                months = 1
+
+            elif plan_key.endswith(
+                "_6months"
+            ):
+
+                months = 6
+
+            elif plan_key.endswith(
+                "_yearly"
+            ):
+
+                months = 12
+
+            else:
+
+                months = 1
+
+            # ==========================
+            # CURRENT PREMIUM EXPIRY
+            # ==========================
+
+            conn = sqlite3.connect(
+                DATABASE_PATH
+            )
+
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """
+                SELECT premium_expiry
+                FROM users
+                WHERE id = ?
+                """,
+                (user_id,)
+            )
+
+            row = cursor.fetchone()
+
+            # ==========================
+            # CALCULATE NEW EXPIRY
+            # ==========================
+
+            from calendar import monthrange
+
+            today = datetime.now()
+
+            if row and row[0]:
+
+                try:
+
+                    current_expiry = (
+                        datetime.strptime(
+                            row[0],
+                            "%Y-%m-%d"
+                        )
+                    )
+
+                except:
+
+                    current_expiry = today
+
+            else:
+
+                current_expiry = today
+
+            # Never move expiry backwards
+
+            base_date = max(
+                today,
+                current_expiry
+            )
+
+            total_months = (
+                base_date.year * 12
+                + base_date.month
+                - 1
+                + months
+            )
+
+            new_year = (
+                total_months // 12
+            )
+
+            new_month = (
+                total_months % 12
+            ) + 1
+
+            new_day = min(
+                base_date.day,
+                monthrange(
+                    new_year,
+                    new_month
+                )[1]
+            )
+
+            new_expiry = base_date.replace(
+                year=new_year,
+                month=new_month,
+                day=new_day
+            )
+
+            expiry_string = (
+                new_expiry.strftime(
+                    "%Y-%m-%d"
+                )
+            )
+
+            # ==========================
+            # UPDATE PREMIUM
+            # ==========================
+
+            cursor.execute(
+                """
+                UPDATE users
+
+                SET
+
+                    premium_plan = ?,
+
+                    premium_expiry = ?,
+
+                    razorpay_subscription_id = ?
+
+                WHERE id = ?
+                """,
+
+                (
+                    plan_key,
+                    expiry_string,
+                    subscription_id,
+                    user_id
+                )
+            )
+
+            conn.commit()
+
+            conn.close()
+
+            print(
+                "PREMIUM RENEWED UNTIL:",
+                expiry_string
+            )
+
+        return {
+            "status": True
+        }
+
+    except Exception as e:
+
+        print(
+            "RAZORPAY WEBHOOK ERROR:",
+            str(e)
+        )
+
+        return {
+            "status": False,
+            "message": str(e)
         }
