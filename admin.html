@@ -854,6 +854,7 @@ body{
 
     <div class="panel">
 
+        <!-- FILTER BUTTONS -->
         <div style="
             display:flex;
             gap:10px;
@@ -899,10 +900,16 @@ body{
         </div>
 
 
-        <div style="overflow-x:auto;">
+        <!-- PREMIUM USERS TABLE -->
+
+        <div style="
+            overflow-x:auto;
+            width:100%;
+        ">
 
             <table style="
                 width:100%;
+                min-width:1100px;
                 border-collapse:collapse;
             ">
 
@@ -910,33 +917,98 @@ body{
 
                     <tr>
 
-                        <th style="padding:12px;text-align:left;">
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
                             ID
                         </th>
 
-                        <th style="padding:12px;text-align:left;">
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
                             Farmer
                         </th>
 
-                        <th style="padding:12px;text-align:left;">
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
                             Mobile
                         </th>
 
-                        <th style="padding:12px;text-align:left;">
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
                             Plan
                         </th>
 
-                        <th style="padding:12px;text-align:left;">
-                            Status
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
+                            Premium Status
                         </th>
 
-                        <th style="padding:12px;text-align:left;">
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
                             Expiry
+                        </th>
+
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
+                            Subscription ID
+                        </th>
+
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
+                            Autopay
+                        </th>
+
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
+                            Payment
+                        </th>
+
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
+                            Last Payment
+                        </th>
+
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
+                            Next Payment
                         </th>
 
                     </tr>
 
                 </thead>
+
 
                 <tbody id="premiumUsersTableBody">
 
@@ -1999,24 +2071,27 @@ async function addGovernmentScheme(){
 }
 
 
-async function loadPremiumUsers(filter = "all"){
+async function loadPremiumUsers(filter = "all") {
 
     const tbody =
         document.getElementById(
             "premiumUsersTableBody"
         );
 
-    if(!tbody){
-
+    if (!tbody) {
         return;
-
     }
 
+
+    // ==========================
+    // LOADING
+    // ==========================
+
     tbody.innerHTML =
-        "<tr><td colspan='6' style='padding:20px;'>Loading...</td></tr>";
+        "<tr><td colspan='11' style='padding:20px;'>Loading...</td></tr>";
 
 
-    try{
+    try {
 
         const response =
             await fetch(
@@ -2028,40 +2103,40 @@ async function loadPremiumUsers(filter = "all"){
             await response.json();
 
 
-        if(!data.status){
+        if (!data.status) {
 
             tbody.innerHTML =
-                "<tr><td colspan='6' style='padding:20px;'>Unable to load users.</td></tr>";
+                "<tr><td colspan='11' style='padding:20px;'>Unable to load users.</td></tr>";
 
             return;
-
         }
 
 
-        let users = data.users || [];
+        let users =
+            data.users || [];
 
 
         // ==========================
         // FILTER
         // ==========================
 
-        if(filter !== "all"){
+        if (filter !== "all") {
 
-            users = users.filter(
-                user =>
-                    user.premium_status === filter
-            );
+            users =
+                users.filter(
+                    user =>
+                        user.premium_status === filter
+                );
 
         }
 
 
-        if(users.length === 0){
+        if (users.length === 0) {
 
             tbody.innerHTML =
-                "<tr><td colspan='6' style='padding:20px;'>No users found.</td></tr>";
+                "<tr><td colspan='11' style='padding:20px;'>No users found.</td></tr>";
 
             return;
-
         }
 
 
@@ -2070,14 +2145,21 @@ async function loadPremiumUsers(filter = "all"){
 
         users.forEach(user => {
 
-            let statusText = "⚪ Free";
 
-            let statusColor = "#666";
+            // ==========================
+            // PREMIUM STATUS
+            // ==========================
+
+            let statusText =
+                "⚪ Free";
+
+            let statusColor =
+                "#666";
 
 
-            if(
+            if (
                 user.premium_status === "basic"
-            ){
+            ) {
 
                 statusText =
                     "🌱 Basic";
@@ -2087,10 +2169,9 @@ async function loadPremiumUsers(filter = "all"){
 
             }
 
-
-            else if(
+            else if (
                 user.premium_status === "advanced"
-            ){
+            ) {
 
                 statusText =
                     "🚀 Advanced";
@@ -2100,10 +2181,9 @@ async function loadPremiumUsers(filter = "all"){
 
             }
 
-
-            else if(
+            else if (
                 user.premium_status === "expired"
-            ){
+            ) {
 
                 statusText =
                     "🔴 Expired";
@@ -2114,17 +2194,133 @@ async function loadPremiumUsers(filter = "all"){
             }
 
 
+            // ==========================
+            // AUTOPAY STATUS
+            // ==========================
+
+            let autopayText =
+                user.autopay_status || "-";
+
+            let autopayColor =
+                "#666";
+
+
+            if (
+                autopayText === "active"
+            ) {
+
+                autopayText =
+                    "🟢 Active";
+
+                autopayColor =
+                    "#2e7d32";
+
+            }
+
+            else if (
+                autopayText === "pending"
+            ) {
+
+                autopayText =
+                    "🟡 Pending";
+
+                autopayColor =
+                    "#f57c00";
+
+            }
+
+            else if (
+                autopayText === "halted"
+            ) {
+
+                autopayText =
+                    "🔴 Halted";
+
+                autopayColor =
+                    "#d32f2f";
+
+            }
+
+            else if (
+                autopayText === "cancelled"
+            ) {
+
+                autopayText =
+                    "⚫ Cancelled";
+
+                autopayColor =
+                    "#555";
+
+            }
+
+
+            // ==========================
+            // PAYMENT STATUS
+            // ==========================
+
+            let paymentText =
+                user.last_payment_status || "-";
+
+            let paymentColor =
+                "#666";
+
+
+            if (
+                paymentText === "paid"
+            ) {
+
+                paymentText =
+                    "🟢 Paid";
+
+                paymentColor =
+                    "#2e7d32";
+
+            }
+
+            else if (
+                paymentText === "pending"
+            ) {
+
+                paymentText =
+                    "🟡 Pending";
+
+                paymentColor =
+                    "#f57c00";
+
+            }
+
+            else if (
+                paymentText === "failed"
+            ) {
+
+                paymentText =
+                    "🔴 Failed";
+
+                paymentColor =
+                    "#d32f2f";
+
+            }
+
+
+            // ==========================
+            // TABLE ROW
+            // ==========================
+
             html += `
 
                 <tr>
+
+                    <!-- ID -->
 
                     <td style="
                         padding:12px;
                         border-top:1px solid #eee;
                     ">
-                        ${user.id}
+                        ${user.id || "-"}
                     </td>
 
+
+                    <!-- FARMER -->
 
                     <td style="
                         padding:12px;
@@ -2135,6 +2331,8 @@ async function loadPremiumUsers(filter = "all"){
                     </td>
 
 
+                    <!-- MOBILE -->
+
                     <td style="
                         padding:12px;
                         border-top:1px solid #eee;
@@ -2143,6 +2341,8 @@ async function loadPremiumUsers(filter = "all"){
                     </td>
 
 
+                    <!-- PLAN -->
+
                     <td style="
                         padding:12px;
                         border-top:1px solid #eee;
@@ -2150,6 +2350,8 @@ async function loadPremiumUsers(filter = "all"){
                         ${user.premium_plan || "Free"}
                     </td>
 
+
+                    <!-- PREMIUM STATUS -->
 
                     <td style="
                         padding:12px;
@@ -2161,12 +2363,70 @@ async function loadPremiumUsers(filter = "all"){
                     </td>
 
 
+                    <!-- EXPIRY -->
+
                     <td style="
                         padding:12px;
                         border-top:1px solid #eee;
                     ">
                         ${user.premium_expiry || "-"}
                     </td>
+
+
+                    <!-- SUBSCRIPTION ID -->
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                        font-size:13px;
+                    ">
+                        ${user.razorpay_subscription_id || "-"}
+                    </td>
+
+
+                    <!-- AUTOPAY -->
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                        color:${autopayColor};
+                        font-weight:bold;
+                    ">
+                        ${autopayText}
+                    </td>
+
+
+                    <!-- PAYMENT -->
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                        color:${paymentColor};
+                        font-weight:bold;
+                    ">
+                        ${paymentText}
+                    </td>
+
+
+                    <!-- LAST PAYMENT -->
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                    ">
+                        ${user.last_payment_date || "-"}
+                    </td>
+
+
+                    <!-- NEXT PAYMENT -->
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                    ">
+                        ${user.next_payment_date || "-"}
+                    </td>
+
 
                 </tr>
 
@@ -2175,10 +2435,12 @@ async function loadPremiumUsers(filter = "all"){
         });
 
 
-        tbody.innerHTML = html;
+        tbody.innerHTML =
+            html;
+
 
     }
-    catch(error){
+    catch (error) {
 
         console.error(
             "Premium users error:",
@@ -2187,7 +2449,7 @@ async function loadPremiumUsers(filter = "all"){
 
 
         tbody.innerHTML =
-            "<tr><td colspan='6' style='padding:20px;color:red;'>Server connection failed.</td></tr>";
+            "<tr><td colspan='11' style='padding:20px;color:red;'>Server connection failed.</td></tr>";
 
     }
 

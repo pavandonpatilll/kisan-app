@@ -220,6 +220,46 @@ except sqlite3.OperationalError:
 
     pass
 
+# ==========================
+# RAZORPAY AUTOPAY / PAYMENT COLUMNS
+# ==========================
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN razorpay_subscription_status TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN last_payment_status TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN last_payment_date TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN next_payment_date TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
 
 conn.commit()
 
@@ -831,6 +871,10 @@ def admin_users():
     }
 
 
+# ==========================
+# ADMIN PREMIUM USERS
+# ==========================
+
 @app.get("/admin/premium-users")
 def admin_premium_users():
 
@@ -845,7 +889,12 @@ def admin_premium_users():
             name,
             mobile,
             premium_plan,
-            premium_expiry
+            premium_expiry,
+            razorpay_subscription_id,
+            razorpay_subscription_status,
+            last_payment_status,
+            last_payment_date,
+            next_payment_date
         FROM users
         ORDER BY id DESC
     """)
@@ -857,12 +906,29 @@ def admin_premium_users():
 
     users = []
 
+
     for row in rows:
 
         plan = row["premium_plan"] or ""
         expiry = row["premium_expiry"] or ""
 
+        subscription_status = (
+            row["razorpay_subscription_status"]
+            or ""
+        )
+
+        last_payment_status = (
+            row["last_payment_status"]
+            or ""
+        )
+
+
         plan_lower = plan.lower()
+
+
+        # ==========================
+        # PREMIUM STATUS
+        # ==========================
 
         if not plan:
 
@@ -881,7 +947,10 @@ def admin_premium_users():
             premium_status = "free"
 
 
-        # Expiry check
+        # ==========================
+        # EXPIRY CHECK
+        # ==========================
+
         if expiry:
 
             try:
@@ -899,13 +968,49 @@ def admin_premium_users():
                 pass
 
 
+        # ==========================
+        # AUTOPAY DISPLAY STATUS
+        # ==========================
+
+        if subscription_status == "halted":
+
+            autopay_status = "halted"
+
+        elif subscription_status == "cancelled":
+
+            autopay_status = "cancelled"
+
+        elif subscription_status == "charged":
+
+            autopay_status = "active"
+
+        elif subscription_status == "activated":
+
+            autopay_status = "active"
+
+        elif subscription_status == "pending":
+
+            autopay_status = "pending"
+
+        elif subscription_status:
+
+            autopay_status = subscription_status
+
+        else:
+
+            autopay_status = "-"
+
+
         users.append({
 
-            "id": row["id"],
+            "id":
+                row["id"],
 
-            "name": row["name"],
+            "name":
+                row["name"],
 
-            "mobile": row["mobile"],
+            "mobile":
+                row["mobile"],
 
             "premium_plan":
                 plan if plan else "Free",
@@ -914,7 +1019,30 @@ def admin_premium_users():
                 expiry if expiry else "-",
 
             "premium_status":
-                premium_status
+                premium_status,
+
+            "razorpay_subscription_id":
+                row["razorpay_subscription_id"]
+                or "-",
+
+            "razorpay_subscription_status":
+                subscription_status
+                or "-",
+
+            "autopay_status":
+                autopay_status,
+
+            "last_payment_status":
+                last_payment_status
+                or "-",
+
+            "last_payment_date":
+                row["last_payment_date"]
+                or "-",
+
+            "next_payment_date":
+                row["next_payment_date"]
+                or "-"
 
         })
 
@@ -6435,7 +6563,8 @@ def recover_premium_payment(data: dict):
 
         }
 
-    # ==========================
+    
+# ==========================
 # RAZORPAY WEBHOOK
 # ==========================
 
@@ -6444,37 +6573,61 @@ async def razorpay_webhook(request: Request):
 
     try:
 
+        # ==========================
+        # READ RAW BODY
+        # ==========================
+
         body = await request.body()
 
         webhook_signature = request.headers.get(
             "X-Razorpay-Signature"
         )
 
+        event_id = request.headers.get(
+            "x-razorpay-event-id"
+        )
+
         webhook_secret = os.getenv(
             "RAZORPAY_WEBHOOK_SECRET"
         )
 
-        if not webhook_signature:
-            return {
-                "status": False,
-                "message": "Webhook signature missing"
-            }
-
-        if not webhook_secret:
-            return {
-                "status": False,
-                "message": "Webhook secret not configured"
-            }
 
         # ==========================
-        # VERIFY WEBHOOK SIGNATURE
+        # BASIC VALIDATION
+        # ==========================
+
+        if not webhook_signature:
+
+            return {
+                "status": False,
+                "message":
+                    "Webhook signature missing"
+            }
+
+
+        if not webhook_secret:
+
+            return {
+                "status": False,
+                "message":
+                    "Webhook secret not configured"
+            }
+
+
+        # ==========================
+        # VERIFY SIGNATURE
         # ==========================
 
         expected_signature = hmac.new(
+
             webhook_secret.encode(),
+
             body,
+
             hashlib.sha256
+
         ).hexdigest()
+
 
         if not hmac.compare_digest(
             expected_signature,
@@ -6483,83 +6636,447 @@ async def razorpay_webhook(request: Request):
 
             return {
                 "status": False,
-                "message": "Invalid webhook signature"
+                "message":
+                    "Invalid webhook signature"
             }
 
+
         # ==========================
-        # READ EVENT
+        # READ PAYLOAD
         # ==========================
 
         payload = json.loads(body)
 
-        event = payload.get(
-            "event"
-        )
+        event = payload.get("event")
+
 
         print(
             "RAZORPAY WEBHOOK EVENT:",
             event
         )
 
+        print(
+            "RAZORPAY EVENT ID:",
+            event_id
+        )
+
+
         # ==========================
-        # RECURRING PAYMENT SUCCESS
+        # ONLY HANDLE SUBSCRIPTION EVENTS
+        # ==========================
+
+        if event not in [
+
+            "subscription.pending",
+
+            "subscription.charged",
+
+            "subscription.halted"
+
+        ]:
+
+            return {
+
+                "status": True,
+
+                "message":
+                    "Event ignored"
+
+            }
+
+
+        # ==========================
+        # SUBSCRIPTION ENTITY
+        # ==========================
+
+        subscription_entity = (
+
+            payload
+            .get("payload", {})
+            .get("subscription", {})
+            .get("entity", {})
+
+        )
+
+
+        subscription_id = (
+
+            subscription_entity.get("id")
+            or ""
+
+        )
+
+
+        notes = (
+
+            subscription_entity.get(
+                "notes",
+                {}
+            )
+
+        )
+
+
+        # ==========================
+        # USER + PLAN
+        # ==========================
+
+        user_id = notes.get(
+            "user_id"
+        )
+
+        plan_key = notes.get(
+            "selected_plan"
+        )
+
+
+        print(
+            "WEBHOOK SUBSCRIPTION:",
+            subscription_id
+        )
+
+        print(
+            "WEBHOOK USER:",
+            user_id
+        )
+
+        print(
+            "WEBHOOK PLAN:",
+            plan_key
+        )
+
+
+        # ==========================
+        # VALIDATION
+        # ==========================
+
+        if not user_id:
+
+            return {
+
+                "status": True,
+
+                "message":
+                    "User ID missing"
+
+            }
+
+
+        if not plan_key:
+
+            return {
+
+                "status": True,
+
+                "message":
+                    "Plan missing"
+
+            }
+
+
+        # ==========================
+        # DATABASE
+        # ==========================
+
+        conn = sqlite3.connect(
+            DATABASE_PATH
+        )
+
+        cursor = conn.cursor()
+
+
+        # ==========================
+        # DUPLICATE EVENT PROTECTION
+        # ==========================
+
+        if event_id:
+
+            cursor.execute("""
+
+                CREATE TABLE IF NOT EXISTS
+                razorpay_webhook_events (
+
+                    event_id TEXT PRIMARY KEY,
+
+                    event TEXT,
+
+                    created_at TEXT
+
+                )
+
+            """)
+
+
+            cursor.execute("""
+
+                SELECT event_id
+
+                FROM razorpay_webhook_events
+
+                WHERE event_id = ?
+
+            """, (
+
+                event_id,
+
+            ))
+
+
+            already_processed = (
+                cursor.fetchone()
+            )
+
+
+            if already_processed:
+
+                conn.close()
+
+                print(
+                    "DUPLICATE WEBHOOK IGNORED:",
+                    event_id
+                )
+
+                return {
+
+                    "status": True,
+
+                    "message":
+                        "Duplicate event ignored"
+
+                }
+
+
+        # ==========================
+        # SUBSCRIPTION PENDING
+        # ==========================
+
+        if event == "subscription.pending":
+
+            cursor.execute("""
+
+                UPDATE users
+
+                SET
+
+                    razorpay_subscription_id = ?,
+
+                    razorpay_subscription_status = ?,
+
+                    last_payment_status = ?
+
+                WHERE id = ?
+
+            """, (
+
+                subscription_id,
+
+                "pending",
+
+                "pending",
+
+                user_id
+
+            ))
+
+
+            if event_id:
+
+                cursor.execute("""
+
+                    INSERT OR IGNORE INTO
+                    razorpay_webhook_events
+
+                    (
+                        event_id,
+                        event,
+                        created_at
+                    )
+
+                    VALUES (?, ?, ?)
+
+                """, (
+
+                    event_id,
+
+                    event,
+
+                    datetime.now().isoformat()
+
+                ))
+
+
+            conn.commit()
+
+            conn.close()
+
+
+            print(
+                "PREMIUM PAYMENT PENDING:",
+                user_id
+            )
+
+
+            return {
+
+                "status": True,
+
+                "message":
+                    "Subscription payment pending"
+
+            }
+
+
+        # ==========================
+        # SUBSCRIPTION HALTED
+        # ==========================
+
+        if event == "subscription.halted":
+
+            cursor.execute("""
+
+                UPDATE users
+
+                SET
+
+                    razorpay_subscription_id = ?,
+
+                    razorpay_subscription_status = ?,
+
+                    last_payment_status = ?
+
+                WHERE id = ?
+
+            """, (
+
+                subscription_id,
+
+                "halted",
+
+                "failed",
+
+                user_id
+
+            ))
+
+
+            if event_id:
+
+                cursor.execute("""
+
+                    INSERT OR IGNORE INTO
+                    razorpay_webhook_events
+
+                    (
+                        event_id,
+                        event,
+                        created_at
+                    )
+
+                    VALUES (?, ?, ?)
+
+                """, (
+
+                    event_id,
+
+                    event,
+
+                    datetime.now().isoformat()
+
+                ))
+
+
+            conn.commit()
+
+            conn.close()
+
+
+            print(
+                "PREMIUM AUTOPAY HALTED:",
+                user_id
+            )
+
+
+            return {
+
+                "status": True,
+
+                "message":
+                    "Subscription halted. Premium not renewed."
+
+            }
+
+
+        # ==========================
+        # SUCCESSFUL RECURRING PAYMENT
         # ==========================
 
         if event == "subscription.charged":
 
-            subscription_entity = (
-                payload
-                .get("payload", {})
-                .get("subscription", {})
-                .get("entity", {})
-            )
 
-            subscription_id = (
-                subscription_entity.get("id")
-            )
+            # ==========================
+            # SAVE EVENT FIRST
+            # ==========================
 
-            notes = (
-                subscription_entity.get("notes", {})
-            )
+            if event_id:
 
-            user_id = notes.get(
-                "user_id"
-            )
+                cursor.execute("""
 
-            plan_key = notes.get(
-                "selected_plan"
-            )
+                    CREATE TABLE IF NOT EXISTS
+                    razorpay_webhook_events (
 
-            print(
-                "WEBHOOK SUBSCRIPTION:",
-                subscription_id
-            )
+                        event_id TEXT PRIMARY KEY,
 
-            print(
-                "WEBHOOK USER:",
-                user_id
-            )
+                        event TEXT,
 
-            print(
-                "WEBHOOK PLAN:",
-                plan_key
-            )
+                        created_at TEXT
 
-            if not user_id:
+                    )
 
-                return {
-                    "status": True,
-                    "message":
-                        "Webhook received but user ID missing"
-                }
+                """)
 
-            if not plan_key:
 
-                return {
-                    "status": True,
-                    "message":
-                        "Webhook received but plan missing"
-                }
+                cursor.execute("""
+
+                    INSERT OR IGNORE INTO
+                    razorpay_webhook_events
+
+                    (
+                        event_id,
+                        event,
+                        created_at
+                    )
+
+                    VALUES (?, ?, ?)
+
+                """, (
+
+                    event_id,
+
+                    event,
+
+                    datetime.now().isoformat()
+
+                ))
+
+
+                if cursor.rowcount == 0:
+
+                    conn.close()
+
+                    print(
+                        "DUPLICATE CHARGED EVENT:",
+                        event_id
+                    )
+
+                    return {
+
+                        "status": True,
+
+                        "message":
+                            "Duplicate event ignored"
+
+                    }
+
 
             # ==========================
             # PLAN DURATION
@@ -6587,34 +7104,37 @@ async def razorpay_webhook(request: Request):
 
                 months = 1
 
+
             # ==========================
-            # CURRENT PREMIUM EXPIRY
+            # GET CURRENT PREMIUM
             # ==========================
 
-            conn = sqlite3.connect(
-                DATABASE_PATH
-            )
+            cursor.execute("""
 
-            cursor = conn.cursor()
+                SELECT
 
-            cursor.execute(
-                """
-                SELECT premium_expiry
+                    premium_expiry
+
                 FROM users
+
                 WHERE id = ?
-                """,
-                (user_id,)
-            )
+
+            """, (
+
+                user_id,
+
+            ))
+
 
             row = cursor.fetchone()
 
-            # ==========================
-            # CALCULATE NEW EXPIRY
-            # ==========================
 
-            from calendar import monthrange
+            # ==========================
+            # CURRENT DATE
+            # ==========================
 
             today = datetime.now()
+
 
             if row and row[0]:
 
@@ -6622,12 +7142,15 @@ async def razorpay_webhook(request: Request):
 
                     current_expiry = (
                         datetime.strptime(
+
                             row[0],
+
                             "%Y-%m-%d"
+
                         )
                     )
 
-                except:
+                except Exception:
 
                     current_expiry = today
 
@@ -6635,54 +7158,99 @@ async def razorpay_webhook(request: Request):
 
                 current_expiry = today
 
-            # Never move expiry backwards
 
-            base_date = max(
-                today,
-                current_expiry
-            )
+            # ==========================
+            # NEVER MOVE EXPIRY BACKWARD
+            # ==========================
+
+            if current_expiry > today:
+
+                base_date = current_expiry
+
+            else:
+
+                base_date = today
+
+
+            # ==========================
+            # ADD PLAN DURATION
+            # ==========================
+
+            from calendar import monthrange
+
 
             total_months = (
+
                 base_date.year * 12
+
                 + base_date.month
                 - 1
+
                 + months
+
             )
+
 
             new_year = (
                 total_months // 12
             )
 
+
             new_month = (
                 total_months % 12
             ) + 1
 
+
             new_day = min(
+
                 base_date.day,
+
                 monthrange(
+
                     new_year,
+
                     new_month
+
                 )[1]
+
             )
+
 
             new_expiry = base_date.replace(
+
                 year=new_year,
+
                 month=new_month,
+
                 day=new_day
+
             )
 
+
             expiry_string = (
+
                 new_expiry.strftime(
                     "%Y-%m-%d"
                 )
+
             )
+
+
+            # ==========================
+            # NEXT PAYMENT DATE
+            # ==========================
+
+            next_payment_date = (
+                expiry_string
+            )
+
 
             # ==========================
             # UPDATE PREMIUM
             # ==========================
 
-            cursor.execute(
-                """
+            cursor.execute("""
+
                 UPDATE users
 
                 SET
@@ -6691,31 +7259,87 @@ async def razorpay_webhook(request: Request):
 
                     premium_expiry = ?,
 
-                    razorpay_subscription_id = ?
+                    razorpay_subscription_id = ?,
+
+                    razorpay_subscription_status = ?,
+
+                    last_payment_status = ?,
+
+                    last_payment_date = ?,
+
+                    next_payment_date = ?
 
                 WHERE id = ?
-                """,
 
-                (
-                    plan_key,
-                    expiry_string,
-                    subscription_id,
-                    user_id
-                )
-            )
+            """, (
+
+                plan_key,
+
+                expiry_string,
+
+                subscription_id,
+
+                "charged",
+
+                "paid",
+
+                today.strftime(
+                    "%Y-%m-%d"
+                ),
+
+                next_payment_date,
+
+                user_id
+
+            ))
+
 
             conn.commit()
 
             conn.close()
+
+
+            print(
+                "PREMIUM PAYMENT SUCCESS:",
+                user_id
+            )
 
             print(
                 "PREMIUM RENEWED UNTIL:",
                 expiry_string
             )
 
+            print(
+                "NEXT PAYMENT DATE:",
+                next_payment_date
+            )
+
+
+            return {
+
+                "status": True,
+
+                "message":
+                    "Premium renewed successfully",
+
+                "expiry":
+                    expiry_string,
+
+                "next_payment_date":
+                    next_payment_date
+
+            }
+
+
+        conn.close()
+
+
         return {
+
             "status": True
+
         }
+
 
     except Exception as e:
 
@@ -6724,7 +7348,12 @@ async def razorpay_webhook(request: Request):
             str(e)
         )
 
+
         return {
+
             "status": False,
-            "message": str(e)
+
+            "message":
+                str(e)
+
         }
