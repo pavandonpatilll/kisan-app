@@ -260,6 +260,18 @@ except sqlite3.OperationalError:
     pass
 
 
+# ==========================
+# RAZORPAY PAYMENT ID
+# ==========================
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN razorpay_payment_id TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
 
 conn.commit()
 
@@ -891,6 +903,7 @@ def admin_premium_users():
             premium_plan,
             premium_expiry,
             razorpay_subscription_id,
+            razorpay_payment_id,
             razorpay_subscription_status,
             last_payment_status,
             last_payment_date,
@@ -910,6 +923,7 @@ def admin_premium_users():
     for row in rows:
 
         plan = row["premium_plan"] or ""
+
         expiry = row["premium_expiry"] or ""
 
         subscription_status = (
@@ -988,6 +1002,10 @@ def admin_premium_users():
 
             autopay_status = "active"
 
+        elif subscription_status == "authenticated":
+
+            autopay_status = "active"
+
         elif subscription_status == "pending":
 
             autopay_status = "pending"
@@ -1000,6 +1018,10 @@ def admin_premium_users():
 
             autopay_status = "-"
 
+
+        # ==========================
+        # ADD USER
+        # ==========================
 
         users.append({
 
@@ -1023,6 +1045,10 @@ def admin_premium_users():
 
             "razorpay_subscription_id":
                 row["razorpay_subscription_id"]
+                or "-",
+
+            "razorpay_payment_id":
+                row["razorpay_payment_id"]
                 or "-",
 
             "razorpay_subscription_status":
@@ -1054,7 +1080,6 @@ def admin_premium_users():
         "users": users
 
     }
-
 
 # ==========================
 # ADMIN ADD MANDI
@@ -5942,6 +5967,7 @@ def create_subscription(data: dict):
 # VERIFY RAZORPAY SUBSCRIPTION
 # ==========================
 
+
 @app.post("/verify-subscription")
 def verify_subscription(data: dict):
 
@@ -6032,21 +6058,15 @@ def verify_subscription(data: dict):
         # PLAN DURATION
         # ==========================
 
-        if plan_key.endswith(
-            "_monthly"
-        ):
+        if plan_key.endswith("_monthly"):
 
             months = 1
 
-        elif plan_key.endswith(
-            "_6months"
-        ):
+        elif plan_key.endswith("_6months"):
 
             months = 6
 
-        elif plan_key.endswith(
-            "_yearly"
-        ):
+        elif plan_key.endswith("_yearly"):
 
             months = 12
 
@@ -6156,6 +6176,8 @@ def verify_subscription(data: dict):
 
                 razorpay_subscription_id = ?,
 
+                razorpay_payment_id = ?,
+
                 razorpay_subscription_status = ?,
 
                 last_payment_status = ?,
@@ -6174,6 +6196,8 @@ def verify_subscription(data: dict):
 
             subscription_id,
 
+            payment_id,
+
             "authenticated",
 
             "paid",
@@ -6188,7 +6212,6 @@ def verify_subscription(data: dict):
 
 
         conn.commit()
-
         conn.close()
 
 

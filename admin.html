@@ -855,6 +855,7 @@ body{
     <div class="panel">
 
         <!-- FILTER BUTTONS -->
+
         <div style="
             display:flex;
             gap:10px;
@@ -909,13 +910,15 @@ body{
 
             <table style="
                 width:100%;
-                min-width:1100px;
+                min-width:1250px;
                 border-collapse:collapse;
             ">
 
                 <thead>
 
                     <tr>
+
+                        <!-- 1 ID -->
 
                         <th style="
                             padding:12px;
@@ -925,6 +928,9 @@ body{
                             ID
                         </th>
 
+
+                        <!-- 2 FARMER -->
+
                         <th style="
                             padding:12px;
                             text-align:left;
@@ -932,6 +938,9 @@ body{
                         ">
                             Farmer
                         </th>
+
+
+                        <!-- 3 MOBILE -->
 
                         <th style="
                             padding:12px;
@@ -941,6 +950,9 @@ body{
                             Mobile
                         </th>
 
+
+                        <!-- 4 PLAN -->
+
                         <th style="
                             padding:12px;
                             text-align:left;
@@ -948,6 +960,9 @@ body{
                         ">
                             Plan
                         </th>
+
+
+                        <!-- 5 PREMIUM STATUS -->
 
                         <th style="
                             padding:12px;
@@ -957,6 +972,9 @@ body{
                             Premium Status
                         </th>
 
+
+                        <!-- 6 EXPIRY -->
+
                         <th style="
                             padding:12px;
                             text-align:left;
@@ -964,6 +982,9 @@ body{
                         ">
                             Expiry
                         </th>
+
+
+                        <!-- 7 SUBSCRIPTION ID -->
 
                         <th style="
                             padding:12px;
@@ -973,6 +994,20 @@ body{
                             Subscription ID
                         </th>
 
+
+                        <!-- 8 PAYMENT ID -->
+
+                        <th style="
+                            padding:12px;
+                            text-align:left;
+                            background:#f4f7f4;
+                        ">
+                            Payment ID
+                        </th>
+
+
+                        <!-- 9 AUTOPAY -->
+
                         <th style="
                             padding:12px;
                             text-align:left;
@@ -980,6 +1015,9 @@ body{
                         ">
                             Autopay
                         </th>
+
+
+                        <!-- 10 PAYMENT -->
 
                         <th style="
                             padding:12px;
@@ -989,6 +1027,9 @@ body{
                             Payment
                         </th>
 
+
+                        <!-- 11 LAST PAYMENT -->
+
                         <th style="
                             padding:12px;
                             text-align:left;
@@ -996,6 +1037,9 @@ body{
                         ">
                             Last Payment
                         </th>
+
+
+                        <!-- 12 NEXT PAYMENT -->
 
                         <th style="
                             padding:12px;
@@ -1014,6 +1058,7 @@ body{
 
                 </tbody>
 
+
             </table>
 
         </div>
@@ -1021,6 +1066,7 @@ body{
     </div>
 
 </section>
+
 
     </main>
 
@@ -2088,7 +2134,7 @@ async function loadPremiumUsers(filter = "all") {
     // ==========================
 
     tbody.innerHTML =
-        "<tr><td colspan='11' style='padding:20px;'>Loading...</td></tr>";
+        "<tr><td colspan='12' style='padding:20px;'>Loading...</td></tr>";
 
 
     try {
@@ -2106,7 +2152,7 @@ async function loadPremiumUsers(filter = "all") {
         if (!data.status) {
 
             tbody.innerHTML =
-                "<tr><td colspan='11' style='padding:20px;'>Unable to load users.</td></tr>";
+                "<tr><td colspan='12' style='padding:20px;'>Unable to load users.</td></tr>";
 
             return;
         }
@@ -2134,7 +2180,7 @@ async function loadPremiumUsers(filter = "all") {
         if (users.length === 0) {
 
             tbody.innerHTML =
-                "<tr><td colspan='11' style='padding:20px;'>No users found.</td></tr>";
+                "<tr><td colspan='12' style='padding:20px;'>No users found.</td></tr>";
 
             return;
         }
@@ -2310,6 +2356,7 @@ async function loadPremiumUsers(filter = "all") {
 
                 <tr>
 
+
                     <!-- ID -->
 
                     <td style="
@@ -2384,6 +2431,17 @@ async function loadPremiumUsers(filter = "all") {
                     </td>
 
 
+                    <!-- PAYMENT ID -->
+
+                    <td style="
+                        padding:12px;
+                        border-top:1px solid #eee;
+                        font-size:13px;
+                    ">
+                        ${user.razorpay_payment_id || "-"}
+                    </td>
+
+
                     <!-- AUTOPAY -->
 
                     <td style="
@@ -2449,11 +2507,12 @@ async function loadPremiumUsers(filter = "all") {
 
 
         tbody.innerHTML =
-            "<tr><td colspan='11' style='padding:20px;color:red;'>Server connection failed.</td></tr>";
+            "<tr><td colspan='12' style='padding:20px;color:red;'>Server connection failed.</td></tr>";
 
     }
 
 }
+
 
 
 async function loadUsers(){
