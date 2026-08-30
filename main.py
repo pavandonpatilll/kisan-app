@@ -5966,6 +5966,10 @@ def verify_subscription(data: dict):
         )
 
 
+        # ==========================
+        # VALIDATION
+        # ==========================
+
         if not user_id:
 
             return {
@@ -6007,7 +6011,7 @@ def verify_subscription(data: dict):
 
 
         # ==========================
-        # VERIFY SIGNATURE
+        # VERIFY RAZORPAY SIGNATURE
         # ==========================
 
         razorpay_client.utility.verify_subscription_payment_signature({
@@ -6057,14 +6061,50 @@ def verify_subscription(data: dict):
 
         from calendar import monthrange
 
-        def add_months(base_date, months_to_add):
-            total_months = (base_date.year * 12 + base_date.month - 1) + months_to_add
-            year = total_months // 12
-            month = (total_months % 12) + 1
-            day = min(base_date.day, monthrange(year, month)[1])
-            return base_date.replace(year=year, month=month, day=day)
 
-        expiry_date = add_months(datetime.now(), months)
+        def add_months(
+            base_date,
+            months_to_add
+        ):
+
+            total_months = (
+                base_date.year * 12
+                + base_date.month
+                - 1
+                + months_to_add
+            )
+
+            year = (
+                total_months // 12
+            )
+
+            month = (
+                total_months % 12
+            ) + 1
+
+            day = min(
+                base_date.day,
+                monthrange(
+                    year,
+                    month
+                )[1]
+            )
+
+            return base_date.replace(
+                year=year,
+                month=month,
+                day=day
+            )
+
+
+        today = datetime.now()
+
+
+        expiry_date = add_months(
+            today,
+            months
+        )
+
 
         expiry_string = (
             expiry_date.strftime(
@@ -6074,10 +6114,32 @@ def verify_subscription(data: dict):
 
 
         # ==========================
-        # SAVE PREMIUM
+        # PAYMENT DATE
         # ==========================
 
-        conn = sqlite3.connect(DATABASE_PATH)
+        payment_date = (
+            today.strftime(
+                "%Y-%m-%d"
+            )
+        )
+
+
+        # ==========================
+        # NEXT PAYMENT DATE
+        # ==========================
+
+        next_payment_date = (
+            expiry_string
+        )
+
+
+        # ==========================
+        # SAVE PREMIUM + PAYMENT DATA
+        # ==========================
+
+        conn = sqlite3.connect(
+            DATABASE_PATH
+        )
 
         cursor = conn.cursor()
 
@@ -6092,7 +6154,15 @@ def verify_subscription(data: dict):
 
                 premium_expiry = ?,
 
-                razorpay_subscription_id = ?
+                razorpay_subscription_id = ?,
+
+                razorpay_subscription_status = ?,
+
+                last_payment_status = ?,
+
+                last_payment_date = ?,
+
+                next_payment_date = ?
 
             WHERE id = ?
 
@@ -6104,6 +6174,14 @@ def verify_subscription(data: dict):
 
             subscription_id,
 
+            "authenticated",
+
+            "paid",
+
+            payment_date,
+
+            next_payment_date,
+
             user_id
 
         ))
@@ -6113,6 +6191,10 @@ def verify_subscription(data: dict):
 
         conn.close()
 
+
+        # ==========================
+        # SUCCESS
+        # ==========================
 
         return {
 
@@ -6125,7 +6207,25 @@ def verify_subscription(data: dict):
                 plan_key,
 
             "expiry":
-                expiry_string
+                expiry_string,
+
+            "payment_id":
+                payment_id,
+
+            "subscription_id":
+                subscription_id,
+
+            "payment_status":
+                "paid",
+
+            "subscription_status":
+                "authenticated",
+
+            "last_payment_date":
+                payment_date,
+
+            "next_payment_date":
+                next_payment_date
 
         }
 
@@ -6137,13 +6237,16 @@ def verify_subscription(data: dict):
             str(e)
         )
 
+
         return {
 
             "status": False,
 
-            "message": str(e)
+            "message":
+                str(e)
 
         }
+
 
 # ==========================
 # PREMIUM STATUS
