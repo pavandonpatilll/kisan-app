@@ -4535,7 +4535,7 @@ let chatUserId = null;
 let chatUserName = "";
 let sendingMessage = false;
 
-const API = "https://kisan-ai-api-lezf.onrender.com";
+const API = "https://kisan-app-1.onrender.com";
 // ----------------------------
 // Show Login
 // ----------------------------
@@ -4597,7 +4597,7 @@ return;
 
 
 let response = await fetch(
-"https://kisan-ai-api-lezf.onrender.com/register",
+"https://kisan-app-1.onrender.com/register",
 {
 method:"POST",
 
@@ -4647,7 +4647,7 @@ async function loginUser(){
     let password = document.getElementById("loginPassword").value.trim();
 
     let response = await fetch(
-        "https://kisan-ai-api-lezf.onrender.com/login",
+        "https://kisan-app-1.onrender.com/login",
         {
             method:"POST",
             headers:{
@@ -5963,7 +5963,7 @@ async function loadNotificationPage(){
 
         let adminResponse = await fetch(
 
-            `https://kisan-ai-api-lezf.onrender.com/notifications/${user.id}`,
+            `https://kisan-app-1.onrender.com/notifications/${user.id}`,
 
             {
                 method:"GET",
@@ -5989,7 +5989,7 @@ async function loadNotificationPage(){
 
         let rainResponse = await fetch(
 
-            `https://kisan-ai-api-lezf.onrender.com/rain-alert/${user.id}`,
+            `https://kisan-app-1.onrender.com/rain-alert/${user.id}`,
 
             {
                 method:"GET",
@@ -6432,7 +6432,7 @@ console.log(e);
 async function loadWeather(lat, lon) {
 
     let response = await fetch(
-        "https://kisan-ai-api-lezf.onrender.com/weather/" + lat + "/" + lon
+        "https://kisan-app-1.onrender.com/weather/" + lat + "/" + lon
     );
 
     let data = await response.json();
@@ -6737,7 +6737,7 @@ function toggleForecast(i){
 async function loadLocationName(lat, lon){
 
     let response = await fetch(
-        "https://kisan-ai-api-lezf.onrender.com/location/" + lat + "/" + lon
+        "https://kisan-app-1.onrender.com/location/" + lat + "/" + lon
     );
 
     let data = await response.json();
@@ -6788,7 +6788,7 @@ async function loadMandi(){
 
         const response =
             await fetch(
-                `https://kisan-ai-api-lezf.onrender.com/mandi-all/${encodeURIComponent(state)}`
+                `https://kisan-app-1.onrender.com/mandi-all/${encodeURIComponent(state)}`
             );
 
 
@@ -6995,7 +6995,7 @@ async function loadCropGuide(){
         const response =
             await fetch(
 
-                `https://kisan-ai-api-lezf.onrender.com/crop-guide/${user.id}/${encodeURIComponent(crop)}`
+                `https://kisan-app-1.onrender.com/crop-guide/${user.id}/${encodeURIComponent(crop)}`
 
             );
 
@@ -8152,7 +8152,7 @@ document.getElementById("schemeState").value;
 
 let response = await fetch(
 
-"https://kisan-ai-api-lezf.onrender.com/schemes/"+state
+"https://kisan-app-1.onrender.com/schemes/"+state
 
 );
 
@@ -8250,7 +8250,7 @@ let user = JSON.parse(localStorage.getItem("user"));
 let crop = document.getElementById("homeCropSelect").value;
 
 let response = await fetch(
-"https://kisan-ai-api-lezf.onrender.com/update-home-crop",
+"https://kisan-app-1.onrender.com/update-home-crop",
 {
 method:"POST",
 headers:{
@@ -8320,7 +8320,7 @@ async function loadAlerts(){
 
         let response = await fetch(
 
-            `https://kisan-ai-api-lezf.onrender.com/alerts/${user.id}`,
+            `https://kisan-app-1.onrender.com/alerts/${user.id}`,
 
             {
                 method:"GET",
@@ -8458,7 +8458,7 @@ if(!user){
 
 
 let res = await fetch(
-`https://kisan-ai-api-lezf.onrender.com/alerts/${user.id}`
+`https://kisan-app-1.onrender.com/alerts/${user.id}`
 );
 
 
@@ -8574,7 +8574,7 @@ async function loadNotificationPopup(){
 
         let response = await fetch(
 
-            `https://kisan-ai-api-lezf.onrender.com/alerts/${user.id}`,
+            `https://kisan-app-1.onrender.com/alerts/${user.id}`,
 
             {
                 cache:"no-store"
@@ -8703,7 +8703,7 @@ async function loadNotificationCount(){
     try{
 
         let response = await fetch(
-            `https://kisan-ai-api-lezf.onrender.com/rain-alert/${user.id}`,
+            `https://kisan-app-1.onrender.com/rain-alert/${user.id}`,
             {
                 cache:"no-store"
             }
@@ -9243,7 +9243,7 @@ async function buyPlan(plan){
         const response =
             await fetch(
 
-                "https://kisan-ai-api-lezf.onrender.com/create-subscription",
+                "https://kisan-app-1.onrender.com/create-subscription",
 
                 {
 
@@ -9390,7 +9390,7 @@ async function verifyPremiumPayment(
         const response =
             await fetch(
 
-                "https://kisan-ai-api-lezf.onrender.com/verify-subscription",
+                "https://kisan-app-1.onrender.com/verify-subscription",
 
                 {
 
@@ -9552,7 +9552,7 @@ async function loadPremiumStatus(){
         const response =
             await fetch(
 
-                `https://kisan-ai-api-lezf.onrender.com/premium-status/${user.id}`
+                `https://kisan-app-1.onrender.com/premium-status/${user.id}`
 
             );
 
@@ -9654,7 +9654,7 @@ async function recoverPendingPremiumPayment(){
         const response =
             await fetch(
 
-                "https://kisan-ai-api-lezf.onrender.com/recover-premium-payment",
+                "https://kisan-app-1.onrender.com/recover-premium-payment",
 
                 {
 
@@ -10089,7 +10089,7 @@ return;
 
 let response=await fetch(
 
-"https://kisan-ai-api-lezf.onrender.com/profile/"+user.id
+"https://kisan-app-1.onrender.com/profile/"+user.id
 
 );
 
