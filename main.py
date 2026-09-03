@@ -111,9 +111,16 @@ app.add_middleware(
 # ==========================
 
 
-DATABASE_PATH = "/var/data/database.db"
+DATABASE_PATH = "data/database.db"
 
-conn = sqlite3.connect(DATABASE_PATH,
+# Create database folder if it does not exist
+os.makedirs(
+    os.path.dirname(DATABASE_PATH),
+    exist_ok=True
+)
+
+conn = sqlite3.connect(
+    DATABASE_PATH,
     check_same_thread=False
 )
 
