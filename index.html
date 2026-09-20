@@ -4444,7 +4444,7 @@ Loading Weather...
 
 <div class="farmAdvice">
 
-🌱 Farming Advice
+<span id="weatherAdviceLabel">🌱 Farming Advice</span>
 
 <p id="advice">
 Weather data aane ke baad farming advice milegi
@@ -4452,7 +4452,7 @@ Weather data aane ke baad farming advice milegi
 
 </div>
 
-<button onclick="getLiveLocation()">
+<button id="getLocationButton" onclick="getLiveLocation()">
 📍 Get My Location
 </button>
 
@@ -4466,7 +4466,7 @@ Location not detected
 
 <div>
 💧
-<p>Humidity</p>
+<p id="humidityLabel">Humidity</p>
 <span id="humidity">
 --%
 </span>
@@ -4475,7 +4475,7 @@ Location not detected
 
 <div>
 🌧️
-<p>Rain</p>
+<p id="rainLabel">Rain</p>
 <span id="rain">
 --%
 </span>
@@ -4484,7 +4484,7 @@ Location not detected
 
 <div>
 💨
-<p>Wind</p>
+<p id="windLabel">Wind</p>
 <span id="wind">
 -- km/h
 </span>
@@ -4494,7 +4494,7 @@ Location not detected
 </div>
 
 
-<h2>📅 7-Day Forecast</h2>
+<h2 id="forecastLabel">📅 7-Day Forecast</h2>
 
 <div id="forecastBox" class="forecastBox">
 
@@ -7614,31 +7614,6 @@ data.location;
 
 }
 
-async function saveUserLocation(lat, lon){
-
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    if(!user || !user.id){
-        return;
-    }
-
-    try{
-        await fetch(`${API}/save-location`, {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({
-                user_id:String(user.id),
-                latitude:lat,
-                longitude:lon
-            })
-        });
-    }
-    catch(error){
-        console.error("Location save error:", error);
-    }
-}
-
-
 }
 
 catch(e){
@@ -7652,6 +7627,8 @@ console.log(e);
 
 
 async function loadWeather(lat, lon) {
+
+    const weatherText = applyWeatherLanguage();
 
     try{
         let response = await fetch(
@@ -7711,6 +7688,25 @@ async function loadWeather(lat, lon) {
 
     };
 
+    const weatherTranslations = {
+        hi: {
+            0:"साफ आसमान", 1:"मुख्यतः साफ", 2:"आंशिक बादल",
+            3:"बादल", 45:"कोहरा", 61:"हल्की बारिश",
+            63:"बारिश", 65:"तेज बारिश", 80:"बारिश की बौछार",
+            95:"आंधी-तूफान"
+        },
+        mr: {
+            0:"स्वच्छ आकाश", 1:"मुख्यतः स्वच्छ", 2:"अंशतः ढगाळ",
+            3:"ढगाळ", 45:"धुके", 61:"हलका पाऊस",
+            63:"पाऊस", 65:"मुसळधार पाऊस", 80:"पावसाच्या सरी",
+            95:"वादळ"
+        }
+    };
+
+    const selectedLanguage = localStorage.getItem("appLanguage") || "hi";
+    weather.text = weatherTranslations[selectedLanguage]?.[data.weather_code]
+        || weather.text;
+
 
     document.getElementById("weatherStatus").innerHTML =
         weather.text;
@@ -7720,7 +7716,8 @@ async function loadWeather(lat, lon) {
 
 
     document.getElementById("advice").innerHTML =
-        "AI Farming Advice will be generated based on live weather.";
+        weatherText ? weatherText.advice :
+        "Live weather based farming advice will be generated.";
 
         if(data.forecast){
             showForecast(data.forecast);
@@ -7729,6 +7726,7 @@ async function loadWeather(lat, lon) {
     catch(error){
         console.error("Weather Error:", error);
         document.getElementById("weatherStatus").innerHTML =
+            weatherText ? weatherText.unavailable :
             "Weather temporarily unavailable";
         document.getElementById("forecastBox").innerHTML =
             "Unable to load forecast. Please try again.";
@@ -8089,32 +8087,6 @@ async function loadMandi(){
 
                             <span>
                                 / quintal
-                            </span>
-
-                        </div>
-
-
-                        <div class="mandiPrices">
-
-                            <div>
-
-                                <span>📉 Minimum</span>
-
-                                <strong>
-                                    ₹ ${mandi.Min_Price}
-                                </strong>
-
-                            </div>
-
-
-                            <div>
-
-                                <span>⚖️ Average</span>
-
-                                <strong>
-                                    ₹ ${mandi.Modal_Price}
-                                </strong>
-
                             </div>
 
 
@@ -8189,6 +8161,89 @@ async function loadMandi(){
 
     }
 
+}
+
+async function saveUserLocation(lat, lon){
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if(!user || !user.id){
+        return;
+    }
+
+    try{
+        await fetch(`${API}/save-location`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                user_id:String(user.id),
+                latitude:lat,
+                longitude:lon
+            })
+        });
+    }
+    catch(error){
+        console.error("Location save error:", error);
+    }
+}
+
+function applyWeatherLanguage(){
+
+    const language = localStorage.getItem("appLanguage") || "hi";
+    const text = {
+        en: {
+            adviceLabel:"🌱 Farming Advice",
+            advice:"Live weather ke hisaab se farming advice milegi.",
+            locationButton:"📍 Get My Location",
+            locationText:"Location not detected",
+            humidity:"Humidity",
+            rain:"Rain",
+            wind:"Wind",
+            forecast:"📅 7-Day Forecast",
+            loading:"Loading Weather...",
+            unavailable:"Weather temporarily unavailable"
+        },
+        hi: {
+            adviceLabel:"🌱 खेती सलाह",
+            advice:"लाइव मौसम के आधार पर खेती की सलाह मिलेगी।",
+            locationButton:"📍 मेरी लोकेशन लें",
+            locationText:"लोकेशन नहीं मिली",
+            humidity:"नमी",
+            rain:"बारिश",
+            wind:"हवा",
+            forecast:"📅 7 दिन का मौसम",
+            loading:"मौसम लोड हो रहा है...",
+            unavailable:"मौसम अभी उपलब्ध नहीं है"
+        },
+        mr: {
+            adviceLabel:"🌱 शेतीचा सल्ला",
+            advice:"लाइव्ह हवामानानुसार शेतीचा सल्ला मिळेल.",
+            locationButton:"📍 माझे स्थान घ्या",
+            locationText:"स्थान सापडले नाही",
+            humidity:"आर्द्रता",
+            rain:"पाऊस",
+            wind:"वारा",
+            forecast:"📅 7 दिवसांचे हवामान",
+            loading:"हवामान लोड होत आहे...",
+            unavailable:"हवामान सध्या उपलब्ध नाही"
+        }
+    }[language] || null;
+
+    if(!text){
+        return;
+    }
+
+    document.getElementById("weatherAdviceLabel").textContent = text.adviceLabel;
+    document.getElementById("advice").textContent = text.advice;
+    document.getElementById("getLocationButton").textContent = text.locationButton;
+    document.getElementById("locationText").textContent = text.locationText;
+    document.getElementById("humidityLabel").textContent = text.humidity;
+    document.getElementById("rainLabel").textContent = text.rain;
+    document.getElementById("windLabel").textContent = text.wind;
+    document.getElementById("forecastLabel").textContent = text.forecast;
+    document.getElementById("weatherStatus").textContent = text.loading;
+
+    return text;
 }
 
 async function loadCropGuide(){
@@ -10490,6 +10545,7 @@ document.addEventListener(
     function(){
 
         applyLanguage();
+        applyWeatherLanguage();
 
     }
 );
