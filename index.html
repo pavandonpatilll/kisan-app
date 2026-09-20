@@ -669,6 +669,50 @@ color:#555;
     font-weight:600;
 }
 
+.homeTitle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:20px;
+}
+
+.currentLanguageBadge{
+    padding:5px 9px;
+    border-radius:999px;
+    background:#eaf8ef;
+    color:#087f3e;
+    font-size:11px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.languageSetting{
+    margin:14px 0 8px;
+    padding:14px;
+    border-radius:14px;
+    background:#f5faf6;
+    border:1px solid #e0eee3;
+}
+
+.languageSetting label{
+    display:block;
+    margin-bottom:7px;
+    color:#718078;
+    font-size:12px;
+    font-weight:700;
+}
+
+.languageSetting select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid #d8e8dc;
+    border-radius:10px;
+    background:#fff;
+    color:#18231c;
+    font-size:14px;
+    outline:none;
+}
+
 .weatherCard{
 
 background:white;
@@ -4131,8 +4175,9 @@ Login
         ☰
     </div>
 
-    <h2>
-        🌾 AI सहाय्यक
+    <h2 class="homeTitle">
+        <span id="homeHeaderTitle">🌾 AI सहाय्यक</span>
+        <span class="currentLanguageBadge" id="currentLanguageLabel">मराठी</span>
     </h2>
 
     <div
@@ -4171,27 +4216,37 @@ Login
     </div>
 
 
-    <p onclick="goHome()">
+    <p id="sideHomeLabel" onclick="goHome()">
         🏠 Home
     </p>
 
 
-    <p onclick="openPage('profilePage')">
+    <p id="sideProfileLabel" onclick="openPage('profilePage')">
         👤 Profile
     </p>
 
 
-    <p onclick="openPage('schemePage')">
+    <p id="sideSchemesLabel" onclick="openPage('schemePage')">
         🏛 Schemes
     </p>
 
 
-    <p onclick="openPage('newsPage')">
+    <p id="sideNewsLabel" onclick="openPage('newsPage')">
         📰 News
     </p>
 
 
-    <p onclick="logout()">
+    <div class="languageSetting">
+        <label id="languageSettingLabel" for="homeLanguageSelect">🌐 App Language</label>
+        <select id="homeLanguageSelect" onchange="changeAppLanguage(this.value)">
+            <option value="mr">मराठी</option>
+            <option value="hi">हिंदी</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+
+
+    <p id="sideLogoutLabel" onclick="logout()">
         🚪 Logout
     </p>
 
@@ -4209,7 +4264,7 @@ Farmer
 </h2>
 
 
-<p><b>🌾 मुख्य पीक निवडा</b></p>
+<p><b id="homeCropLabel">🌾 मुख्य पीक निवडा</b></p>
 
 <select id="homeCropSelect" onchange="changeHomeCrop()">
 
@@ -4248,7 +4303,7 @@ Farmer
 </select>
 
 <p>
-🏡 गाव:
+<span id="homeVillageLabel">🏡 गाव:</span>
 <span id="homeVillage">
 --
 </span>
@@ -4256,7 +4311,7 @@ Farmer
 
 
 <p>
-📍 Location:
+<span id="homeLocationLabel">📍 Location:</span>
 <span id="currentLocation">
 Detecting...
 </span>
@@ -10557,6 +10612,8 @@ function selectLanguage(lang){
         lang
     );
 
+    updateLanguageUI(lang);
+
 
     // Language page hide
     document.getElementById(
@@ -10568,6 +10625,19 @@ function selectLanguage(lang){
     document.getElementById(
         "registerSection"
     ).style.display = "flex";
+
+}
+
+function changeAppLanguage(lang){
+
+    if(!translations[lang]){
+        return;
+    }
+
+    localStorage.setItem("appLanguage", lang);
+    applyLanguage();
+    applyWeatherLanguage();
+    updateLanguageUI(lang);
 
 }
 
@@ -10599,6 +10669,10 @@ window.addEventListener("load", function () {
 const translations = {
 
     en: {
+        header: "🌾 AI Assistant",
+        cropLabel: "🌾 Select Main Crop",
+        villageLabel: "🏡 Village:",
+        locationLabel: "📍 Location:",
         weather: "Weather",
         kisanConnect: "Kisan Connect",
         mandi: "Mandi",
@@ -10614,11 +10688,22 @@ const translations = {
         home: "Home",
         search: "Search",
         ai: "AI",
-        alerts: "Alerts"
+        alerts: "Alerts",
+        language: "App Language",
+        sideHome: "Home",
+        sideProfile: "Profile",
+        sideSchemes: "Schemes",
+        sideNews: "News",
+        sideLogout: "Logout",
+        languageName: "English"
     },
 
 
     hi: {
+        header: "🌾 AI सहायक",
+        cropLabel: "🌾 मुख्य फसल चुनें",
+        villageLabel: "🏡 गांव:",
+        locationLabel: "📍 स्थान:",
         weather: "मौसम",
         kisanConnect: "किसान कनेक्ट",
         mandi: "मंडी भाव",
@@ -10634,11 +10719,22 @@ const translations = {
         home: "होम",
         search: "खोजें",
         ai: "AI",
-        alerts: "सूचनाएं"
+        alerts: "सूचनाएं",
+        language: "ऐप भाषा",
+        sideHome: "होम",
+        sideProfile: "प्रोफाइल",
+        sideSchemes: "सरकारी योजनाएं",
+        sideNews: "कृषि समाचार",
+        sideLogout: "लॉगआउट",
+        languageName: "हिंदी"
     },
 
 
     mr: {
+        header: "🌾 AI सहाय्यक",
+        cropLabel: "🌾 मुख्य पीक निवडा",
+        villageLabel: "🏡 गाव:",
+        locationLabel: "📍 स्थान:",
         weather: "हवामान",
         kisanConnect: "किसान कनेक्ट",
         mandi: "बाजार भाव",
@@ -10654,7 +10750,14 @@ const translations = {
         home: "मुख्यपृष्ठ",
         search: "शोध",
         ai: "AI",
-        alerts: "सूचना"
+        alerts: "सूचना",
+        language: "अॅपची भाषा",
+        sideHome: "मुख्यपृष्ठ",
+        sideProfile: "प्रोफाइल",
+        sideSchemes: "सरकारी योजना",
+        sideNews: "शेतीच्या बातम्या",
+        sideLogout: "लॉगआउट",
+        languageName: "मराठी"
     }
 
 };
@@ -10668,6 +10771,18 @@ function applyLanguage(){
 
     const t =
         translations[lang] || translations.mr;
+
+    document.getElementById("homeHeaderTitle").innerText =
+        t.header;
+
+    document.getElementById("homeCropLabel").innerText =
+        t.cropLabel;
+
+    document.getElementById("homeVillageLabel").innerText =
+        t.villageLabel;
+
+    document.getElementById("homeLocationLabel").innerText =
+        t.locationLabel;
 
 
     document.getElementById("txtWeather").innerText =
@@ -10718,6 +10833,41 @@ function applyLanguage(){
 
     document.getElementById("navProfile").innerText =
         t.profile;
+
+    document.getElementById("sideHomeLabel").innerText =
+        "🏠 " + t.sideHome;
+
+    document.getElementById("sideProfileLabel").innerText =
+        "👤 " + t.sideProfile;
+
+    document.getElementById("sideSchemesLabel").innerText =
+        "🏛 " + t.sideSchemes;
+
+    document.getElementById("sideNewsLabel").innerText =
+        "📰 " + t.sideNews;
+
+    document.getElementById("sideLogoutLabel").innerText =
+        "🚪 " + t.sideLogout;
+
+    document.getElementById("languageSettingLabel").innerText =
+        "🌐 " + t.language;
+
+    document.getElementById("currentLanguageLabel").innerText =
+        t.languageName;
+
+    document.getElementById("homeLanguageSelect").value = lang;
+
+}
+
+function updateLanguageUI(lang){
+
+    const selector = document.getElementById("homeLanguageSelect");
+
+    if(selector){
+        selector.value = lang;
+    }
+
+    applyLanguage();
 
 }
 
