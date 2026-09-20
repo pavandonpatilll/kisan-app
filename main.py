@@ -641,7 +641,37 @@ conn.commit()
 
 def hash_password(password):
 
-    return hashlib.sha256(password.encode()).hexdigest()
+    salt = os.urandom(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode(),
+        salt,
+        310000
+    )
+
+    return "pbkdf2_sha256$310000$" + salt.hex() + "$" + digest.hex()
+
+
+def verify_password(password, stored_hash):
+
+    if not stored_hash:
+        return False
+
+    if stored_hash.startswith("pbkdf2_sha256$"):
+        try:
+            _, iterations, salt_hex, digest_hex = stored_hash.split("$", 3)
+            digest = hashlib.pbkdf2_hmac(
+                "sha256",
+                password.encode(),
+                bytes.fromhex(salt_hex),
+                int(iterations)
+            )
+            return hmac.compare_digest(digest.hex(), digest_hex)
+        except (ValueError, TypeError):
+            return False
+
+    legacy_hash = hashlib.sha256(password.encode()).hexdigest()
+    return hmac.compare_digest(legacy_hash, stored_hash)
 
 # ==========================
 # Models
@@ -677,8 +707,8 @@ class LocationModel(BaseModel):
     longitude:float    
 
 class HomeCropModel(BaseModel):
-        user_id: int
-        crop: str
+    user_id: str
+    crop: str
 
 
 class AdminLoginModel(BaseModel):
@@ -1456,11 +1486,18 @@ def login(user: LoginModel):
     data = user_doc.to_dict()
 
     # Password Check
-    if data.get("password") != hash_password(user.password):
+    stored_password = data.get("password")
+
+    if not verify_password(user.password, stored_password):
         return {
             "status": False,
             "message": "Wrong Password"
         }
+
+    if stored_password and not stored_password.startswith("pbkdf2_sha256$"):
+        firestore_db.collection("users").document(user_doc.id).update({
+            "password": hash_password(user.password)
+        })
 
     return {
         "status": True,
@@ -3870,8 +3907,6 @@ def update_home_crop(data: HomeCropModel):
             "status": False,
             "message": str(e)
         }
-
-
 # ==========================
 # SMART ALERTS - FIRESTORE
 # ==========================
@@ -5584,6 +5619,24 @@ def get_farmers():
 @app.post("/send-chat")
 def send_chat(data: dict):
 
+    sender_id = str(data.get("sender_id", "")).strip()
+    receiver_id = str(data.get("receiver_id", "")).strip()
+
+    if not sender_id or not receiver_id or sender_id == receiver_id:
+        return {
+            "status": False,
+            "message": "Valid sender and receiver are required"
+        }
+
+    sender = firestore_db.collection("users").document(sender_id).get()
+    receiver = firestore_db.collection("users").document(receiver_id).get()
+
+    if not sender.exists or not receiver.exists:
+        return {
+            "status": False,
+            "message": "User not found"
+        }
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -5634,8 +5687,8 @@ def send_chat(data: dict):
     VALUES(?,?,?,?,?,?,?,?)
     """,
     (
-        data["sender_id"],
-        data["receiver_id"],
+        sender_id,
+        receiver_id,
         message,
         datetime.now().strftime(
             "%Y-%m-%d %H:%M"
@@ -5660,8 +5713,8 @@ def send_chat(data: dict):
 
 @app.get("/chat/{user1}/{user2}")
 def get_chat(
-    user1: int,
-    user2: int
+    user1: str,
+    user2: str
 ):
 
     conn = sqlite3.connect(DATABASE_PATH)
@@ -5782,14 +5835,28 @@ async def upload_chat_image(
             }
 
 
-        extension = os.path.splitext(
-            file.filename
-        )[1]
+        image_data = await file.read()
 
+        if len(image_data) > 10 * 1024 * 1024:
+            return {
+                "status": False,
+                "message": "Image must be smaller than 10 MB"
+            }
 
-        if not extension:
+        image = Image.open(io.BytesIO(image_data))
+        image.verify()
 
-            extension = ".jpg"
+        extension_by_type = {
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "image/webp": ".webp",
+            "image/gif": ".gif"
+        }
+
+        extension = extension_by_type.get(
+            file.content_type,
+            ".jpg"
+        )
 
 
         filename = (
@@ -5809,9 +5876,7 @@ async def upload_chat_image(
             "wb"
         ) as buffer:
 
-            buffer.write(
-                await file.read()
-            )
+            buffer.write(image_data)
 
 
         return {

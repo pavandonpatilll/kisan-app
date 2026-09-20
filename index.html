@@ -5481,10 +5481,6 @@ Loading Report...
 </div>
 
 
-<div id="newsList">
-
-</div>
-
 <div class="newsContainer" id="newsList">
 
 🔄 Loading news...
@@ -5952,7 +5948,7 @@ function openPage(page){
 
     else if(page == "weatherPage"){
 
-        loadWeather();
+        getLiveLocation();
 
     }
 
@@ -9103,31 +9099,35 @@ data.history[0];
 
 
 
-document.getElementById(
-"totalScans"
-).innerHTML =
-data.count;
+    const totalScans = document.getElementById("totalScans");
+
+    if(totalScans){
+        totalScans.innerHTML = data.count;
+    }
 
 
 
-document.getElementById(
-"lastCrop"
-).innerHTML =
-latest.crop;
+    const lastCrop = document.getElementById("lastCrop");
+
+    if(lastCrop){
+        lastCrop.innerHTML = latest.crop || "--";
+    }
 
 
 
-document.getElementById(
-"lastDisease"
-).innerHTML =
-latest.disease;
+    const lastDisease = document.getElementById("lastDisease");
+
+    if(lastDisease){
+        lastDisease.innerHTML = latest.disease || "--";
+    }
 
 
 
-document.getElementById(
-"riskLevel"
-).innerHTML =
-latest.severity;
+    const riskLevel = document.getElementById("riskLevel");
+
+    if(riskLevel){
+        riskLevel.innerHTML = latest.severity || "--";
+    }
 
 
 
@@ -9689,6 +9689,10 @@ async function toggleNotifications(){
     let popup =
     document.getElementById("notificationPopup");
 
+    if(!popup){
+        return;
+    }
+
 
     if(popup.style.display === "block"){
 
@@ -9709,9 +9713,11 @@ async function toggleNotifications(){
 
 function closeNotifications(){
 
-    document.getElementById(
-        "notificationPopup"
-    ).style.display = "none";
+    const popup = document.getElementById("notificationPopup");
+
+    if(popup){
+        popup.style.display = "none";
+    }
 
 }
 
@@ -9733,6 +9739,10 @@ async function loadNotificationPopup(){
     document.getElementById(
         "notificationContent"
     );
+
+    if(!box){
+        return;
+    }
 
 
     try{
@@ -10186,8 +10196,8 @@ function selectLanguage(lang){
 
     // Login page show
     document.getElementById(
-        "loginPage"
-    ).style.display = "block";
+        "loginSection"
+    ).style.display = "flex";
 
 }
 
@@ -10198,14 +10208,14 @@ window.addEventListener("load", function () {
     if (lang) {
 
         let languagePage = document.getElementById("languagePage");
-        let loginPage = document.getElementById("loginPage");
+        let loginSection = document.getElementById("loginSection");
 
         if (languagePage) {
             languagePage.style.display = "none";
         }
 
-        if (loginPage) {
-            loginPage.style.display = "block";
+        if (loginSection) {
+            loginSection.style.display = "flex";
         }
 
     }
@@ -11284,9 +11294,6 @@ document.getElementById("profileVillage").innerHTML=
 }
 
 window.onload = function(){
-
-getLiveLocation();
-
 
 loadAlertCount();
 
