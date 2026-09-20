@@ -17,8 +17,40 @@ from datetime import datetime
 import os
 import uuid
 from dotenv import load_dotenv
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 load_dotenv()
+
+# ==========================
+# Firebase Firestore
+# ==========================
+
+firebase_credentials_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+
+if firebase_credentials_json:
+
+    firebase_cred = credentials.Certificate(
+        json.loads(firebase_credentials_json)
+    )
+
+elif os.path.exists("firebase-service-account.json"):
+
+    firebase_cred = credentials.Certificate(
+        "firebase-service-account.json"
+    )
+
+else:
+
+    raise RuntimeError("Firebase credentials not configured")
+
+
+if not firebase_admin._apps:
+
+    firebase_admin.initialize_app(firebase_cred)
+
+
+firestore_db = firestore.client()
 
 MANDI_API_KEY = os.getenv("MANDI_API_KEY")
 
@@ -1324,138 +1356,112 @@ def get_notifications(user_id: int):
 # ==========================
 # Register API
 # ==========================
+# ==========================
+# Register API - FIRESTORE
+# ==========================
 
 @app.post("/register")
 def register(user: RegisterModel):
 
     # Mobile Validation
     if len(user.mobile) != 10 or not user.mobile.isdigit():
-
         return {
             "status": False,
             "message": "Enter Valid Mobile Number"
         }
 
+    # Language Validation
+    if user.language not in ["mr", "hi", "en"]:
+        user.language = "hi"
 
     # Duplicate Mobile Check
-    cursor.execute(
-        "SELECT id FROM users WHERE mobile=?",
-        (user.mobile,)
+    existing_users = (
+        firestore_db
+        .collection("users")
+        .where("mobile", "==", user.mobile)
+        .limit(1)
+        .stream()
     )
 
-    if cursor.fetchone():
-
+    for existing_user in existing_users:
         return {
             "status": False,
             "message": "Mobile Number Already Registered"
         }
 
+    # Create Firestore User ID
+    user_id = str(uuid.uuid4())
 
-    # --------------------------------
-    # LANGUAGE VALIDATION
-    # --------------------------------
-
-    if user.language not in ["mr", "hi", "en"]:
-
-        user.language = "hi"
-
-
-    # --------------------------------
-    # SAVE USER
-    # --------------------------------
-
-    cursor.execute(
-        """
-        INSERT INTO users(
-            name,
-            mobile,
-            village,
-            crop,
-            password,
-            language
-        )
-        VALUES(?,?,?,?,?,?)
-        """,
-        (
-            user.name,
-            user.mobile,
-            user.village,
-            user.crop,
-            hash_password(user.password),
-            user.language
-        )
-    )
-
-
-    conn.commit()
-
-
-    return {
-
-        "status": True,
-
-        "message": "Registration Successful"
-
+    # Save User
+    user_data = {
+        "id": user_id,
+        "name": user.name,
+        "mobile": user.mobile,
+        "village": user.village,
+        "crop": user.crop,
+        "password": hash_password(user.password),
+        "language": user.language,
+        "latitude": None,
+        "longitude": None,
+        "created_at": datetime.now().isoformat()
     }
 
+    firestore_db.collection("users").document(user_id).set(user_data)
+
+    return {
+        "status": True,
+        "message": "Registration Successful"
+    }
+
+
 # ==========================
-# Login API
+# Login API - FIRESTORE
 # ==========================
 
 @app.post("/login")
 def login(user: LoginModel):
 
-    cursor.execute(
-        """
-        SELECT
-            id,
-            name,
-            mobile,
-            village,
-            password,
-            crop
-        FROM users
-        WHERE mobile=?
-        """,
-        (user.mobile,)
+    # Find User By Mobile
+    users = (
+        firestore_db
+        .collection("users")
+        .where("mobile", "==", user.mobile)
+        .limit(1)
+        .stream()
     )
 
-    data = cursor.fetchone()
+    user_doc = None
 
-    if data is None:
+    for doc in users:
+        user_doc = doc
+        break
 
+    # User Not Found
+    if user_doc is None:
         return {
             "status": False,
             "message": "User Not Found"
         }
 
-    if data[4] != hash_password(user.password):
+    data = user_doc.to_dict()
 
+    # Password Check
+    if data.get("password") != hash_password(user.password):
         return {
             "status": False,
             "message": "Wrong Password"
         }
 
     return {
-
         "status": True,
-
         "message": "Login Successful",
-
         "user": {
-
-            "id": data[0],
-
-            "name": data[1],
-
-            "mobile": data[2],
-
-            "village": data[3],
-
-            "crop": data[5]
-
+            "id": data.get("id"),
+            "name": data.get("name"),
+            "mobile": data.get("mobile"),
+            "village": data.get("village"),
+            "crop": data.get("crop")
         }
-
     }
 
 # ==========================
