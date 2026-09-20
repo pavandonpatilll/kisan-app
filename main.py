@@ -5388,44 +5388,38 @@ def add_admin_news(data: AdminNewsModel):
         }
     
 
+# ==========================
+# Farmers API - FIRESTORE
+# ==========================
+
 @app.get("/farmers")
 def get_farmers():
 
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
+    farmers = []
 
+    users = firestore_db.collection("users").stream()
 
-    cursor.execute("""
-    SELECT id,name,crop,village
-    FROM users
-    """)
+    for doc in users:
 
+        f = doc.to_dict()
 
-    farmers = cursor.fetchall()
+        farmers.append({
 
+            "id": f.get("id", doc.id),
 
-    conn.close()
+            "name": f.get("name", ""),
 
+            "crop": f.get("crop", ""),
 
-    data=[]
-
-
-    for f in farmers:
-
-        data.append({
-
-            "id":f[0],
-            "name":f[1],
-            "crop":f[2],
-            "village":f[3]
+            "village": f.get("village", "")
 
         })
 
-
     return {
 
-        "status":True,
-        "farmers":data
+        "status": True,
+
+        "farmers": farmers
 
     }
 
