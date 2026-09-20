@@ -2290,6 +2290,10 @@ IMPORTANT:
     
 
 
+# ==========================
+# ADMIN ADD CROP GUIDE - FIRESTORE
+# ==========================
+
 @app.post("/admin/crop-guide")
 def add_admin_crop_guide(data: AdminCropGuideModel):
 
@@ -2305,38 +2309,45 @@ def add_admin_crop_guide(data: AdminCropGuideModel):
                 "message": "Crop name and information required"
             }
 
-        cursor.execute("""
-            INSERT INTO admin_crop_guides(
-                crop,
-                information,
-                date
-            )
-            VALUES (?, ?, ?)
-        """, (
-            crop,
-            information,
-            datetime.now().strftime("%Y-%m-%d")
-        ))
+        guide_id = str(uuid.uuid4())
 
-        conn.commit()
+        crop_guide_data = {
+
+            "id": guide_id,
+
+            "crop": crop,
+
+            "information": information,
+
+            "date": datetime.now().strftime("%Y-%m-%d"),
+
+            "created_at": datetime.now().isoformat()
+
+        }
+
+        firestore_db.collection(
+            "admin_crop_guides"
+        ).document(guide_id).set(
+            crop_guide_data
+        )
 
         return {
+
             "status": True,
+
             "message": "Crop guide added successfully"
+
         }
 
     except Exception as e:
 
-        conn.rollback()
-
         return {
+
             "status": False,
+
             "message": str(e)
+
         }
-
-
-
-
 # ==========================
 # DISEASE SCAN - FIRESTORE
 # ==========================
@@ -3793,38 +3804,42 @@ def update_home_crop(data: HomeCropModel):
         }
 
 
+# ==========================
+# SMART ALERTS - FIRESTORE
+# ==========================
+
 @app.get("/alerts/{user_id}")
-def smart_alerts(user_id: int):
+def smart_alerts(user_id: str):
 
     try:
 
         # =====================================================
-        # USER DATA
+        # USER DATA - FIRESTORE
         # =====================================================
 
-        cursor.execute("""
-            SELECT crop, village, latitude, longitude, language
-            FROM users
-            WHERE id=?
-        """, (user_id,))
+        user_doc = (
+            firestore_db
+            .collection("users")
+            .document(str(user_id))
+            .get()
+        )
 
-        user = cursor.fetchone()
-
-        if not user:
+        if not user_doc.exists:
 
             return {
                 "status": False,
                 "message": "User not found"
             }
 
+        user = user_doc.to_dict()
 
-        crop = user[0] or "General Crop"
-        village = user[1] or "Unknown"
+        crop = user.get("crop") or "General Crop"
+        village = user.get("village") or "Unknown"
 
-        lat = user[2]
-        lon = user[3]
+        lat = user.get("latitude")
+        lon = user.get("longitude")
 
-        language = user[4] or "hi"
+        language = user.get("language") or "hi"
 
 
         # =====================================================
@@ -3871,12 +3886,9 @@ def smart_alerts(user_id: int):
                     timeout=10
                 )
 
-
                 weather_response.raise_for_status()
 
-
                 weather_data = weather_response.json()
-
 
                 current = weather_data["current"]
 
@@ -3907,13 +3919,11 @@ def smart_alerts(user_id: int):
                         .index(current_time)
                     )
 
-
                     rain = weather_data[
                         "hourly"
                     ][
                         "precipitation_probability"
                     ][current_hour]
-
 
                 except Exception:
 
@@ -3941,7 +3951,7 @@ def smart_alerts(user_id: int):
 
 
         # =====================================================
-        # DISEASE HISTORY
+        # DISEASE HISTORY - FIRESTORE
         # =====================================================
 
         disease_info = (
@@ -3953,35 +3963,52 @@ def smart_alerts(user_id: int):
 
         try:
 
-            cursor.execute("""
-                SELECT
-                    crop,
-                    disease,
-                    confidence,
-                    severity,
-                    affected,
-                    symptoms,
-                    date
-                FROM disease_history
-                WHERE user_id=?
-                ORDER BY id DESC
-                LIMIT 1
-            """, (user_id,))
+            disease_docs = (
+                firestore_db
+                .collection("disease_history")
+                .stream()
+            )
 
 
-            last_disease = cursor.fetchone()
+            user_diseases = []
+
+            for doc in disease_docs:
+
+                disease_data = doc.to_dict()
+
+                if str(
+                    disease_data.get("user_id", "")
+                ) == str(user_id):
+
+                    user_diseases.append(
+                        disease_data
+                    )
 
 
-            if last_disease:
+            # Latest scan first
+            user_diseases.sort(
+                key=lambda x: (
+                    x.get("created_at", "")
+                    or x.get("date", "")
+                    or ""
+                ),
+                reverse=True
+            )
+
+
+            if user_diseases:
+
+                last_disease = user_diseases[0]
+
 
                 disease_info = f"""
-Previous Scan Crop: {last_disease[0]}
-Previous Disease: {last_disease[1]}
-Previous Confidence: {last_disease[2]}
-Previous Severity: {last_disease[3]}
-Affected Part: {last_disease[4]}
-Symptoms: {last_disease[5]}
-Scan Date: {last_disease[6]}
+Previous Scan Crop: {last_disease.get("crop", "")}
+Previous Disease: {last_disease.get("disease", "")}
+Previous Confidence: {last_disease.get("confidence", "")}
+Previous Severity: {last_disease.get("severity", "")}
+Affected Part: {last_disease.get("affected", "")}
+Symptoms: {last_disease.get("symptoms", "")}
+Scan Date: {last_disease.get("date", "")}
 """
 
 
@@ -4105,7 +4132,6 @@ agricultural technical names.
 
 {disease_instruction}
 
-
 Generate today's REAL farmer alerts.
 
 Analyze:
@@ -4115,7 +4141,6 @@ Analyze:
 3. Disease risk
 4. Farming reminder
 5. Today's practical tasks
-
 
 IMPORTANT:
 
@@ -4203,7 +4228,6 @@ All descriptive text must be in {selected_language}.
                     "Alert Model Success:",
                     model_name
                 )
-
 
                 break
 
