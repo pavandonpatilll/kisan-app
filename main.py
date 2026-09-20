@@ -706,7 +706,7 @@ class LoginModel(BaseModel):
 
 class LocationModel(BaseModel):
 
-    user_id:int
+    user_id:str
 
     latitude:float
 
@@ -1643,10 +1643,21 @@ def save_location(data: LocationModel):
 # Weather API
 # ==========================
 
+weather_cache = {}
+WEATHER_CACHE_SECONDS = 600
+
 @app.get("/weather/{lat}/{lon}")
 def get_weather(lat: float, lon: float):
 
     try:
+
+        cache_key = (round(lat, 2), round(lon, 2))
+        cached = weather_cache.get(cache_key)
+
+        if cached and (
+            datetime.now().timestamp() - cached[0]
+        ) < WEATHER_CACHE_SECONDS:
+            return cached[1]
 
         url = (
             "https://api.open-meteo.com/v1/forecast"
@@ -1700,7 +1711,7 @@ def get_weather(lat: float, lon: float):
 
 
 
-        return {
+        result = {
 
 
             "status": True,
@@ -1762,9 +1773,21 @@ def get_weather(lat: float, lon: float):
 
         }
 
+        weather_cache[cache_key] = (
+            datetime.now().timestamp(),
+            result
+        )
+
+        return result
+
 
 
     except Exception as e:
+
+        cached = weather_cache.get((round(lat, 2), round(lon, 2)))
+
+        if cached:
+            return cached[1]
 
 
         return {
@@ -6204,7 +6227,6 @@ def create_subscription(data: dict):
                 str(e)
 
         }
-    
 
 
 # ==========================
@@ -7623,3 +7645,4 @@ async def razorpay_webhook(request: Request):
                 str(e)
 
         }
+

@@ -7541,12 +7541,16 @@ lat,
 lon
 );
 
+saveUserLocation(lat, lon);
+
 
 
 getLocationName(
 lat,
 lon
 );
+
+loadLocationName(lat, lon);
 
 
 
@@ -7562,10 +7566,13 @@ lon
 
 function(error){
 
+    const messageByCode = {
+        1: "Location permission allow karo.",
+        2: "Location detect nahi ho pa rahi.",
+        3: "Location request timeout ho gaya. Dobara try karo."
+    };
 
-alert(
-"Location allow karo farming features ke liye"
-);
+    alert(messageByCode[error.code] || "Location detect nahi ho pa rahi.");
 
 
 }
@@ -7605,6 +7612,30 @@ document.getElementById(
 data.location;
 
 
+}
+
+async function saveUserLocation(lat, lon){
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if(!user || !user.id){
+        return;
+    }
+
+    try{
+        await fetch(`${API}/save-location`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                user_id:String(user.id),
+                latitude:lat,
+                longitude:lon
+            })
+        });
+    }
+    catch(error){
+        console.error("Location save error:", error);
+    }
 }
 
 
@@ -7707,6 +7738,13 @@ async function loadWeather(lat, lon) {
 let weatherForecastData = null;
 
 function showForecast(forecast){
+
+    if(!forecast || !Array.isArray(forecast.date)){
+        document.getElementById("forecastBox").innerHTML =
+            "Forecast unavailable.";
+        return;
+    }
+
     weatherForecastData = forecast;
 
     const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
