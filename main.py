@@ -780,8 +780,10 @@ def admin_login(data: AdminLoginModel):
 
     }
 
+
+
 # ==========================
-# ADMIN DASHBOARD
+# ADMIN DASHBOARD - FIRESTORE
 # ==========================
 
 @app.get("/admin/dashboard")
@@ -793,60 +795,60 @@ def admin_dashboard():
         # USERS
         # ==========================
 
-        cursor.execute(
-            "SELECT COUNT(*) FROM users"
+        users_docs = (
+            firestore_db
+            .collection("users")
+            .stream()
         )
 
-        total_users = cursor.fetchone()[0]
+        total_users = sum(
+            1 for _ in users_docs
+        )
 
 
         # ==========================
-        # DISEASE
+        # DISEASE HISTORY
         # ==========================
 
-        cursor.execute(
-            "SELECT COUNT(*) FROM disease_history"
+        disease_docs = (
+            firestore_db
+            .collection("disease_history")
+            .stream()
         )
 
-        total_disease = cursor.fetchone()[0]
+        total_disease = sum(
+            1 for _ in disease_docs
+        )
 
 
         # ==========================
         # MANDI
         # ==========================
 
-        total_mandi = 0
+        mandi_docs = (
+            firestore_db
+            .collection("mandi")
+            .stream()
+        )
 
-        try:
-
-            cursor.execute(
-                "SELECT COUNT(*) FROM mandi"
-            )
-
-            total_mandi = cursor.fetchone()[0]
-
-        except Exception:
-
-            total_mandi = 0
+        total_mandi = sum(
+            1 for _ in mandi_docs
+        )
 
 
         # ==========================
         # ADMIN NEWS
         # ==========================
 
-        total_news = 0
+        news_docs = (
+            firestore_db
+            .collection("admin_news")
+            .stream()
+        )
 
-        try:
-
-            cursor.execute(
-                "SELECT COUNT(*) FROM admin_news"
-            )
-
-            total_news = cursor.fetchone()[0]
-
-        except Exception:
-
-            total_news = 0
+        total_news = sum(
+            1 for _ in news_docs
+        )
 
 
         # ==========================
