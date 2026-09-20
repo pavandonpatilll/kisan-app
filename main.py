@@ -1421,94 +1421,116 @@ def login(user: LoginModel):
 # Get Profile API
 # ==========================
 
+# ==========================
+# Profile API - FIRESTORE
+# ==========================
+
 @app.get("/profile/{user_id}")
-def get_profile(user_id:int):
+def get_profile(user_id: str):
 
-    cursor.execute(
-        """
-        SELECT
-        id,
-        name,
-        mobile,
-        village
+    try:
 
-        FROM users
+        user_doc = (
+            firestore_db
+            .collection("users")
+            .document(user_id)
+            .get()
+        )
 
-        WHERE id=?
-        """,
-        (user_id,)
-    )
+        if not user_doc.exists:
 
-    user = cursor.fetchone()
+            return {
+                "status": False,
+                "message": "User Not Found"
+            }
 
-
-    if user is None:
+        user = user_doc.to_dict()
 
         return {
 
-            "status":False,
+            "status": True,
 
-            "message":"User Not Found"
+            "user": {
 
-        }
+                "id": user.get("id", user_doc.id),
 
+                "name": user.get("name", ""),
 
-    return {
+                "mobile": user.get("mobile", ""),
 
-        "status":True,
+                "village": user.get("village", "")
 
-        "user":{
-
-            "id":user[0],
-
-            "name":user[1],
-
-            "mobile":user[2],
-
-            "village":user[3]
+            }
 
         }
 
-    }
+    except Exception as e:
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
+
 
 # ==========================
-# Save User Location
+# Save User Location - FIRESTORE
 # ==========================
 
 @app.post("/save-location")
-def save_location(data:LocationModel):
+def save_location(data: LocationModel):
 
-    cursor.execute(
-        """
-        UPDATE users
+    try:
 
-        SET latitude=?,
-        longitude=?
-
-        WHERE id=?
-        """,
-
-        (
-            data.latitude,
-            data.longitude,
-            data.user_id
+        user_ref = (
+            firestore_db
+            .collection("users")
+            .document(str(data.user_id))
         )
-    )
 
-    conn.commit()
+        user_doc = user_ref.get()
 
+        if not user_doc.exists:
 
-    return {
+            return {
 
-        "status":True,
+                "status": False,
 
-        "message":"Location Saved",
+                "message": "User Not Found"
 
-        "latitude":data.latitude,
+            }
 
-        "longitude":data.longitude
+        user_ref.update({
 
-    }
+            "latitude": data.latitude,
+
+            "longitude": data.longitude
+
+        })
+
+        return {
+
+            "status": True,
+
+            "message": "Location Saved",
+
+            "latitude": data.latitude,
+
+            "longitude": data.longitude
+
+        }
+
+    except Exception as e:
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
 
 # ==========================
 # Weather API
