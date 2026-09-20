@@ -163,6 +163,12 @@ display:none;
 
 }
 
+#loginSection{
+
+display:none;
+
+}
+
 #homeSection{
 
 display:none;
@@ -5734,9 +5740,22 @@ let data = await response.json();
 
 if(data.status){
 
-alert(data.message);
+localStorage.setItem(
+    "user",
+    JSON.stringify(data.user)
+);
 
-showLogin();
+localStorage.setItem("userId", data.user.id);
+
+alert(data.message + " - App opening");
+
+document.getElementById("registerSection").style.display = "none";
+document.getElementById("homeSection").style.display = "block";
+
+updateUserUI(data.user);
+applyLanguage();
+loadPremiumStatus();
+loadDiseaseSummary();
 
 }
 
@@ -5944,6 +5963,10 @@ function openPage(page){
         console.error("Unknown page:", page);
         return;
     }
+
+    document.getElementById("languagePage").style.display = "none";
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("registerSection").style.display = "none";
 
     document.getElementById("homeSection").style.display = "none";
 
@@ -7424,6 +7447,10 @@ function goHome(){
         p.style.display = "none";
 
     });
+
+    document.getElementById("languagePage").style.display = "none";
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("registerSection").style.display = "none";
 
     document.getElementById("homeSection").style.display = "block";
 
@@ -10262,9 +10289,9 @@ function selectLanguage(lang){
     ).style.display = "none";
 
 
-    // Login page show
+    // Registration page show
     document.getElementById(
-        "loginSection"
+        "registerSection"
     ).style.display = "flex";
 
 }
@@ -10283,7 +10310,11 @@ window.addEventListener("load", function () {
         }
 
         if (loginSection) {
-            loginSection.style.display = "flex";
+            loginSection.style.display = "none";
+        }
+
+        if(!localStorage.getItem("user")){
+            document.getElementById("registerSection").style.display = "flex";
         }
 
     }

@@ -1456,7 +1456,14 @@ def register(user: RegisterModel):
 
     return {
         "status": True,
-        "message": "Registration Successful"
+        "message": "Registration Successful",
+        "user": {
+            "id": user_id,
+            "name": user.name,
+            "mobile": user.mobile,
+            "village": user.village,
+            "crop": user.crop
+        }
     }
 
 
