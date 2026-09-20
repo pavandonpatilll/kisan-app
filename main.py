@@ -1679,6 +1679,9 @@ def get_weather(lat: float, lon: float):
 
         response = requests.get(
             url,
+            headers={
+                "User-Agent": "ShrimantShetkari/1.0 weather-service"
+            },
             timeout=10
         )
 

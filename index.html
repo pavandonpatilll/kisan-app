@@ -5653,6 +5653,24 @@ let chatUserName = "";
 let sendingMessage = false;
 
 const API = "https://kisan-app-1.onrender.com";
+
+initializeAppHistory();
+
+window.addEventListener("popstate", function(event){
+
+    const page = event.state && event.state.kisanApp
+        ? event.state.appPage
+        : "home";
+
+    if(page === "home"){
+        goHome(true);
+    }
+    else{
+        openPage(page, true);
+    }
+
+});
+
 // ----------------------------
 // Show Login
 // ----------------------------
@@ -5955,13 +5973,35 @@ function logout(){
 
 }
 
-function openPage(page){
+function initializeAppHistory(){
+
+    const initialState = {
+        kisanApp: true,
+        appPage: "home"
+    };
+
+    history.replaceState(initialState, "", location.href);
+    history.pushState(initialState, "", location.href);
+}
+
+function openPage(page, fromHistory = false){
 
     const targetPage = document.getElementById(page);
 
     if(!targetPage){
         console.error("Unknown page:", page);
         return;
+    }
+
+    if(!fromHistory){
+        history.pushState(
+            {
+                kisanApp: true,
+                appPage: page
+            },
+            "",
+            location.href
+        );
     }
 
     document.getElementById("languagePage").style.display = "none";
@@ -7438,7 +7478,18 @@ async function loadNotificationPage(){
 }
 
 
-function goHome(){
+function goHome(fromHistory = false){
+
+    if(!fromHistory){
+        history.pushState(
+            {
+                kisanApp: true,
+                appPage: "home"
+            },
+            "",
+            location.href
+        );
+    }
 
     let pages = document.querySelectorAll(".featurePage");
 
