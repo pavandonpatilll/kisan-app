@@ -9358,41 +9358,91 @@ document.getElementById("otherCrop").style.display="none";
 
 });
 
-async function changeHomeCrop(){
+async function changeHomeCrop() {
 
-let user = JSON.parse(localStorage.getItem("user"));
+    try {
 
-let crop = document.getElementById("homeCropSelect").value;
+        let user = JSON.parse(
+            localStorage.getItem("user")
+        );
 
-let response = await fetch(
-"https://kisan-app-1.onrender.com/update-home-crop",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
+        if (!user || !user.id) {
 
-user_id:user.id,
-crop:crop
+            alert("Please login first");
+            return;
 
-})
-});
+        }
 
-let data = await response.json();
+        let crop = document
+            .getElementById("homeCropSelect")
+            .value;
 
-if(data.status){
+        if (!crop) {
 
-user.crop=crop;
+            alert("Please select crop");
+            return;
 
-localStorage.setItem(
-"user",
-JSON.stringify(user)
-);
+        }
 
-alert("✅ Crop Updated");
+        let response = await fetch(
+            "https://kisan-app-1.onrender.com/update-home-crop",
+            {
+                method: "POST",
 
-}
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    user_id: user.id,
+
+                    crop: crop
+
+                })
+            }
+        );
+
+        let data = await response.json();
+
+        if (data.status) {
+
+            // Update local user data
+            user.crop = crop;
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(user)
+            );
+
+            alert("✅ Crop Updated");
+
+            // Refresh home/profile UI if function exists
+            if (typeof loadProfile === "function") {
+                loadProfile();
+            }
+
+        } else {
+
+            alert(
+                "❌ " +
+                (data.message || "Crop update failed")
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "CHANGE CROP ERROR:",
+            error
+        );
+
+        alert(
+            "❌ Server error. Please try again."
+        );
+
+    }
 
 }
 

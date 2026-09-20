@@ -1205,6 +1205,9 @@ def get_admin_mandi():
 class NotificationModel(BaseModel):
     message: str
 
+# ==========================
+# ADMIN ADD NOTIFICATION - FIRESTORE
+# ==========================
 
 @app.post("/admin/notification")
 def add_notification(data: NotificationModel):
@@ -1220,65 +1223,121 @@ def add_notification(data: NotificationModel):
                 "message": "Notification message is required"
             }
 
-        cursor.execute("""
-            INSERT INTO notifications(
-                message,
-                date
-            )
-            VALUES(?,?)
-        """, (
-            message,
-            datetime.now().strftime("%d-%m-%Y %H:%M")
-        ))
+        notification_id = str(uuid.uuid4())
 
-        conn.commit()
+        notification_data = {
+
+            "id": notification_id,
+
+            "message": message,
+
+            "date": datetime.now().strftime(
+                "%d-%m-%Y %H:%M"
+            ),
+
+            "created_at": datetime.now().isoformat()
+
+        }
+
+        firestore_db.collection(
+            "notifications"
+        ).document(
+            notification_id
+        ).set(
+            notification_data
+        )
 
         return {
+
             "status": True,
+
             "message": "Notification sent successfully"
+
         }
 
     except Exception as e:
 
-        print("NOTIFICATION ERROR:", str(e))
+        print(
+            "NOTIFICATION ERROR:",
+            str(e)
+        )
 
         return {
+
             "status": False,
+
             "message": str(e)
+
         }
 
 
+# ==========================
+# GET NOTIFICATIONS - FIRESTORE
+# ==========================
+
 @app.get("/notifications/{user_id}")
-def get_notifications(user_id: int):
+def get_notifications(user_id: str):
 
     try:
 
-        cursor.execute("""
-            SELECT
-                id,
-                message,
-                date
-            FROM notifications
-            ORDER BY id DESC
-            LIMIT 20
-        """)
-
-        rows = cursor.fetchall()
-
+        notification_docs = (
+            firestore_db
+            .collection("notifications")
+            .stream()
+        )
 
         notifications = []
 
-        for row in rows:
+        for doc in notification_docs:
+
+            data = doc.to_dict()
 
             notifications.append({
 
-                "id": row[0],
+                "id": data.get(
+                    "id",
+                    doc.id
+                ),
 
-                "message": row[1],
+                "message": data.get(
+                    "message",
+                    ""
+                ),
 
-                "date": row[2]
+                "date": data.get(
+                    "date",
+                    ""
+                ),
+
+                "_created_at": data.get(
+                    "created_at",
+                    ""
+                )
 
             })
+
+
+        # Latest notifications first
+        notifications.sort(
+            key=lambda x: x.get(
+                "_created_at",
+                ""
+            ),
+            reverse=True
+        )
+
+
+        # Only latest 20
+        notifications = notifications[:20]
+
+
+        # Remove internal sorting field
+        for item in notifications:
+
+            item.pop(
+                "_created_at",
+                None
+            )
 
 
         return {
@@ -1306,9 +1365,7 @@ def get_notifications(user_id: int):
         }
 
 
-# ==========================
-# Register API
-# ==========================
+
 # ==========================
 # Register API - FIRESTORE
 # ==========================
@@ -3764,6 +3821,8 @@ def add_admin_scheme(data: SchemeModel):
         }
 
     
+
+
 # ==========================
 # UPDATE HOME CROP - FIRESTORE
 # ==========================
@@ -3788,8 +3847,17 @@ def update_home_crop(data: HomeCropModel):
                 "message": "User Not Found"
             }
 
+        crop = data.crop.strip()
+
+        if not crop:
+
+            return {
+                "status": False,
+                "message": "Crop is required"
+            }
+
         user_ref.update({
-            "crop": data.crop
+            "crop": crop
         })
 
         return {
