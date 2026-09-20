@@ -929,61 +929,32 @@ def admin_users():
 
 
 # ==========================
-# ADMIN PREMIUM USERS
+# ADMIN PREMIUM USERS - FIRESTORE
 # ==========================
 
 @app.get("/admin/premium-users")
 def admin_premium_users():
 
-    conn = sqlite3.connect(DATABASE_PATH)
-    conn.row_factory = sqlite3.Row
-
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            id,
-            name,
-            mobile,
-            premium_plan,
-            premium_expiry,
-            razorpay_subscription_id,
-            razorpay_payment_id,
-            razorpay_subscription_status,
-            last_payment_status,
-            last_payment_date,
-            next_payment_date
-        FROM users
-        ORDER BY id DESC
-    """)
-
-    rows = cursor.fetchall()
-
-    conn.close()
-
+    user_docs = firestore_db.collection("users").stream()
 
     users = []
 
+    for doc in user_docs:
 
-    for row in rows:
+        data = doc.to_dict()
 
-        plan = row["premium_plan"] or ""
-
-        expiry = row["premium_expiry"] or ""
+        plan = data.get("premium_plan") or ""
+        expiry = data.get("premium_expiry") or ""
 
         subscription_status = (
-            row["razorpay_subscription_status"]
-            or ""
+            data.get("razorpay_subscription_status") or ""
         )
 
         last_payment_status = (
-            row["last_payment_status"]
-            or ""
+            data.get("last_payment_status") or ""
         )
 
-
         plan_lower = plan.lower()
-
 
         # ==========================
         # PREMIUM STATUS
@@ -1005,7 +976,6 @@ def admin_premium_users():
 
             premium_status = "free"
 
-
         # ==========================
         # EXPIRY CHECK
         # ==========================
@@ -1014,9 +984,7 @@ def admin_premium_users():
 
             try:
 
-                expiry_date = datetime.fromisoformat(
-                    expiry
-                )
+                expiry_date = datetime.fromisoformat(expiry)
 
                 if expiry_date < datetime.now():
 
@@ -1026,9 +994,8 @@ def admin_premium_users():
 
                 pass
 
-
         # ==========================
-        # AUTOPAY DISPLAY STATUS
+        # AUTOPAY STATUS
         # ==========================
 
         if subscription_status == "halted":
@@ -1039,15 +1006,11 @@ def admin_premium_users():
 
             autopay_status = "cancelled"
 
-        elif subscription_status == "charged":
-
-            autopay_status = "active"
-
-        elif subscription_status == "activated":
-
-            autopay_status = "active"
-
-        elif subscription_status == "authenticated":
+        elif subscription_status in [
+            "charged",
+            "activated",
+            "authenticated"
+        ]:
 
             autopay_status = "active"
 
@@ -1063,21 +1026,13 @@ def admin_premium_users():
 
             autopay_status = "-"
 
-
-        # ==========================
-        # ADD USER
-        # ==========================
-
         users.append({
 
-            "id":
-                row["id"],
+            "id": data.get("id", doc.id),
 
-            "name":
-                row["name"],
+            "name": data.get("name", ""),
 
-            "mobile":
-                row["mobile"],
+            "mobile": data.get("mobile", ""),
 
             "premium_plan":
                 plan if plan else "Free",
@@ -1089,34 +1044,27 @@ def admin_premium_users():
                 premium_status,
 
             "razorpay_subscription_id":
-                row["razorpay_subscription_id"]
-                or "-",
+                data.get("razorpay_subscription_id") or "-",
 
             "razorpay_payment_id":
-                row["razorpay_payment_id"]
-                or "-",
+                data.get("razorpay_payment_id") or "-",
 
             "razorpay_subscription_status":
-                subscription_status
-                or "-",
+                subscription_status or "-",
 
             "autopay_status":
                 autopay_status,
 
             "last_payment_status":
-                last_payment_status
-                or "-",
+                last_payment_status or "-",
 
             "last_payment_date":
-                row["last_payment_date"]
-                or "-",
+                data.get("last_payment_date") or "-",
 
             "next_payment_date":
-                row["next_payment_date"]
-                or "-"
+                data.get("next_payment_date") or "-"
 
         })
-
 
     return {
 
@@ -1139,119 +1087,116 @@ class MandiModel(BaseModel):
     avg_price: float
 
 
+# ==========================
+# ADMIN ADD MANDI - FIRESTORE
+# ==========================
+
 @app.post("/admin/mandi")
 def add_mandi(data: MandiModel):
 
     try:
 
-        cursor.execute(
-            """
-            INSERT INTO mandi(
-                crop,
-                location,
-                min_price,
-                max_price,
-                avg_price,
-                date
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (
-                data.crop.strip(),
-                data.location.strip(),
-                data.min_price,
-                data.max_price,
-                data.avg_price,
-                datetime.now().strftime("%Y-%m-%d")
-            )
-        )
+        mandi_id = str(uuid.uuid4())
 
-        conn.commit()
+        mandi_data = {
 
+            "id": mandi_id,
 
-        # Verify immediately
-        cursor.execute(
-            """
-            SELECT
-                id,
-                crop,
-                location,
-                min_price,
-                max_price,
-                avg_price,
-                date
-            FROM mandi
-            ORDER BY id DESC
-            LIMIT 1
-            """
-        )
+            "crop": data.crop.strip(),
 
-        row = cursor.fetchone()
+            "location": data.location.strip(),
 
+            "min_price": data.min_price,
 
-        return {
-            "status": True,
-            "message": "Mandi rate added successfully",
-            "saved": {
-                "id": row[0],
-                "crop": row[1],
-                "location": row[2],
-                "min_price": row[3],
-                "max_price": row[4],
-                "avg_price": row[5],
-                "date": row[6]
-            }
+            "max_price": data.max_price,
+
+            "avg_price": data.avg_price,
+
+            "date": datetime.now().strftime("%Y-%m-%d"),
+
+            "created_at": datetime.now().isoformat()
+
         }
 
+        firestore_db.collection("mandi").document(
+            mandi_id
+        ).set(mandi_data)
+
+        return {
+
+            "status": True,
+
+            "message": "Mandi rate added successfully",
+
+            "saved": mandi_data
+
+        }
 
     except Exception as e:
 
-        conn.rollback()
-
         return {
+
             "status": False,
+
             "message": str(e)
+
         }
 
+
+
 # ==========================
-# ADMIN MANDI LIST
+# ADMIN MANDI LIST - FIRESTORE
 # ==========================
 
 @app.get("/admin/mandi")
 def get_admin_mandi():
 
-    cursor.execute("""
-        SELECT
-            id,
-            crop,
-            location,
-            min_price,
-            max_price,
-            avg_price,
-            date
-        FROM mandi
-        ORDER BY id DESC
-    """)
-
-    rows = cursor.fetchall()
+    mandi_docs = (
+        firestore_db
+        .collection("mandi")
+        .stream()
+    )
 
     mandi = []
 
-    for row in rows:
+    for doc in mandi_docs:
+
+        data = doc.to_dict()
 
         mandi.append({
-            "id": row[0],
-            "crop": row[1],
-            "location": row[2],
-            "min_price": row[3],
-            "max_price": row[4],
-            "avg_price": row[5],
-            "date": row[6]
+
+            "id": data.get("id", doc.id),
+
+            "crop": data.get("crop", ""),
+
+            "location": data.get("location", ""),
+
+            "min_price": data.get("min_price", 0),
+
+            "max_price": data.get("max_price", 0),
+
+            "avg_price": data.get("avg_price", 0),
+
+            "date": data.get("date", ""),
+
+            "_created_at": data.get("created_at", "")
+
         })
 
+    mandi.sort(
+        key=lambda x: x.get("_created_at", ""),
+        reverse=True
+    )
+
+    for item in mandi:
+        item.pop("_created_at", None)
+
     return {
+
         "status": True,
+
         "mandi": mandi
+
     }
 
 
