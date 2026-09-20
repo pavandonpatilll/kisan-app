@@ -10191,22 +10191,22 @@ function selectLanguage(lang){
 
 }
 
-window.addEventListener("load", function(){
+window.addEventListener("load", function () {
 
-    let lang =
-        localStorage.getItem("appLanguage");
+    let lang = localStorage.getItem("appLanguage");
 
+    if (lang) {
 
-    if(lang){
+        let languagePage = document.getElementById("languagePage");
+        let loginPage = document.getElementById("loginPage");
 
-        document.getElementById(
-            "languagePage"
-        ).style.display = "none";
+        if (languagePage) {
+            languagePage.style.display = "none";
+        }
 
-
-        document.getElementById(
-            "loginPage"
-        ).style.display = "block";
+        if (loginPage) {
+            loginPage.style.display = "block";
+        }
 
     }
 
@@ -11287,7 +11287,6 @@ window.onload = function(){
 
 getLiveLocation();
 
-loadUser();
 
 loadAlertCount();
 
