@@ -4506,38 +4506,43 @@ All descriptive text must be in {selected_language}.
         }
 
 
+# ============================================================
+# RAIN ALERT - FIRESTORE
+# ============================================================
+
 @app.get("/rain-alert/{user_id}")
-def rain_alert(user_id: int):
+def rain_alert(user_id: str):
 
     try:
 
         # =====================================================
-        # USER DATA
+        # USER DATA - FIRESTORE
         # =====================================================
 
-        cursor.execute("""
-            SELECT crop, village, latitude, longitude, language
-            FROM users
-            WHERE id=?
-        """, (user_id,))
+        user_ref = (
+            firestore_db
+            .collection("users")
+            .document(str(user_id))
+        )
 
-        user = cursor.fetchone()
+        user_doc = user_ref.get()
 
-        if user is None:
+        if not user_doc.exists:
 
             return {
                 "status": False,
                 "message": "User not found"
             }
 
+        user = user_doc.to_dict()
 
-        crop = user[0] or "General Crop"
-        village = user[1] or "Unknown"
+        crop = user.get("crop") or "General Crop"
+        village = user.get("village") or "Unknown"
 
-        latitude = user[2]
-        longitude = user[3]
+        latitude = user.get("latitude")
+        longitude = user.get("longitude")
 
-        language = user[4] or "hi"
+        language = user.get("language") or "hi"
 
 
         # =====================================================
@@ -4612,6 +4617,10 @@ def rain_alert(user_id: int):
                 ]
 
 
+                # =================================================
+                # WEATHER CODE
+                # =================================================
+
                 code = current[
                     "weather_code"
                 ]
@@ -4643,7 +4652,9 @@ def rain_alert(user_id: int):
                     81: "Heavy Rain Showers",
                     82: "Violent Rain",
 
-                    95: "Thunderstorm"
+                    95: "Thunderstorm",
+                    96: "Thunderstorm with Hail",
+                    99: "Thunderstorm with Heavy Hail"
 
                 }
 
@@ -4655,7 +4666,7 @@ def rain_alert(user_id: int):
 
 
                 # =================================================
-                # RAIN PROBABILITY
+                # CURRENT RAIN PROBABILITY
                 # =================================================
 
                 try:
@@ -4673,13 +4684,21 @@ def rain_alert(user_id: int):
                         "precipitation_probability"
                     ][index]
 
-
                 except Exception:
 
                     rain = 0
 
 
                 weather_available = True
+
+
+                print(
+                    "RAIN ALERT LIVE WEATHER:",
+                    temperature,
+                    humidity,
+                    rain,
+                    weather_name
+                )
 
 
             except Exception as e:
@@ -4707,6 +4726,7 @@ Weather: {weather_name}
 
             weather_info = """
 Live weather data unavailable.
+
 Do not invent weather values.
 """
 
@@ -4732,7 +4752,6 @@ Live Weather:
 
 {weather_info}
 
-
 Create a REAL rain-related farming alert.
 
 IMPORTANT LANGUAGE RULE:
@@ -4756,6 +4775,7 @@ Consider:
 - fertilizer timing
 - irrigation requirement
 
+Give practical advice for the farmer.
 
 Reply ONLY in this exact format:
 
@@ -4801,7 +4821,6 @@ Keep each answer to one short sentence.
                     model_name
                 )
 
-
                 break
 
 
@@ -4828,7 +4847,7 @@ Keep each answer to one short sentence.
 
 
         # =====================================================
-        # PARSE RESPONSE
+        # PARSE AI RESPONSE
         # =====================================================
 
         text = response.text.strip()
@@ -4862,7 +4881,8 @@ Keep each answer to one short sentence.
                 rain_status = (
                     line.replace(
                         "Rain Status:",
-                        ""
+                        "",
+                        1
                     ).strip()
                 )
 
@@ -4874,7 +4894,8 @@ Keep each answer to one short sentence.
                 crop_risk = (
                     line.replace(
                         "Crop Risk:",
-                        ""
+                        "",
+                        1
                     ).strip()
                 )
 
@@ -4886,7 +4907,8 @@ Keep each answer to one short sentence.
                 advice = (
                     line.replace(
                         "Advice:",
-                        ""
+                        "",
+                        1
                     ).strip()
                 )
 
@@ -4898,7 +4920,8 @@ Keep each answer to one short sentence.
                 action = (
                     line.replace(
                         "Action:",
-                        ""
+                        "",
+                        1
                     ).strip()
                 )
 
@@ -4968,6 +4991,8 @@ Keep each answer to one short sentence.
             "message": str(e)
 
         }
+
+    
 
 def classify_news(title, description):
 
