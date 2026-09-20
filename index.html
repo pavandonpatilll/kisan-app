@@ -603,6 +603,72 @@ color:#555;
 
 }
 
+.profileForm{
+    margin-top:20px;
+    text-align:left;
+}
+
+.profileForm label{
+    display:block;
+    margin:14px 0 6px;
+    color:var(--ss-muted, #718078);
+    font-size:13px;
+    font-weight:700;
+}
+
+.profileForm input,
+.profileForm select{
+    width:100%;
+    padding:13px 14px;
+    border:1px solid var(--ss-border, #e7ece9);
+    border-radius:12px;
+    background:#f7f9f8;
+    color:var(--ss-text, #18231c);
+    font-size:15px;
+    outline:none;
+}
+
+.profileForm input:focus,
+.profileForm select:focus{
+    border-color:var(--ss-green, #16a34a);
+    box-shadow:0 0 0 3px rgba(22,163,74,.1);
+}
+
+.profileActions{
+    display:grid;
+    gap:10px;
+    margin-top:20px;
+}
+
+.profileActions button{
+    width:100%;
+    padding:13px 16px;
+    border:0;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.saveProfileBtn{
+    background:var(--ss-green, #16a34a);
+    color:#fff;
+}
+
+.logoutProfileBtn{
+    background:#fff0f0;
+    color:#c62828;
+    border:1px solid #ffd6d6 !important;
+}
+
+.profileMessage{
+    min-height:20px;
+    margin-top:12px;
+    text-align:center;
+    font-size:13px;
+    font-weight:600;
+}
+
 .weatherCard{
 
 background:white;
@@ -5523,6 +5589,63 @@ Mobile
 Village
 </p>
 
+<form class="profileForm" onsubmit="saveProfile(event)">
+
+<label for="editProfileName">Full Name</label>
+<input id="editProfileName" type="text" maxlength="80" required>
+
+<label for="editProfileMobile">Mobile Number</label>
+<input id="editProfileMobile" type="tel" readonly>
+
+<label for="editProfileVillage">Village</label>
+<input id="editProfileVillage" type="text" maxlength="80" required>
+
+<label for="editProfileCrop">Main Crop</label>
+<select id="editProfileCrop" required>
+    <option value="">Select Crop</option>
+    <option>Rice (Paddy)</option>
+    <option>Wheat</option>
+    <option>Soybean</option>
+    <option>Cotton</option>
+    <option>Maize</option>
+    <option>Sugarcane</option>
+    <option>Groundnut</option>
+    <option>Onion</option>
+    <option>Potato</option>
+    <option>Tomato</option>
+    <option>Chilli</option>
+    <option>Tur (Pigeon Pea)</option>
+    <option>Gram (Chana)</option>
+    <option>Moong</option>
+    <option>Urad</option>
+    <option>Jowar</option>
+    <option>Bajra</option>
+    <option>Ragi</option>
+    <option>Sunflower</option>
+    <option>Mustard</option>
+    <option>Sesame (Til)</option>
+    <option>Coriander</option>
+    <option>Cumin (Jeera)</option>
+    <option>Garlic</option>
+    <option>Ginger</option>
+    <option>Banana</option>
+    <option>Mango</option>
+    <option>Grapes</option>
+    <option>Orange</option>
+    <option>Pomegranate</option>
+    <option>Papaya</option>
+    <option>Other</option>
+</select>
+
+<div class="profileActions">
+    <button class="saveProfileBtn" type="submit" id="saveProfileButton">💾 Save Changes</button>
+    <button class="logoutProfileBtn" type="button" onclick="logout()">🚪 Logout</button>
+</div>
+
+<p class="profileMessage" id="profileMessage"></p>
+
+</form>
+
 
 </div>
 
@@ -5657,6 +5780,14 @@ const API = "https://kisan-app-1.onrender.com";
 initializeAppHistory();
 
 window.addEventListener("popstate", function(event){
+
+    const sideMenu = document.getElementById("sideMenu");
+
+    if(sideMenu && sideMenu.classList.contains("active")){
+        sideMenu.classList.remove("active");
+        history.pushState(event.state, "", location.href);
+        return;
+    }
 
     const page = event.state && event.state.kisanApp
         ? event.state.appPage
@@ -11531,9 +11662,76 @@ document.getElementById("profileMobile").innerHTML=
 document.getElementById("profileVillage").innerHTML=
 "🏡 "+data.user.village;
 
+document.getElementById("editProfileName").value = data.user.name || "";
+document.getElementById("editProfileMobile").value = data.user.mobile || "";
+document.getElementById("editProfileVillage").value = data.user.village || "";
+document.getElementById("editProfileCrop").value = data.user.crop || "";
+
+localStorage.setItem("user", JSON.stringify({
+    ...user,
+    ...data.user
+}));
 
 }
 
+}
+
+async function saveProfile(event){
+
+    event.preventDefault();
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    const message = document.getElementById("profileMessage");
+    const button = document.getElementById("saveProfileButton");
+
+    if(!user || !user.id){
+        message.textContent = "Please login again.";
+        return;
+    }
+
+    const profile = {
+        name: document.getElementById("editProfileName").value.trim(),
+        village: document.getElementById("editProfileVillage").value.trim(),
+        crop: document.getElementById("editProfileCrop").value
+    };
+
+    if(!profile.name || !profile.village || !profile.crop){
+        message.textContent = "Please fill all profile details.";
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Saving...";
+    message.textContent = "";
+
+    try{
+        const response = await fetch(`${API}/profile/${user.id}`, {
+            method:"PUT",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(profile)
+        });
+
+        const data = await response.json();
+
+        if(!response.ok || !data.status){
+            throw new Error(data.message || "Profile update failed");
+        }
+
+        localStorage.setItem("user", JSON.stringify(data.user));
+        updateUserUI(data.user);
+        document.getElementById("profileName").textContent = "👨‍🌾 " + data.user.name;
+        document.getElementById("profileMobile").textContent = "📱 " + data.user.mobile;
+        document.getElementById("profileVillage").textContent = "🏡 " + data.user.village;
+        message.textContent = "Profile saved successfully.";
+    }
+    catch(error){
+        console.error("Profile update error:", error);
+        message.textContent = error.message || "Unable to save profile.";
+    }
+    finally{
+        button.disabled = false;
+        button.textContent = "💾 Save Changes";
+    }
 
 }
 

@@ -717,6 +717,12 @@ class HomeCropModel(BaseModel):
     crop: str
 
 
+class ProfileUpdateModel(BaseModel):
+    name: str
+    village: str
+    crop: str
+
+
 class AdminLoginModel(BaseModel):
 
     username: str
@@ -1565,7 +1571,9 @@ def get_profile(user_id: str):
 
                 "mobile": user.get("mobile", ""),
 
-                "village": user.get("village", "")
+                "village": user.get("village", ""),
+                
+                "crop": user.get("crop", "")
 
             }
 
@@ -1579,6 +1587,56 @@ def get_profile(user_id: str):
 
             "message": str(e)
 
+        }
+
+
+@app.put("/profile/{user_id}")
+def update_profile(user_id: str, profile: ProfileUpdateModel):
+
+    name = profile.name.strip()
+    village = profile.village.strip()
+    crop = profile.crop.strip()
+
+    if not name or not village or not crop:
+        return {
+            "status": False,
+            "message": "Name, village and crop are required"
+        }
+
+    try:
+
+        user_ref = firestore_db.collection("users").document(user_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            return {
+                "status": False,
+                "message": "User Not Found"
+            }
+
+        user_ref.update({
+            "name": name,
+            "village": village,
+            "crop": crop
+        })
+
+        return {
+            "status": True,
+            "message": "Profile updated successfully",
+            "user": {
+                "id": user_id,
+                "name": name,
+                "mobile": user_doc.to_dict().get("mobile", ""),
+                "village": village,
+                "crop": crop
+            }
+        }
+
+    except Exception as e:
+
+        return {
+            "status": False,
+            "message": str(e)
         }
 
 
