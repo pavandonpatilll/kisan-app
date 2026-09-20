@@ -5673,11 +5673,6 @@ def send_chat(data: dict):
             "message": "User not found"
         }
 
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
-
-
-    # Purane text chat ke liye default
     message_type = data.get(
         "message_type",
         "text"
@@ -5707,37 +5702,21 @@ def send_chat(data: dict):
         None
     )
 
+    message_id = str(uuid.uuid4())
+    created_at = datetime.now().isoformat()
 
-    cursor.execute("""
-    INSERT INTO messages
-    (
-        sender_id,
-        receiver_id,
-        message,
-        time,
-        message_type,
-        image,
-        latitude,
-        longitude
-    )
-    VALUES(?,?,?,?,?,?,?,?)
-    """,
-    (
-        sender_id,
-        receiver_id,
-        message,
-        datetime.now().strftime(
-            "%Y-%m-%d %H:%M"
-        ),
-        message_type,
-        image,
-        latitude,
-        longitude
-    ))
-
-
-    conn.commit()
-    conn.close()
+    firestore_db.collection("messages").document(message_id).set({
+        "id": message_id,
+        "sender_id": sender_id,
+        "receiver_id": receiver_id,
+        "message": message,
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "message_type": message_type,
+        "image": image,
+        "latitude": latitude,
+        "longitude": longitude,
+        "created_at": created_at
+    })
 
 
     return {
@@ -5752,77 +5731,46 @@ def get_chat(
     user1: str,
     user2: str
 ):
+    user1 = str(user1).strip()
+    user2 = str(user2).strip()
 
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
-
-
-    cursor.execute("""
-    SELECT
-        sender_id,
-        message,
-        time,
-        message_type,
-        image,
-        latitude,
-        longitude
-
-    FROM messages
-
-    WHERE
-    (
-        sender_id=?
-        AND receiver_id=?
-    )
-
-    OR
-
-    (
-        sender_id=?
-        AND receiver_id=?
-    )
-
-    ORDER BY id
-    """,
-    (
-        user1,
-        user2,
-        user2,
-        user1
-    ))
-
-
-    chats = cursor.fetchall()
-
-    conn.close()
-
+    if not user1 or not user2:
+        return {
+            "status": False,
+            "message": "Both users are required",
+            "chat": []
+        }
 
     data = []
+    message_docs = firestore_db.collection("messages").stream()
 
+    for doc in message_docs:
+        chat = doc.to_dict()
+        sender_id = str(chat.get("sender_id", ""))
+        receiver_id = str(chat.get("receiver_id", ""))
 
-    for c in chats:
+        if not (
+            (sender_id == user1 and receiver_id == user2)
+            or
+            (sender_id == user2 and receiver_id == user1)
+        ):
+            continue
 
         data.append({
-
-            "sender": c[0],
-
-            "message": c[1],
-
-            "time": c[2],
-
-            "message_type":
-                c[3] or "text",
-
-            "image":
-                c[4],
-
-            "latitude":
-                c[5],
-
-            "longitude":
-                c[6]
-
+            "sender": sender_id,
+            "message": chat.get("message", ""),
+            "time": chat.get("time", ""),
+            "message_type": chat.get("message_type", "text"),
+            "image": chat.get("image"),
+            "latitude": chat.get("latitude"),
+            "longitude": chat.get("longitude"),
+            "created_at": chat.get("created_at", "")
         })
+
+    data.sort(key=lambda item: item.get("created_at", ""))
+
+    for item in data:
+        item.pop("created_at", None)
 
 
     return {
