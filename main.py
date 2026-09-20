@@ -6127,10 +6127,11 @@ def create_subscription(data: dict):
 
         }
     
-# ==========================
-# VERIFY RAZORPAY SUBSCRIPTION
-# ==========================
 
+
+# ==========================
+# VERIFY RAZORPAY SUBSCRIPTION - FIRESTORE
+# ==========================
 
 @app.post("/verify-subscription")
 def verify_subscription(data: dict):
@@ -6240,7 +6241,7 @@ def verify_subscription(data: dict):
 
 
         # ==========================
-        # EXPIRY DATE
+        # ADD MONTHS FUNCTION
         # ==========================
 
         from calendar import monthrange
@@ -6281,6 +6282,10 @@ def verify_subscription(data: dict):
             )
 
 
+        # ==========================
+        # DATES
+        # ==========================
+
         today = datetime.now()
 
 
@@ -6297,10 +6302,6 @@ def verify_subscription(data: dict):
         )
 
 
-        # ==========================
-        # PAYMENT DATE
-        # ==========================
-
         payment_date = (
             today.strftime(
                 "%Y-%m-%d"
@@ -6308,75 +6309,63 @@ def verify_subscription(data: dict):
         )
 
 
-        # ==========================
-        # NEXT PAYMENT DATE
-        # ==========================
-
         next_payment_date = (
             expiry_string
         )
 
 
         # ==========================
+        # FIRESTORE USER
+        # ==========================
+
+        user_ref = (
+            firestore_db
+            .collection("users")
+            .document(str(user_id))
+        )
+
+        user_doc = user_ref.get()
+
+
+        if not user_doc.exists:
+
+            return {
+                "status": False,
+                "message": "User not found"
+            }
+
+
+        # ==========================
         # SAVE PREMIUM + PAYMENT DATA
         # ==========================
 
-        conn = sqlite3.connect(
-            DATABASE_PATH
-        )
+        user_ref.update({
 
-        cursor = conn.cursor()
+            "premium_plan":
+                plan_key,
 
+            "premium_expiry":
+                expiry_string,
 
-        cursor.execute("""
+            "razorpay_subscription_id":
+                subscription_id,
 
-            UPDATE users
+            "razorpay_payment_id":
+                payment_id,
 
-            SET
+            "razorpay_subscription_status":
+                "authenticated",
 
-                premium_plan = ?,
+            "last_payment_status":
+                "paid",
 
-                premium_expiry = ?,
+            "last_payment_date":
+                payment_date,
 
-                razorpay_subscription_id = ?,
+            "next_payment_date":
+                next_payment_date
 
-                razorpay_payment_id = ?,
-
-                razorpay_subscription_status = ?,
-
-                last_payment_status = ?,
-
-                last_payment_date = ?,
-
-                next_payment_date = ?
-
-            WHERE id = ?
-
-        """, (
-
-            plan_key,
-
-            expiry_string,
-
-            subscription_id,
-
-            payment_id,
-
-            "authenticated",
-
-            "paid",
-
-            payment_date,
-
-            next_payment_date,
-
-            user_id
-
-        ))
-
-
-        conn.commit()
-        conn.close()
+        })
 
 
         # ==========================
@@ -6434,55 +6423,71 @@ def verify_subscription(data: dict):
 
         }
 
-    
+
 # ==========================
-# PREMIUM STATUS
+# PREMIUM STATUS - FIRESTORE
 # ==========================
 
 @app.get("/premium-status/{user_id}")
-def premium_status(user_id: int):
+def premium_status(user_id: str):
 
     try:
 
-        conn = sqlite3.connect(DATABASE_PATH)
-        cursor = conn.cursor()
+        # ==========================
+        # GET USER FROM FIRESTORE
+        # ==========================
 
-        cursor.execute("""
+        user_ref = (
+            firestore_db
+            .collection("users")
+            .document(str(user_id))
+        )
 
-            SELECT
+        user_doc = user_ref.get()
 
-                premium_plan,
-                premium_expiry,
-                razorpay_subscription_id
 
-            FROM users
-
-            WHERE id = ?
-
-        """, (user_id,))
-
-        row = cursor.fetchone()
-
-        conn.close()
-
-        if not row:
+        if not user_doc.exists:
 
             return {
 
                 "status": False,
+
                 "premium": False
 
             }
 
-        premium_plan = row[0] or ""
-        premium_expiry = row[1] or ""
-        subscription_id = row[2] or ""
+
+        user = user_doc.to_dict()
+
+
+        # ==========================
+        # PREMIUM DATA
+        # ==========================
+
+        premium_plan = (
+            user.get("premium_plan")
+            or ""
+        )
+
+        premium_expiry = (
+            user.get("premium_expiry")
+            or ""
+        )
+
+        subscription_id = (
+            user.get(
+                "razorpay_subscription_id"
+            )
+            or ""
+        )
+
 
         # ==========================
         # CHECK EXPIRY
         # ==========================
 
         premium_active = False
+
 
         if premium_plan and premium_expiry:
 
@@ -6493,13 +6498,20 @@ def premium_status(user_id: int):
                     "%Y-%m-%d"
                 )
 
+
                 if datetime.now() < expiry_date:
 
                     premium_active = True
 
-            except:
+
+            except Exception:
 
                 premium_active = False
+
+
+        # ==========================
+        # RESPONSE
+        # ==========================
 
         return {
 
@@ -6519,6 +6531,7 @@ def premium_status(user_id: int):
 
         }
 
+
     except Exception as e:
 
         print(
@@ -6526,18 +6539,23 @@ def premium_status(user_id: int):
             str(e)
         )
 
+
         return {
 
             "status": False,
+
             "premium": False,
-            "message": str(e)
+
+            "message":
+                str(e)
 
         }
 
+    
+
 
 # ==========================
-# RECOVER PENDING PREMIUM
-# PAYMENT
+# RECOVER PENDING PREMIUM PAYMENT - FIRESTORE
 # ==========================
 
 @app.post("/recover-premium-payment")
@@ -6557,6 +6575,10 @@ def recover_premium_payment(data: dict):
             "plan"
         )
 
+
+        # ==========================
+        # VALIDATION
+        # ==========================
 
         if not user_id:
 
@@ -6709,7 +6731,9 @@ def recover_premium_payment(data: dict):
 
                 - 1
 
-            ) + months_to_add
+                + months_to_add
+
+            )
 
 
             year = (
@@ -6764,54 +6788,62 @@ def recover_premium_payment(data: dict):
 
 
         # ==========================
+        # FIRESTORE USER
+        # ==========================
+
+        user_ref = (
+
+            firestore_db
+            .collection("users")
+            .document(str(user_id))
+
+        )
+
+
+        user_doc = user_ref.get()
+
+
+        if not user_doc.exists:
+
+            return {
+
+                "status": False,
+
+                "premium": False,
+
+                "message":
+                    "User not found"
+
+            }
+
+
+        # ==========================
         # SAVE PREMIUM
         # ==========================
 
-        conn = sqlite3.connect(
-            DATABASE_PATH
-        )
+        user_ref.update({
 
-
-        cursor = conn.cursor()
-
-
-        cursor.execute(
-
-            """
-
-            UPDATE users
-
-            SET
-
-                premium_plan = ?,
-
-                premium_expiry = ?,
-
-                razorpay_subscription_id = ?
-
-            WHERE id = ?
-
-            """,
-
-            (
-
+            "premium_plan":
                 plan_key,
 
+            "premium_expiry":
                 expiry_string,
 
+            "razorpay_subscription_id":
                 subscription_id,
 
-                user_id
+            "razorpay_subscription_status":
+                subscription_status,
 
-            )
+            "last_payment_status":
+                "paid"
 
-        )
+        })
 
 
-        conn.commit()
-
-        conn.close()
-
+        # ==========================
+        # SUCCESS
+        # ==========================
 
         return {
 
@@ -6836,7 +6868,6 @@ def recover_premium_payment(data: dict):
         print(
 
             "PREMIUM RECOVERY ERROR:",
-
             str(e)
 
         )
@@ -6853,9 +6884,10 @@ def recover_premium_payment(data: dict):
 
         }
 
-    
+
+
 # ==========================
-# RAZORPAY WEBHOOK
+# RAZORPAY WEBHOOK - FIRESTORE
 # ==========================
 
 @app.post("/razorpay-webhook")
@@ -6890,8 +6922,7 @@ async def razorpay_webhook(request: Request):
 
             return {
                 "status": False,
-                "message":
-                    "Webhook signature missing"
+                "message": "Webhook signature missing"
             }
 
 
@@ -6899,8 +6930,7 @@ async def razorpay_webhook(request: Request):
 
             return {
                 "status": False,
-                "message":
-                    "Webhook secret not configured"
+                "message": "Webhook secret not configured"
             }
 
 
@@ -6926,8 +6956,7 @@ async def razorpay_webhook(request: Request):
 
             return {
                 "status": False,
-                "message":
-                    "Invalid webhook signature"
+                "message": "Invalid webhook signature"
             }
 
 
@@ -6969,8 +6998,7 @@ async def razorpay_webhook(request: Request):
 
                 "status": True,
 
-                "message":
-                    "Event ignored"
+                "message": "Event ignored"
 
             }
 
@@ -7046,8 +7074,7 @@ async def razorpay_webhook(request: Request):
 
                 "status": True,
 
-                "message":
-                    "User ID missing"
+                "message": "User ID missing"
 
             }
 
@@ -7058,21 +7085,33 @@ async def razorpay_webhook(request: Request):
 
                 "status": True,
 
-                "message":
-                    "Plan missing"
+                "message": "Plan missing"
 
             }
 
 
         # ==========================
-        # DATABASE
+        # FIRESTORE USER
         # ==========================
 
-        conn = sqlite3.connect(
-            DATABASE_PATH
+        user_ref = (
+            firestore_db
+            .collection("users")
+            .document(str(user_id))
         )
 
-        cursor = conn.cursor()
+        user_doc = user_ref.get()
+
+
+        if not user_doc.exists:
+
+            return {
+
+                "status": False,
+
+                "message": "User not found"
+
+            }
 
 
         # ==========================
@@ -7081,45 +7120,18 @@ async def razorpay_webhook(request: Request):
 
         if event_id:
 
-            cursor.execute("""
-
-                CREATE TABLE IF NOT EXISTS
-                razorpay_webhook_events (
-
-                    event_id TEXT PRIMARY KEY,
-
-                    event TEXT,
-
-                    created_at TEXT
-
+            event_ref = (
+                firestore_db
+                .collection(
+                    "razorpay_webhook_events"
                 )
-
-            """)
-
-
-            cursor.execute("""
-
-                SELECT event_id
-
-                FROM razorpay_webhook_events
-
-                WHERE event_id = ?
-
-            """, (
-
-                event_id,
-
-            ))
-
-
-            already_processed = (
-                cursor.fetchone()
+                .document(str(event_id))
             )
 
+            event_doc = event_ref.get()
 
-            if already_processed:
 
-                conn.close()
+            if event_doc.exists:
 
                 print(
                     "DUPLICATE WEBHOOK IGNORED:",
@@ -7142,62 +7154,32 @@ async def razorpay_webhook(request: Request):
 
         if event == "subscription.pending":
 
-            cursor.execute("""
+            user_ref.update({
 
-                UPDATE users
+                "razorpay_subscription_id":
+                    subscription_id,
 
-                SET
+                "razorpay_subscription_status":
+                    "pending",
 
-                    razorpay_subscription_id = ?,
+                "last_payment_status":
+                    "pending"
 
-                    razorpay_subscription_status = ?,
+            })
 
-                    last_payment_status = ?
 
-                WHERE id = ?
-
-            """, (
-
-                subscription_id,
-
-                "pending",
-
-                "pending",
-
-                user_id
-
-            ))
-
+            # Save event AFTER successful user update
 
             if event_id:
 
-                cursor.execute("""
+                event_ref.set({
 
-                    INSERT OR IGNORE INTO
-                    razorpay_webhook_events
+                    "event": event,
 
-                    (
-                        event_id,
-                        event,
-                        created_at
-                    )
+                    "created_at":
+                        datetime.now().isoformat()
 
-                    VALUES (?, ?, ?)
-
-                """, (
-
-                    event_id,
-
-                    event,
-
-                    datetime.now().isoformat()
-
-                ))
-
-
-            conn.commit()
-
-            conn.close()
+                })
 
 
             print(
@@ -7222,62 +7204,32 @@ async def razorpay_webhook(request: Request):
 
         if event == "subscription.halted":
 
-            cursor.execute("""
+            user_ref.update({
 
-                UPDATE users
+                "razorpay_subscription_id":
+                    subscription_id,
 
-                SET
+                "razorpay_subscription_status":
+                    "halted",
 
-                    razorpay_subscription_id = ?,
+                "last_payment_status":
+                    "failed"
 
-                    razorpay_subscription_status = ?,
+            })
 
-                    last_payment_status = ?
 
-                WHERE id = ?
-
-            """, (
-
-                subscription_id,
-
-                "halted",
-
-                "failed",
-
-                user_id
-
-            ))
-
+            # Save event AFTER successful user update
 
             if event_id:
 
-                cursor.execute("""
+                event_ref.set({
 
-                    INSERT OR IGNORE INTO
-                    razorpay_webhook_events
+                    "event": event,
 
-                    (
-                        event_id,
-                        event,
-                        created_at
-                    )
+                    "created_at":
+                        datetime.now().isoformat()
 
-                    VALUES (?, ?, ?)
-
-                """, (
-
-                    event_id,
-
-                    event,
-
-                    datetime.now().isoformat()
-
-                ))
-
-
-            conn.commit()
-
-            conn.close()
+                })
 
 
             print(
@@ -7309,49 +7261,19 @@ async def razorpay_webhook(request: Request):
 
             if event_id:
 
-                cursor.execute("""
-
-                    CREATE TABLE IF NOT EXISTS
-                    razorpay_webhook_events (
-
-                        event_id TEXT PRIMARY KEY,
-
-                        event TEXT,
-
-                        created_at TEXT
-
+                event_ref = (
+                    firestore_db
+                    .collection(
+                        "razorpay_webhook_events"
                     )
-
-                """)
-
-
-                cursor.execute("""
-
-                    INSERT OR IGNORE INTO
-                    razorpay_webhook_events
-
-                    (
-                        event_id,
-                        event,
-                        created_at
-                    )
-
-                    VALUES (?, ?, ?)
-
-                """, (
-
-                    event_id,
-
-                    event,
-
-                    datetime.now().isoformat()
-
-                ))
+                    .document(str(event_id))
+                )
 
 
-                if cursor.rowcount == 0:
+                event_doc = event_ref.get()
 
-                    conn.close()
+
+                if event_doc.exists:
 
                     print(
                         "DUPLICATE CHARGED EVENT:",
@@ -7366,6 +7288,18 @@ async def razorpay_webhook(request: Request):
                             "Duplicate event ignored"
 
                     }
+
+
+                # Reserve event before premium update
+
+                event_ref.set({
+
+                    "event": event,
+
+                    "created_at":
+                        datetime.now().isoformat()
+
+                })
 
 
             # ==========================
@@ -7399,24 +7333,13 @@ async def razorpay_webhook(request: Request):
             # GET CURRENT PREMIUM
             # ==========================
 
-            cursor.execute("""
+            user_data = user_doc.to_dict()
 
-                SELECT
-
-                    premium_expiry
-
-                FROM users
-
-                WHERE id = ?
-
-            """, (
-
-                user_id,
-
-            ))
-
-
-            row = cursor.fetchone()
+            current_expiry_string = (
+                user_data.get(
+                    "premium_expiry"
+                )
+            )
 
 
             # ==========================
@@ -7426,14 +7349,14 @@ async def razorpay_webhook(request: Request):
             today = datetime.now()
 
 
-            if row and row[0]:
+            if current_expiry_string:
 
                 try:
 
                     current_expiry = (
                         datetime.strptime(
 
-                            row[0],
+                            current_expiry_string,
 
                             "%Y-%m-%d"
 
@@ -7539,54 +7462,32 @@ async def razorpay_webhook(request: Request):
             # UPDATE PREMIUM
             # ==========================
 
-            cursor.execute("""
+            user_ref.update({
 
-                UPDATE users
+                "premium_plan":
+                    plan_key,
 
-                SET
+                "premium_expiry":
+                    expiry_string,
 
-                    premium_plan = ?,
+                "razorpay_subscription_id":
+                    subscription_id,
 
-                    premium_expiry = ?,
+                "razorpay_subscription_status":
+                    "charged",
 
-                    razorpay_subscription_id = ?,
+                "last_payment_status":
+                    "paid",
 
-                    razorpay_subscription_status = ?,
+                "last_payment_date":
+                    today.strftime(
+                        "%Y-%m-%d"
+                    ),
 
-                    last_payment_status = ?,
+                "next_payment_date":
+                    next_payment_date
 
-                    last_payment_date = ?,
-
-                    next_payment_date = ?
-
-                WHERE id = ?
-
-            """, (
-
-                plan_key,
-
-                expiry_string,
-
-                subscription_id,
-
-                "charged",
-
-                "paid",
-
-                today.strftime(
-                    "%Y-%m-%d"
-                ),
-
-                next_payment_date,
-
-                user_id
-
-            ))
-
-
-            conn.commit()
-
-            conn.close()
+            })
 
 
             print(
@@ -7619,9 +7520,6 @@ async def razorpay_webhook(request: Request):
                     next_payment_date
 
             }
-
-
-        conn.close()
 
 
         return {
