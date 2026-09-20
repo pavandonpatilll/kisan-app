@@ -882,43 +882,49 @@ def admin_dashboard():
 
         }
 
+
+
 # ==========================
-# ADMIN USERS
+# ADMIN USERS - FIRESTORE
 # ==========================
 
 @app.get("/admin/users")
 def admin_users():
 
-    cursor.execute("""
-        SELECT
-            id,
-            name,
-            mobile,
-            village,
-            crop,
-            language
-        FROM users
-        ORDER BY id DESC
-    """)
-
-    rows = cursor.fetchall()
-
     users = []
 
-    for row in rows:
+    user_docs = (
+        firestore_db
+        .collection("users")
+        .stream()
+    )
+
+    for doc in user_docs:
+
+        data = doc.to_dict()
 
         users.append({
-            "id": row[0],
-            "name": row[1],
-            "mobile": row[2],
-            "village": row[3],
-            "crop": row[4],
-            "language": row[5]
+
+            "id": data.get("id", doc.id),
+
+            "name": data.get("name", ""),
+
+            "mobile": data.get("mobile", ""),
+
+            "village": data.get("village", ""),
+
+            "crop": data.get("crop", ""),
+
+            "language": data.get("language", "")
+
         })
 
     return {
+
         "status": True,
+
         "users": users
+
     }
 
 
