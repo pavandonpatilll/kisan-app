@@ -5791,6 +5791,8 @@ async function loginUser(){
 
         document.getElementById("homeSection").style.display="block";
 
+        updateUserUI(data.user);
+
 
         // ⭐ Selected language Home par apply karo
         applyLanguage();
@@ -5808,6 +5810,29 @@ async function loginUser(){
 
     }
 
+}
+
+function updateUserUI(user){
+
+    if(!user){
+        return;
+    }
+
+    const farmerName = document.getElementById("farmerName");
+    const homeVillage = document.getElementById("homeVillage");
+    const homeCropSelect = document.getElementById("homeCropSelect");
+
+    if(farmerName){
+        farmerName.textContent = user.name || "Farmer";
+    }
+
+    if(homeVillage){
+        homeVillage.textContent = user.village || "--";
+    }
+
+    if(homeCropSelect && user.crop){
+        homeCropSelect.value = user.crop;
+    }
 }
 
 // ==========================
@@ -5857,6 +5882,9 @@ function checkSavedLogin(){
         document.getElementById(
             "homeSection"
         ).style.display = "block";
+
+        updateUserUI(user);
+        applyLanguage();
 
 
         // Keep user ID also available
@@ -5910,6 +5938,13 @@ function logout(){
 
 function openPage(page){
 
+    const targetPage = document.getElementById(page);
+
+    if(!targetPage){
+        console.error("Unknown page:", page);
+        return;
+    }
+
     document.getElementById("homeSection").style.display = "none";
 
     let pages = document.querySelectorAll(".featurePage");
@@ -5920,7 +5955,7 @@ function openPage(page){
 
     });
 
-    document.getElementById(page).style.display = "flex";
+    targetPage.style.display = "flex";
 
     if(page == "profilePage"){
 
@@ -5996,6 +6031,12 @@ async function loadFarmers(){
     let box =
         document.getElementById("farmerList");
 
+    let user = JSON.parse(localStorage.getItem("user"));
+
+    if(!box || !user || !user.id){
+        return;
+    }
+
 
     box.innerHTML =
         "🔄 Loading farmers...";
@@ -6012,11 +6053,9 @@ async function loadFarmers(){
         let data =
             await res.json();
 
-
-        let user =
-            JSON.parse(
-                localStorage.getItem("user")
-            );
+        if(!res.ok || !data.status || !Array.isArray(data.farmers)){
+            throw new Error(data.message || "Unable to load farmers");
+        }
 
 
         let html = "";
@@ -6069,7 +6108,7 @@ async function loadFarmers(){
 
 
                 <button
-                    onclick="openChat(${f.id}, '${f.name}')"
+                    onclick="openChat('${encodeURIComponent(String(f.id))}', '${encodeURIComponent(f.name || "Farmer")}')"
                 >
 
                     💬 Chat
@@ -6106,9 +6145,9 @@ async function loadFarmers(){
 
 function openChat(id, name){
 
-    chatUserId = id;
+    chatUserId = decodeURIComponent(id);
 
-    chatUserName = name;
+    chatUserName = decodeURIComponent(name);
 
 
     openPage("chatPage");
@@ -6117,7 +6156,7 @@ function openChat(id, name){
     document.getElementById(
         "chatTitle"
     ).innerHTML =
-        "💬 Chat with " + name;
+        "💬 Chat with " + chatUserName;
 
 
     loadChat();
@@ -6155,6 +6194,10 @@ async function loadChat(){
 
         let data =
             await res.json();
+
+        if(!res.ok || !data.status || !Array.isArray(data.chat)){
+            throw new Error(data.message || "Unable to load chat");
+        }
 
 
         let html = "";
@@ -6416,7 +6459,7 @@ sendingMessage=true;
 try{
 
 
-await fetch(
+let response = await fetch(
 API+"/send-chat",
 {
 
@@ -6438,6 +6481,12 @@ message:msg
 
 
 });
+
+let data = await response.json();
+
+if(!response.ok || !data.status){
+    throw new Error(data.message || "Message could not be sent");
+}
 
 
 input.value="";
@@ -7440,6 +7489,10 @@ document.addEventListener("click", function(event){
 
 function getLiveLocation(){
 
+if(!navigator.geolocation){
+    alert("Location is not supported on this device");
+    return;
+}
 
 navigator.geolocation.getCurrentPosition(
 
@@ -7542,13 +7595,16 @@ console.log(e);
 
 async function loadWeather(lat, lon) {
 
-    let response = await fetch(
-        "https://kisan-app-1.onrender.com/weather/" + lat + "/" + lon
-    );
+    try{
+        let response = await fetch(
+            "https://kisan-app-1.onrender.com/weather/" + lat + "/" + lon
+        );
 
-    let data = await response.json();
+        let data = await response.json();
 
-    if (!data.status) return;
+        if (!response.ok || !data.status){
+            throw new Error(data.message || "Weather unavailable");
+        }
 
     document.getElementById("temperature").innerHTML =
         data.temperature + "°C";
@@ -7608,7 +7664,17 @@ async function loadWeather(lat, lon) {
     document.getElementById("advice").innerHTML =
         "AI Farming Advice will be generated based on live weather.";
 
-        showForecast(data.forecast);
+        if(data.forecast){
+            showForecast(data.forecast);
+        }
+    }
+    catch(error){
+        console.error("Weather Error:", error);
+        document.getElementById("weatherStatus").innerHTML =
+            "Weather temporarily unavailable";
+        document.getElementById("forecastBox").innerHTML =
+            "Unable to load forecast. Please try again.";
+    }
 }
 
 let weatherForecastData = null;
@@ -10023,7 +10089,7 @@ html+=`
 
 <div class="searchItem"
 
-onclick="searchCrop('${keyword}')">
+    onclick="searchCrop('${encodeURIComponent(keyword)}')">
 
 <div class="searchTitle">
 
@@ -10053,6 +10119,8 @@ box.innerHTML=html;
 
 
 function searchCrop(crop){
+
+crop = decodeURIComponent(crop);
 
 document.getElementById("guideCropSelect").value="Other";
 
@@ -11295,9 +11363,11 @@ document.getElementById("profileVillage").innerHTML=
 
 window.onload = function(){
 
-loadAlertCount();
-
-loadAlerts();
+    if(localStorage.getItem("user")){
+        loadAlertCount().catch(console.error);
+        loadAlerts().catch(console.error);
+        loadNotificationCount().catch(console.error);
+    }
 
 }
 
