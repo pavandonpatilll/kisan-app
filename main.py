@@ -723,6 +723,10 @@ class ProfileUpdateModel(BaseModel):
     crop: str
 
 
+class LanguageUpdateModel(BaseModel):
+    language: str
+
+
 class AdminLoginModel(BaseModel):
 
     username: str
@@ -1468,7 +1472,8 @@ def register(user: RegisterModel):
             "name": user.name,
             "mobile": user.mobile,
             "village": user.village,
-            "crop": user.crop
+            "crop": user.crop,
+            "language": user.language
         }
     }
 
@@ -1526,8 +1531,35 @@ def login(user: LoginModel):
             "name": data.get("name"),
             "mobile": data.get("mobile"),
             "village": data.get("village"),
-            "crop": data.get("crop")
+            "crop": data.get("crop"),
+            "language": data.get("language") or "hi"
         }
+    }
+
+
+@app.put("/language/{user_id}")
+def update_language(user_id: str, language: LanguageUpdateModel):
+
+    if language.language not in ["mr", "hi", "en"]:
+        return {
+            "status": False,
+            "message": "Unsupported language"
+        }
+
+    user_ref = firestore_db.collection("users").document(str(user_id))
+    user_doc = user_ref.get()
+
+    if not user_doc.exists:
+        return {
+            "status": False,
+            "message": "User not found"
+        }
+
+    user_ref.update({"language": language.language})
+
+    return {
+        "status": True,
+        "language": language.language
     }
 
 # ==========================
@@ -1974,7 +2006,7 @@ def location_name(lat:float, lon:float):
 
 
 @app.get("/crop-guide/{user_id}/{crop}")
-def crop_guide(user_id: int, crop: str):
+def crop_guide(user_id: str, crop: str, language: str = None):
 
     try:
 
@@ -1999,7 +2031,7 @@ def crop_guide(user_id: int, crop: str):
         village = user[0]
         latitude = user[1]
         longitude = user[2]
-        language = user[3] or "hi"
+        language = language if language in ["mr", "hi", "en"] else (user[3] or "hi")
 
 
         if crop.strip() == "":
@@ -3312,7 +3344,7 @@ def check_history():
 
 
 @app.get("/farming-advice/{user_id}")
-def farming_advice(user_id: int):
+def farming_advice(user_id: str, language: str = None):
 
     try:
 
@@ -3340,7 +3372,7 @@ def farming_advice(user_id: int):
         village = user[1]
         latitude = user[2]
         longitude = user[3]
-        language = user[4] or "hi"
+        language = language if language in ["mr", "hi", "en"] else (user[4] or "hi")
 
 
         # =========================

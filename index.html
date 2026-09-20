@@ -6056,6 +6056,37 @@ function updateUserUI(user){
     if(homeCropSelect && user.crop){
         homeCropSelect.value = user.crop;
     }
+
+    if(user.language && translations[user.language]){
+        localStorage.setItem("appLanguage", user.language);
+    }
+}
+
+async function syncLanguageWithServer(lang){
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if(!user || !user.id){
+        return;
+    }
+
+    try{
+        const response = await fetch(`${API}/language/${user.id}`, {
+            method:"PUT",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({language:lang})
+        });
+
+        const data = await response.json();
+
+        if(response.ok && data.status){
+            user.language = lang;
+            localStorage.setItem("user", JSON.stringify(user));
+        }
+    }
+    catch(error){
+        console.error("Language sync error:", error);
+    }
 }
 
 // ==========================
@@ -8529,7 +8560,7 @@ async function loadCropGuide(){
         const response =
             await fetch(
 
-                `https://kisan-app-1.onrender.com/crop-guide/${user.id}/${encodeURIComponent(crop)}`
+                `${API}/crop-guide/${user.id}/${encodeURIComponent(crop)}?language=${encodeURIComponent(getSelectedLanguage())}`
 
             );
 
@@ -9570,12 +9601,7 @@ localStorage.getItem("user")
 
 
 let res = await fetch(
-
-API+
-"/farming-advice/"
-+
-user.id
-
+    `${API}/farming-advice/${user.id}?language=${encodeURIComponent(getSelectedLanguage())}`
 );
 
 
@@ -10612,6 +10638,8 @@ function selectLanguage(lang){
         lang
     );
 
+    syncLanguageWithServer(lang);
+
     updateLanguageUI(lang);
 
 
@@ -10635,6 +10663,7 @@ function changeAppLanguage(lang){
     }
 
     localStorage.setItem("appLanguage", lang);
+    syncLanguageWithServer(lang);
     applyLanguage();
     applyWeatherLanguage();
     updateLanguageUI(lang);
