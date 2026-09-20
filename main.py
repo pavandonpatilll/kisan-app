@@ -2335,32 +2335,16 @@ def add_admin_crop_guide(data: AdminCropGuideModel):
         }
 
 
-@app.get("/ai-test")
-def ai_test():
 
-    try:
-        response = client.models.generate_content(
-    model="models/gemini-flash-latest",
-    contents="Namaste,bhai kya chal raha hai hihiii"
-)
 
-        return {
-            "status": True,
-            "reply": response.text
-        }
-
-    except Exception as e:
-
-        return {
-            "status": False,
-            "message": str(e)
-        }
-
+# ==========================
+# DISEASE SCAN - FIRESTORE
+# ==========================
 
 @app.post("/disease-scan")
 async def disease_scan(
     file: UploadFile = File(...),
-    user_id: int = Form(...)
+    user_id: str = Form(...)
 ):
 
     try:
@@ -2373,34 +2357,36 @@ async def disease_scan(
 
 
         # ==========================
-        # GET USER LOCATION
+        # GET USER LOCATION - FIRESTORE
         # ==========================
 
-        cursor.execute("""
-        SELECT latitude, longitude, language
-        FROM users
-        WHERE id=?
-        """, (user_id,))
+        user_ref = (
+            firestore_db
+            .collection("users")
+            .document(str(user_id))
+        )
 
-        location = cursor.fetchone()
+        user_doc = user_ref.get()
 
+        if not user_doc.exists:
 
-        latitude = None
-        longitude = None
+            return {
+                "status": False,
+                "message": "User Not Found"
+            }
+
+        user_data = user_doc.to_dict()
+
+        latitude = user_data.get("latitude")
+        longitude = user_data.get("longitude")
 
         language = (
-            location[2]
-            if location and location[2]
+            user_data.get("language")
+            if user_data.get("language")
             else "en"
         )
 
         weather_info = "Weather data unavailable"
-
-
-        if location:
-
-            latitude = location[0]
-            longitude = location[1]
 
 
         # ==========================
@@ -2412,7 +2398,7 @@ async def disease_scan(
             try:
 
                 weather_url = (
-                    f"https://api.open-meteo.com/v1/forecast?"
+                    "https://api.open-meteo.com/v1/forecast?"
                     f"latitude={latitude}"
                     f"&longitude={longitude}"
                     "&current=temperature_2m,relative_humidity_2m"
@@ -2422,6 +2408,8 @@ async def disease_scan(
                     weather_url,
                     timeout=8
                 )
+
+                weather_response.raise_for_status()
 
                 weather = weather_response.json()
 
@@ -2572,8 +2560,7 @@ Each answer one short sentence.
 
             return {
                 "status": False,
-                "message":
-                    "Please upload crop image."
+                "message": "Please upload crop image."
             }
 
 
@@ -2739,7 +2726,7 @@ Each answer one short sentence.
 
 
         # ==========================
-        # ADMIN DISEASE DATA
+        # ADMIN DISEASE DATA - FIRESTORE
         # ==========================
 
         admin_treatment = ""
@@ -2754,19 +2741,34 @@ Each answer one short sentence.
             # EXACT MATCH
             # ==========================
 
-            cursor.execute("""
-                SELECT treatment
-                FROM admin_disease_data
-                WHERE LOWER(TRIM(crop)) = LOWER(TRIM(?))
-                AND LOWER(TRIM(disease)) = LOWER(TRIM(?))
-                ORDER BY id DESC
-                LIMIT 1
-            """, (
-                ai_crop,
-                ai_disease
-            ))
+            disease_docs = (
+                firestore_db
+                .collection("admin_disease_data")
+                .stream()
+            )
 
-            admin_row = cursor.fetchone()
+            admin_row = None
+
+            for doc in disease_docs:
+
+                data = doc.to_dict()
+
+                db_crop = str(
+                    data.get("crop", "")
+                ).strip().lower()
+
+                db_disease = str(
+                    data.get("disease", "")
+                ).strip().lower()
+
+                if (
+                    db_crop == ai_crop.lower()
+                    and
+                    db_disease == ai_disease.lower()
+                ):
+
+                    admin_row = data
+                    break
 
 
             # ==========================
@@ -2780,21 +2782,35 @@ Each answer one short sentence.
                     .split("(")[-1]
                     .replace(")", "")
                     .strip()
+                    .lower()
                 )
 
-                cursor.execute("""
-                    SELECT treatment
-                    FROM admin_disease_data
-                    WHERE LOWER(TRIM(disease)) LIKE ?
-                    OR LOWER(TRIM(disease)) LIKE ?
-                    ORDER BY id DESC
-                    LIMIT 1
-                """, (
-                    "%" + ai_disease.lower() + "%",
-                    "%" + english_disease.lower() + "%"
-                ))
+                disease_docs = (
+                    firestore_db
+                    .collection("admin_disease_data")
+                    .stream()
+                )
 
-                admin_row = cursor.fetchone()
+                for doc in disease_docs:
+
+                    data = doc.to_dict()
+
+                    db_disease = str(
+                        data.get("disease", "")
+                    ).strip().lower()
+
+                    if (
+                        ai_disease.lower() in db_disease
+                        or
+                        db_disease in ai_disease.lower()
+                        or
+                        english_disease in db_disease
+                        or
+                        db_disease in english_disease
+                    ):
+
+                        admin_row = data
+                        break
 
 
             # ==========================
@@ -2804,7 +2820,8 @@ Each answer one short sentence.
             if admin_row:
 
                 admin_treatment = (
-                    admin_row[0] or ""
+                    admin_row.get("treatment", "")
+                    or ""
                 )
 
 
@@ -2817,77 +2834,59 @@ Each answer one short sentence.
 
 
         # ==========================
-        # SAVE HISTORY
+        # SAVE HISTORY - FIRESTORE
         # ==========================
 
-        cursor.execute("""
+        history_id = str(uuid.uuid4())
 
-        INSERT INTO disease_history(
+        history_data = {
 
-            user_id,
-            crop,
-            disease,
-            confidence,
-            severity,
-            affected,
-            reason,
-            symptoms,
-            medicine,
-            organic,
-            recovery,
-            yield_loss,
-            prevention,
-            ai,
-            weather,
-            date
+            "id": history_id,
 
-        )
+            "user_id": str(user_id),
 
-        VALUES(
-            ?,?,?,?,?,?,?,?,?,?,
-            ?,?,?,?,?,?
-        )
+            "crop": result["crop"],
 
-        """, (
+            "disease": result["disease"],
 
-            user_id,
+            "confidence": result["confidence"],
 
-            result["crop"],
+            "severity": result["severity"],
 
-            result["disease"],
+            "affected": result["affected"],
 
-            result["confidence"],
+            "reason": result["reason"],
 
-            result["severity"],
+            "symptoms": result["symptoms"],
 
-            result["affected"],
+            "medicine": result["medicine"],
 
-            result["reason"],
+            "organic": result["organic"],
 
-            result["symptoms"],
+            "recovery": result["recovery"],
 
-            result["medicine"],
+            "yield_loss": result["yield_loss"],
 
-            result["organic"],
+            "prevention": result["prevention"],
 
-            result["recovery"],
+            "ai": result["ai"],
 
-            result["yield_loss"],
+            "weather": weather_info,
 
-            result["prevention"],
-
-            result["ai"],
-
-            weather_info,
-
-            datetime.now().strftime(
+            "date": datetime.now().strftime(
                 "%d-%m-%Y %H:%M"
-            )
+            ),
 
-        ))
+            "created_at": datetime.now().isoformat()
+
+        }
 
 
-        conn.commit()
+        firestore_db.collection(
+            "disease_history"
+        ).document(history_id).set(
+            history_data
+        )
 
 
         # ==========================
@@ -2924,6 +2923,10 @@ Each answer one short sentence.
         }
 
 
+# ==========================
+# ADMIN ADD DISEASE - FIRESTORE
+# ==========================
+
 @app.post("/admin/disease")
 def add_admin_disease(data: AdminDiseaseModel):
 
@@ -2940,99 +2943,108 @@ def add_admin_disease(data: AdminDiseaseModel):
                 "message": "Please fill all fields"
             }
 
-        cursor.execute("""
-            INSERT INTO admin_disease_data(
-                disease,
-                crop,
-                treatment,
-                date
-            )
-            VALUES (?, ?, ?, ?)
-        """, (
-            disease,
-            crop,
-            treatment,
-            datetime.now().strftime("%Y-%m-%d")
-        ))
+        disease_id = str(uuid.uuid4())
 
-        conn.commit()
+        disease_data = {
+
+            "id": disease_id,
+
+            "disease": disease,
+
+            "crop": crop,
+
+            "treatment": treatment,
+
+            "date": datetime.now().strftime("%Y-%m-%d"),
+
+            "created_at": datetime.now().isoformat()
+
+        }
+
+        firestore_db.collection(
+            "admin_disease_data"
+        ).document(disease_id).set(disease_data)
 
         return {
+
             "status": True,
+
             "message": "Disease data added successfully"
+
         }
 
     except Exception as e:
 
-        conn.rollback()
-
         return {
+
             "status": False,
+
             "message": str(e)
+
         }
 
 
+# ==========================
+# DISEASE HISTORY - FIRESTORE
+# ==========================
 
 @app.get("/disease-history/{user_id}")
-def disease_history(user_id: int):
+def disease_history(user_id: str):
 
     try:
 
-        cursor.execute("""
-
-        SELECT
-
-        crop,
-        disease,
-        confidence,
-        severity,
-        affected,
-        reason,
-        symptoms,
-        medicine,
-        organic,
-        recovery,
-        yield_loss,
-        prevention,
-        ai,
-        weather,
-        date
-
-        FROM disease_history
-
-        WHERE user_id=?
-
-        ORDER BY id DESC
-
-        """, (user_id,))
-
-        rows = cursor.fetchall()
+        history_docs = (
+            firestore_db
+            .collection("disease_history")
+            .where("user_id", "==", str(user_id))
+            .stream()
+        )
 
         history = []
 
-        for row in rows:
+        for doc in history_docs:
+
+            data = doc.to_dict()
 
             history.append({
 
-                "crop": row[0],
-                "disease": row[1],
-                "confidence": row[2],
-                "severity": row[3],
-                "affected": row[4],
+                "crop": data.get("crop", ""),
 
-                "reason": row[5],
-                "symptoms": row[6],
-                "medicine": row[7],
-                "organic": row[8],
-                "recovery": row[9],
-                "yield_loss": row[10],
-                "prevention": row[11],
-                "ai": row[12],
-                "weather": row[13],
+                "disease": data.get("disease", ""),
 
-                "date": row[14]
+                "confidence": data.get("confidence", ""),
+
+                "severity": data.get("severity", ""),
+
+                "affected": data.get("affected", ""),
+
+                "reason": data.get("reason", ""),
+
+                "symptoms": data.get("symptoms", ""),
+
+                "medicine": data.get("medicine", ""),
+
+                "organic": data.get("organic", ""),
+
+                "recovery": data.get("recovery", ""),
+
+                "yield_loss": data.get("yield_loss", ""),
+
+                "prevention": data.get("prevention", ""),
+
+                "ai": data.get("ai", ""),
+
+                "weather": data.get("weather", ""),
+
+                "date": data.get("date", "")
 
             })
+
+        # Latest records first
+        history.sort(
+            key=lambda x: x.get("date", ""),
+            reverse=True
+        )
 
         return {
 
@@ -3055,18 +3067,46 @@ def disease_history(user_id: int):
         }
 
 
+# ==========================
+# CHECK DISEASE HISTORY - FIRESTORE
+# ==========================
+
 @app.get("/check-history")
 def check_history():
 
-    cursor.execute("""
-    SELECT * FROM disease_history
-    """)
+    try:
 
-    data = cursor.fetchall()
+        history_docs = (
+            firestore_db
+            .collection("disease_history")
+            .stream()
+        )
 
-    return {
-        "data": data
-    }
+        data = []
+
+        for doc in history_docs:
+
+            item = doc.to_dict()
+
+            item["firestore_id"] = doc.id
+
+            data.append(item)
+
+        return {
+
+            "data": data
+
+        }
+
+    except Exception as e:
+
+        return {
+
+            "status": False,
+
+            "message": str(e)
+
+        }
 
 
 @app.get("/farming-advice/{user_id}")
@@ -3713,19 +3753,44 @@ def add_admin_scheme(data: SchemeModel):
         }
 
     
+# ==========================
+# UPDATE HOME CROP - FIRESTORE
+# ==========================
+
 @app.post("/update-home-crop")
 def update_home_crop(data: HomeCropModel):
 
-    cursor.execute(
-        "UPDATE users SET crop=? WHERE id=?",
-        (data.crop, data.user_id)
-    )
+    try:
 
-    conn.commit()
+        user_ref = (
+            firestore_db
+            .collection("users")
+            .document(str(data.user_id))
+        )
 
-    return {
-        "status": True
-    }
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+
+            return {
+                "status": False,
+                "message": "User Not Found"
+            }
+
+        user_ref.update({
+            "crop": data.crop
+        })
+
+        return {
+            "status": True
+        }
+
+    except Exception as e:
+
+        return {
+            "status": False,
+            "message": str(e)
+        }
 
 
 @app.get("/alerts/{user_id}")
