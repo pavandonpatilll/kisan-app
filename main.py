@@ -2023,8 +2023,8 @@ def crop_guide(user_id: str, crop: str, language: str = None):
         cursor.execute("""
             SELECT village, latitude, longitude, language
             FROM users
-            WHERE id=?
-        """, (user_id,))
+            WHERE CAST(id AS TEXT) LIKE ? OR mobile LIKE ?
+        """, (f"%{user_id}%", f"%{user_id}%"))
 
         user = cursor.fetchone()
 
@@ -3361,8 +3361,8 @@ def farming_advice(user_id: str, language: str = None):
         cursor.execute("""
         SELECT crop, village, latitude, longitude, language
         FROM users
-        WHERE id=?
-        """, (user_id,))
+        WHERE CAST(id AS TEXT) LIKE ? OR mobile LIKE ?
+        """, (f"%{user_id}%", f"%{user_id}%"))
 
         user = cursor.fetchone()
 
@@ -3451,7 +3451,7 @@ Rain:
         WHERE user_id=?
         ORDER BY id DESC
         LIMIT 1
-        """, (user_id,))
+        """, (f"%{user_id}%", f"%{user_id}%"))
 
 
         disease = cursor.fetchone()
@@ -5316,7 +5316,7 @@ Rules:
 
 
 @app.get("/agri-news/{user_id}")
-def agri_news(user_id: int):
+def agri_news(user_id: str):
 
     try:
 
@@ -5327,8 +5327,8 @@ def agri_news(user_id: int):
         cursor.execute("""
             SELECT village, language
             FROM users
-            WHERE id=?
-        """, (user_id,))
+            WHERE CAST(id AS TEXT) LIKE ? OR mobile LIKE ?
+        """, (f"%{user_id}%", f"%{user_id}%"))
 
         user = cursor.fetchone()
 
