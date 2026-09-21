@@ -3830,12 +3830,13 @@ def get_schemes(state: str):
 
 
         # ==========================
-        # ADMIN ADDED SCHEMES
+        # ADMIN ADDED SCHEMES (SQLite + Firestore)
         # ==========================
 
         admin_schemes = []
 
 
+        # 1. Get from SQLite
         try:
 
             cursor.execute("""
@@ -3876,13 +3877,48 @@ def get_schemes(state: str):
 
                 })
 
+        except Exception as e:
+
+            print("ADMIN SCHEME LOAD ERROR (SQLite):", str(e))
+
+
+        # 2. Get from Firestore
+        try:
+
+            firestore_schemes = (
+                firestore_db
+                .collection("schemes")
+                .where("state", "==", state)
+                .stream()
+            )
+
+
+            for doc in firestore_schemes:
+
+                data = doc.to_dict()
+
+                admin_schemes.append({
+
+                    "name":
+                        data.get("name", ""),
+
+                    "description":
+                        data.get("description", ""),
+
+                    "benefit":
+                        data.get("benefit", ""),
+
+                    "eligibility":
+                        data.get("eligibility", ""),
+
+                    "apply":
+                        data.get("apply_url", "")
+
+                })
 
         except Exception as e:
 
-            print(
-                "ADMIN SCHEME LOAD ERROR:",
-                str(e)
-            )
+            print("ADMIN SCHEME LOAD ERROR (Firestore):", str(e))
 
 
         # ==========================
@@ -3943,6 +3979,7 @@ def add_admin_scheme(data: SchemeModel):
 
     try:
 
+        # 1. Save to SQLite
         cursor.execute("""
             INSERT INTO admin_schemes(
                 name,
@@ -3967,6 +4004,32 @@ def add_admin_scheme(data: SchemeModel):
         ))
 
         conn.commit()
+
+
+        # 2. Save to Firestore (for cloud backup)
+        try:
+
+            scheme_id = str(uuid.uuid4())
+
+            firestore_db.collection("schemes").document(scheme_id).set({
+
+                "name": data.name,
+                "description": data.description,
+                "benefit": data.benefit,
+                "eligibility": data.eligibility,
+                "state": data.state,
+                "apply_url": data.apply_url,
+                "date": datetime.now().strftime("%d-%m-%Y %H:%M"),
+                "created_at": datetime.now().isoformat()
+
+            })
+
+            print(f"Scheme saved to Firestore: {scheme_id}")
+
+        except Exception as fe:
+
+            print("Firestore scheme save error:", str(fe))
+
 
         return {
 
@@ -5453,217 +5516,89 @@ def agri_news(user_id: int):
 
 
         # ==========================
-        # NEWS API
+        # NEWS API - WITH FALLBACK
         # ==========================
 
-        url = (
-            "https://newsdata.io/api/1/news?"
-            "apikey=pub_28ba34b1a77041cfae4e3f43b21bbf3b"
-            "&q=agriculture OR farmer OR crop OR mandi OR farming"
-            "&country=in"
-            "&language=en"
-        )
-
-
-        response = requests.get(
-            url,
-            timeout=10
-        )
-
-
-        response.raise_for_status()
-
-
-        data = response.json()
-
-
-        print(
-            "NEWS API RESPONSE"
-        )
-
-        print(data)
-
-
-        # ==========================
-        # API ERROR
-        # ==========================
-
-        if "results" not in data:
-
-            print(
-                "NEWS API ERROR:",
-                data
+        try:
+            url = (
+                "https://newsdata.io/api/1/news?"
+                "apikey=pub_28ba34b1a77041cfae4e3f43b21bbf3b"
+                "&q=agriculture OR farmer OR crop OR mandi OR farming"
+                "&country=in"
+                "&language=en"
             )
 
-            # Admin news available ho to
-            # API fail hone par bhi return karo
-
-            return {
-
-                "status": True,
-
-                "location": village,
-
-                "language": language,
-
-                "total": len(news),
-
-                "news": news
-
-            }
-
-
-        results = data.get(
-            "results",
-            []
-        )
-
-
-        if not isinstance(
-            results,
-            list
-        ):
-
-            results = []
-
-
-        # ==========================
-        # PROCESS LIVE API NEWS
-        # ==========================
-
-        for item in results[:10]:
-
-            title = item.get(
-                "title"
-            ) or "Agriculture News"
-
-
-            description = item.get(
-                "description"
-            ) or "Latest farming update"
-
-
-            # ==========================
-            # AI CATEGORY
-            # ==========================
-
-            category = classify_news(
-                title,
-                description
+            response = requests.get(
+                url,
+                timeout=10
             )
 
+            response.raise_for_status()
+            data = response.json()
 
-            # ==========================
-            # FARMER MEANING
-            # ==========================
+            print("NEWS API RESPONSE")
 
-            farmer_meaning = get_farmer_meaning(
-                title,
-                description,
-                language
-            )
+            # API se results mil gaye to process karo
+            if "results" in data:
+                results = data.get("results", [])
+                if not isinstance(results, list):
+                    results = []
 
+                for item in results[:10]:
+                    title = item.get("title") or "Agriculture News"
+                    description = item.get("description") or "Latest farming update"
 
-            # ==========================
-            # ICON
-            # ==========================
+                    category = classify_news(title, description)
+                    farmer_meaning = get_farmer_meaning(title, description, language)
 
-            icon = "🌱"
+                    icon = "🌱"
+                    if category == "Weather":
+                        icon = "🌧️"
+                    elif category == "Market":
+                        icon = "💰"
+                    elif category == "Disease":
+                        icon = "🐛"
+                    elif category == "Government":
+                        icon = "🏛️"
 
+                    news.append({
+                        "title": title,
+                        "description": description,
+                        "category": category,
+                        "icon": icon,
+                        "farmer_meaning": farmer_meaning,
+                        "source": "News API",
+                        "date": item.get("pubDate", "") or item.get("createdAt", "")
+                    })
 
-            if category == "Weather":
-
-                icon = "🌧️"
-
-            elif category == "Market":
-
-                icon = "💰"
-
-            elif category == "Disease":
-
-                icon = "🐛"
-
-            elif category == "Government":
-
-                icon = "🏛️"
-
-
-            # ==========================
-            # ADD LIVE NEWS
-            # ==========================
-
-            news.append({
-
-                "title":
-                    title,
-
-                "description":
-                    description,
-
-                "category":
-                    category,
-
-                "icon":
-                    icon,
-
-                "farmer_meaning":
-                    farmer_meaning,
-
-                "source":
-                    item.get(
-                        "source_id",
-                        "News"
-                    ),
-
-                "date":
-                    item.get(
-                        "pubDate",
-                        ""
-                    )
-
-            })
-
+        except Exception as e:
+            # News API fail ho to bhi chaloo - admin news hi show ho jaye
+            print("NEWS API failed, using admin news only:", e)
 
         # ==========================
-        # FINAL RESPONSE
+        # FINAL RETURN
         # ==========================
 
         return {
-
             "status": True,
-
             "location": village,
-
             "language": language,
-
             "total": len(news),
-
             "news": news
-
         }
-
 
     except Exception as e:
-
-        print(
-            "AGRI NEWS ERROR:",
-            e
-        )
-
-
-        # ==========================
-        # FINAL ERROR
-        # ==========================
-
+        print("AGRI NEWS ERROR:", e)
         return {
-
             "status": False,
-
             "message": str(e)
-
         }
 
-    
+
+@app.post("/admin/news")
+
+
+
 @app.post("/admin/news")
 def add_admin_news(data: AdminNewsModel):
 
