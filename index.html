@@ -4,8 +4,16 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Shrimant Shetkari - Kisan AI Assistant">
+<meta name="theme-color" content="#1b5e20">
 
 <title>Shrimant Shetkari</title>
+
+<!-- Preconnect for faster API calls -->
+<link rel="preconnect" href="https://api.open-meteo.com">
+<link rel="preconnect" href="https://nominatim.openstreetmap.org">
+
 <style>
 
 *{
@@ -489,7 +497,6 @@ min-height:100vh;
 
 }
 
-
 .featurePage button{
 
 padding:12px 25px;
@@ -530,7 +537,6 @@ box-shadow:5px 0 20px rgba(0,0,0,.2);
 
 }
 
-
 #sideMenu p{
 
 padding:15px;
@@ -545,20 +551,17 @@ border-bottom:1px solid #ddd;
 
 }
 
-
 #sideMenu.active{
 
 left:0;
 
 }
 
-
 .menuBtn{
 
 cursor:pointer;
 
 }
-
 
 .sideMenuTop{
     display:flex;
@@ -591,7 +594,6 @@ width:90%;
 max-width:350px;
 
 }
-
 
 .profileBox p{
 
@@ -731,7 +733,6 @@ box-shadow:0 5px 20px rgba(0,0,0,.15);
 
 }
 
-
 .weatherCard h1{
 
 font-size:50px;
@@ -741,7 +742,6 @@ color:#2e7d32;
 margin:20px;
 
 }
-
 
 .weatherInfo{
 
@@ -753,13 +753,11 @@ margin-top:25px;
 
 }
 
-
 .weatherInfo div{
 
 font-size:25px;
 
 }
-
 
 .weatherInfo p{
 
@@ -768,7 +766,6 @@ font-size:14px;
 color:#555;
 
 }
-
 
 .weatherInfo span{
 
@@ -806,7 +803,6 @@ margin:15px;
 
 }
 
-
 .farmAdvice{
 
 margin-top:20px;
@@ -831,7 +827,6 @@ cursor:pointer;
 
 }
 
-
 .navIcon{
 
 position:relative;
@@ -839,7 +834,6 @@ position:relative;
 font-size:26px;
 
 }
-
 
 #alertCount{
 
@@ -1031,7 +1025,6 @@ font-weight:bold;
 
 }
 
-
 .aiCard{
 
 background:#ffffff;
@@ -1126,7 +1119,6 @@ border:1px solid #d8f3dc;
 
 }
 
-
 .cropHeader{
 
 display:flex;
@@ -1147,7 +1139,6 @@ margin-bottom:15px;
 
 }
 
-
 .cropHeader h2{
 
 margin:0;
@@ -1156,7 +1147,6 @@ font-size:22px;
 
 }
 
-
 .cropLocation{
 
 font-size:14px;
@@ -1164,8 +1154,6 @@ font-size:14px;
 opacity:0.9;
 
 }
-
-
 
 .guideBox{
 
@@ -1183,7 +1171,6 @@ box-shadow:0 3px 10px rgba(0,0,0,0.08);
 
 }
 
-
 .guideBox h3{
 
 margin:0 0 8px;
@@ -1191,7 +1178,6 @@ margin:0 0 8px;
 font-size:17px;
 
 }
-
 
 .guideBox p{
 
@@ -1203,32 +1189,25 @@ color:#444;
 
 }
 
-
-
 .stageBox{
 border-left-color:#2196f3;
 }
-
 
 .waterBox{
 border-left-color:#03a9f4;
 }
 
-
 .fertilizerBox{
 border-left-color:#8bc34a;
 }
-
 
 .weatherBox{
 border-left-color:#ff9800;
 }
 
-
 .pestBox{
 border-left-color:#e53935;
 }
-
 
 .aiBox{
 border-left-color:#673ab7;
@@ -1250,8 +1229,6 @@ font-weight:bold;
 
 }
 
-
-
 .alertCard{
 
 background:white;
@@ -1268,8 +1245,6 @@ border-left:6px solid #4caf50;
 
 }
 
-
-
 .alertCard h2{
 
 margin-top:0;
@@ -1277,8 +1252,6 @@ margin-top:0;
 font-size:20px;
 
 }
-
-
 
 .alertCard p{
 
@@ -1288,8 +1261,6 @@ line-height:1.6;
 
 }
 
-
-
 .weatherAlert{
 
 border-left-color:#2196f3;
@@ -1297,8 +1268,6 @@ border-left-color:#2196f3;
 background:#e3f2fd;
 
 }
-
-
 
 .cropAlert{
 
@@ -1308,8 +1277,6 @@ background:#f1f8e9;
 
 }
 
-
-
 .diseaseAlert{
 
 border-left-color:#ff9800;
@@ -1318,8 +1285,6 @@ background:#fff3e0;
 
 }
 
-
-
 .reminderAlert{
 
 border-left-color:#9c27b0;
@@ -1327,8 +1292,6 @@ border-left-color:#9c27b0;
 background:#f3e5f5;
 
 }
-
-
 
 #farmTasks p{
 
@@ -1350,7 +1313,6 @@ border-left-color:#4caf50 !important;
 
 }
 
-
 .riskMedium{
 
 background:#fff3e0 !important;
@@ -1358,7 +1320,6 @@ background:#fff3e0 !important;
 border-left-color:#ff9800 !important;
 
 }
-
 
 .riskHigh{
 
@@ -1509,8 +1470,7 @@ transform:scale(1.05);
     transform:scale(1.05);
 }
 
-
-/* 🔴 Notification Count */
+/* [old] Notification Count */
 
 #notificationBadge{
 
@@ -1546,13 +1506,11 @@ transform:scale(1.05);
         0 2px 6px rgba(0,0,0,0.25);
 }
 
-
 /* Jab notification count 0 ho */
 
 #notificationBadge:empty{
     display:none;
 }
-
 
 /* Notification page */
 
@@ -1571,7 +1529,6 @@ transform:scale(1.05);
     box-sizing:border-box;
 }
 
-
 /* Notification cards */
 
 #notificationPage .aiCard{
@@ -1589,7 +1546,6 @@ transform:scale(1.05);
     box-shadow:
         0 4px 14px rgba(0,0,0,0.08);
 }
-
 
 /* Mobile */
 
@@ -1631,15 +1587,11 @@ cursor:pointer;
 
 }
 
-
-
 .newsCard:hover{
 
 transform:translateY(-4px);
 
 }
-
-
 
 .newsCategory{
 
@@ -1657,8 +1609,6 @@ margin-bottom:12px;
 
 }
 
-
-
 .newsCard h3{
 
 font-size:17px;
@@ -1671,8 +1621,6 @@ color:#222;
 
 }
 
-
-
 .newsCard p{
 
 font-size:14px;
@@ -1684,8 +1632,6 @@ line-height:1.6;
 margin-top:10px;
 
 }
-
-
 
 .newsFooter{
 
@@ -1701,10 +1647,7 @@ color:#777;
 
 }
 
-
-
 /* Category Badge */
-
 
 .weatherBadge{
 
@@ -1714,8 +1657,6 @@ color:#1565c0;
 
 }
 
-
-
 .cropBadge{
 
 background:#e8f5e9;
@@ -1723,8 +1664,6 @@ background:#e8f5e9;
 color:#2e7d32;
 
 }
-
-
 
 .marketBadge{
 
@@ -1734,8 +1673,6 @@ color:#ef6c00;
 
 }
 
-
-
 .diseaseBadge{
 
 background:#ffebee;
@@ -1743,8 +1680,6 @@ background:#ffebee;
 color:#c62828;
 
 }
-
-
 
 .govBadge{
 
@@ -1764,7 +1699,6 @@ margin-bottom:15px;
 
 }
 
-
 .newsFilter button{
 
 border:none;
@@ -1783,7 +1717,6 @@ white-space:nowrap;
 cursor:pointer;
 
 }
-
 
 .newsFilter button:hover{
 
@@ -1832,7 +1765,6 @@ color:#33691e;
 
 }
 
-
 /* =========================
    CHAT HEADER
 ========================= */
@@ -1862,7 +1794,6 @@ color:#33691e;
         rgba(0,0,0,.08);
 
 }
-
 
 /* =========================
    CHAT BOX
@@ -1909,20 +1840,17 @@ color:#33691e;
 
 }
 
-
 .myMessage{
 
     justify-content:flex-end;
 
 }
 
-
 .otherMessage{
 
     justify-content:flex-start;
 
 }
-
 
 /* =========================
    INSTAGRAM STYLE MESSAGE
@@ -1946,7 +1874,6 @@ color:#33691e;
 
 }
 
-
 /* OTHER FARMER MESSAGE */
 
 .otherMessage .messageBubble{
@@ -1964,7 +1891,6 @@ color:#33691e;
         6px;
 
 }
-
 
 /* MY MESSAGE */
 
@@ -1984,7 +1910,6 @@ color:#33691e;
 
 }
 
-
 /* MESSAGE TIME */
 
 .messageBubble small{
@@ -1998,7 +1923,6 @@ color:#33691e;
     opacity:.70;
 
 }
-
 
 /* =========================
    CHAT INPUT AREA
@@ -2032,7 +1956,6 @@ color:#33691e;
 
 }
 
-
 /* MESSAGE INPUT */
 
 .chatInputArea input{
@@ -2059,7 +1982,6 @@ color:#33691e;
 
 }
 
-
 /* SEND BUTTON */
 
 .chatInputArea button{
@@ -2085,7 +2007,6 @@ color:#33691e;
     cursor:pointer;
 
 }
-
 
 /* =========================
    BACK BUTTON
@@ -2139,7 +2060,6 @@ padding:20px;
 
 }
 
-
 .languageBox{
 
 width:100%;
@@ -2159,7 +2079,6 @@ box-shadow:
 
 }
 
-
 .languageLogo{
 
 font-size:55px;
@@ -2167,7 +2086,6 @@ font-size:55px;
 margin-bottom:5px;
 
 }
-
 
 .languageBox h1{
 
@@ -2179,7 +2097,6 @@ font-size:30px;
 
 }
 
-
 #languageSubtitle{
 
 color:#666;
@@ -2187,7 +2104,6 @@ color:#666;
 margin-bottom:25px;
 
 }
-
 
 .languageBox button{
 
@@ -2222,7 +2138,6 @@ transition:.2s;
 
 }
 
-
 .languageBox button:hover{
 
 transform:translateY(-2px);
@@ -2243,13 +2158,11 @@ transform:translateY(-2px);
     color:#666;
 }
 
-
 .mandiList{
     display:flex;
     flex-direction:column;
     gap:16px;
 }
-
 
 .mandiCard{
     background:#ffffff;
@@ -2259,7 +2172,6 @@ transform:translateY(-2px);
     border:1px solid #eeeeee;
 }
 
-
 .mandiTop{
     display:flex;
     justify-content:space-between;
@@ -2267,18 +2179,15 @@ transform:translateY(-2px);
     gap:10px;
 }
 
-
 .mandiTop h2{
     margin:0 0 5px 0;
     font-size:20px;
 }
 
-
 .mandiTop p{
     margin:0;
     color:#777;
 }
-
 
 .mandiDate{
     font-size:12px;
@@ -2286,20 +2195,17 @@ transform:translateY(-2px);
     white-space:nowrap;
 }
 
-
 .mandiMainPrice{
     font-size:32px;
     font-weight:800;
     margin:18px 0;
 }
 
-
 .mandiMainPrice span{
     font-size:13px;
     font-weight:normal;
     color:#777;
 }
-
 
 .mandiPrices{
     display:grid;
@@ -2308,14 +2214,12 @@ transform:translateY(-2px);
     gap:10px;
 }
 
-
 .mandiPrices div{
     background:#f7f7f7;
     padding:12px 8px;
     border-radius:12px;
     text-align:center;
 }
-
 
 .mandiPrices span{
     display:block;
@@ -2324,11 +2228,9 @@ transform:translateY(-2px);
     margin-bottom:5px;
 }
 
-
 .mandiPrices strong{
     font-size:16px;
 }
-
 
 .mandiFooter{
     margin-top:15px;
@@ -2338,14 +2240,12 @@ transform:translateY(-2px);
     font-size:13px;
 }
 
-
 .mandiLoading,
 .mandiEmpty{
     text-align:center;
     padding:35px 15px;
     color:#777;
 }
-
 
 @media(max-width:600px){
 
@@ -2381,7 +2281,6 @@ transform:translateY(-2px);
     margin-top:8px;
 }
 
-
 /* =========================
    PLAN LAYOUT
 ========================= */
@@ -2402,7 +2301,6 @@ transform:translateY(-2px);
     padding:0 15px 30px;
 }
 
-
 /* =========================
    PLAN CARD
 ========================= */
@@ -2421,7 +2319,6 @@ transform:translateY(-2px);
     border:2px solid #eee;
 
 }
-
 
 /* =========================
    HEADER
@@ -2449,7 +2346,6 @@ transform:translateY(-2px);
     font-size:14px;
 }
 
-
 /* =========================
    FEATURES
 ========================= */
@@ -2473,7 +2369,6 @@ transform:translateY(-2px);
     font-size:13px;
 
 }
-
 
 /* =========================
    PRICE OPTION
@@ -2523,7 +2418,6 @@ transform:translateY(-2px);
 
 }
 
-
 /* =========================
    BUTTON
 ========================= */
@@ -2548,7 +2442,6 @@ transform:translateY(-2px);
 
 }
 
-
 /* =========================
    PREMIUM STATUS
 ========================= */
@@ -2572,7 +2465,6 @@ transform:translateY(-2px);
     font-weight:bold;
 
 }
-
 
 /* =========================
    MOBILE
@@ -2703,7 +2595,6 @@ transform:translateY(-2px);
 
 }
 
-
 /* =========================
    LOCATION MESSAGE
 ========================= */
@@ -2714,7 +2605,6 @@ transform:translateY(-2px);
 
 }
 
-
 .locationTitle{
 
     font-weight:bold;
@@ -2722,7 +2612,6 @@ transform:translateY(-2px);
     font-size:15px;
 
 }
-
 
 .locationMessage a{
 
@@ -2745,7 +2634,6 @@ transform:translateY(-2px);
     font-weight:bold;
 
 }
-
 
 /* =========================
    CHAT ACTION BUTTONS
@@ -2771,7 +2659,6 @@ transform:translateY(-2px);
 
 }
 
-
 .chatSendBtn{
 
     width:48px;
@@ -2796,7 +2683,6 @@ transform:translateY(-2px);
 
 }
 
-
 /* Mobile adjustment */
 
 @media(max-width:600px){
@@ -2813,7 +2699,6 @@ transform:translateY(-2px);
 
     }
 
-
     .chatImage{
 
         max-width:240px;
@@ -2824,12 +2709,11 @@ transform:translateY(-2px);
 
 }
 
-
 /* =========================================================
    SHRI MANT SHETKARI
    COMPLETE COMMUNITY UI THEME
    GROMO-INSPIRED
-   SAFE OVERRIDE — EXISTING CSS/JS/HTML UNCHANGED
+   SAFE OVERRIDE -- EXISTING CSS/JS/HTML UNCHANGED
 ========================================================= */
 
 /* ---------- THEME ---------- */
@@ -2866,7 +2750,6 @@ transform:translateY(-2px);
     --ss-shadow-big:0 10px 30px rgba(20,50,30,.10);
 }
 
-
 /* =========================================================
    GLOBAL APP
 ========================================================= */
@@ -2896,7 +2779,6 @@ nav div,
     -webkit-tap-highlight-color:transparent;
 }
 
-
 /* =========================================================
    SPLASH SCREEN
 ========================================================= */
@@ -2922,7 +2804,6 @@ nav div,
 .logoBox p{
     font-size:15px;
 }
-
 
 /* =========================================================
    LOGIN / REGISTER
@@ -2978,7 +2859,6 @@ section:not(#homeSection):not(.featurePage){
     color:var(--ss-green);
 }
 
-
 /* =========================================================
    MAIN HEADER
 ========================================================= */
@@ -2998,7 +2878,6 @@ header h2,
 header p{
     color:var(--ss-text);
 }
-
 
 /* =========================================================
    WELCOME / COMMUNITY HEADER
@@ -3021,7 +2900,6 @@ header p{
 .welcomeCard p{
     color:var(--ss-muted);
 }
-
 
 /* =========================================================
    HOME FEATURE GRID
@@ -3069,7 +2947,6 @@ header p{
     margin-top:9px;
 }
 
-
 /* colorful community accents */
 
 .item:nth-child(1){
@@ -3103,7 +2980,6 @@ header p{
 .item:nth-child(8){
     background:linear-gradient(145deg,#fff,#f5efff) !important;
 }
-
 
 /* =========================================================
    BOTTOM NAVIGATION
@@ -3146,7 +3022,6 @@ nav div:active{
     transform:scale(.92);
 }
 
-
 /* =========================================================
    FEATURE PAGES
 ========================================================= */
@@ -3163,7 +3038,6 @@ nav div:active{
 .featurePage h3{
     color:var(--ss-text);
 }
-
 
 /* =========================================================
    SIDE MENU
@@ -3211,7 +3085,6 @@ nav div:active{
     color:var(--ss-text);
 }
 
-
 /* =========================================================
    PROFILE
 ========================================================= */
@@ -3233,7 +3106,6 @@ nav div:active{
 .profileBox p{
     color:var(--ss-muted) !important;
 }
-
 
 /* =========================================================
    WEATHER
@@ -3292,7 +3164,6 @@ nav div:active{
     border:1px solid #d5f0dc;
 }
 
-
 /* =========================================================
    FORECAST
 ========================================================= */
@@ -3339,7 +3210,6 @@ nav div:active{
     background:var(--ss-green-light) !important;
 }
 
-
 /* =========================================================
    AI CARDS
 ========================================================= */
@@ -3369,7 +3239,6 @@ nav div:active{
     background:var(--ss-red-light) !important;
     color:#c62828 !important;
 }
-
 
 /* =========================================================
    CROP GUIDE
@@ -3417,7 +3286,6 @@ nav div:active{
 .aiBox{
     border-left-color:var(--ss-purple) !important;
 }
-
 
 /* =========================================================
    ALERTS
@@ -3471,7 +3339,6 @@ nav div:active{
     background:#fff0f0 !important;
 }
 
-
 /* =========================================================
    NEWS
 ========================================================= */
@@ -3517,7 +3384,6 @@ nav div:active{
     color:var(--ss-green-dark);
 }
 
-
 /* =========================================================
    SEARCH
 ========================================================= */
@@ -3558,7 +3424,6 @@ nav div:active{
     color:var(--ss-muted) !important;
 }
 
-
 /* =========================================================
    VOICE BUTTON
 ========================================================= */
@@ -3567,7 +3432,6 @@ nav div:active{
     background:linear-gradient(135deg,var(--ss-green),var(--ss-green-dark)) !important;
     box-shadow:0 6px 16px rgba(22,163,74,.20);
 }
-
 
 /* =========================================================
    NOTIFICATION
@@ -3584,7 +3448,6 @@ nav div:active{
 #notificationBadge{
     background:var(--ss-red) !important;
 }
-
 
 /* =========================================================
    MANDI
@@ -3626,7 +3489,6 @@ nav div:active{
 .mandiFooter{
     border-top-color:var(--ss-border);
 }
-
 
 /* =========================================================
    PREMIUM
@@ -3685,7 +3547,6 @@ nav div:active{
     border:1px solid #d7efdd;
 }
 
-
 /* =========================================================
    CHAT
 ========================================================= */
@@ -3739,7 +3600,6 @@ nav div:active{
     color:var(--ss-green-dark);
 }
 
-
 /* =========================================================
    LANGUAGE PAGE
 ========================================================= */
@@ -3771,7 +3631,6 @@ nav div:active{
     border-radius:15px !important;
 }
 
-
 /* =========================================================
    NOTIFICATION PAGE
 ========================================================= */
@@ -3786,9 +3645,8 @@ nav div:active{
     border:1px solid var(--ss-border);
 }
 
-
 /* =========================================================
-   MOBILE — COMMUNITY APP LOOK
+   MOBILE -- COMMUNITY APP LOOK
 ========================================================= */
 
 @media(max-width:600px){
@@ -3872,7 +3730,6 @@ nav div:active{
 
 }
 
-
 /* =========================================================
    EXTRA SMALL PHONES
 ========================================================= */
@@ -3901,7 +3758,6 @@ nav div:active{
 
 }
 
-
 /* =========================================================
    SMOOTH SCROLLBARS
 ========================================================= */
@@ -3924,7 +3780,6 @@ nav div:active{
 *::-webkit-scrollbar-track{
     background:transparent;
 }
-
 
 /* =========================================================
    SAFE TOUCH EFFECT
@@ -3978,16 +3833,13 @@ button:active,
             अपनी भाषा चुनें
         </p>
 
-
         <button onclick="selectLanguage('mr')">
             🇮🇳 मराठी
         </button>
 
-
         <button onclick="selectLanguage('hi')">
             🇮🇳 हिंदी
         </button>
-
 
         <button onclick="selectLanguage('en')">
             🇬🇧 English
@@ -4197,7 +4049,6 @@ Login
 
 </header>
 
-
 <div id="sideMenu">
 
     <div class="sideMenuTop">
@@ -4215,26 +4066,21 @@ Login
 
     </div>
 
-
     <p id="sideHomeLabel" onclick="goHome()">
         🏠 Home
     </p>
-
 
     <p id="sideProfileLabel" onclick="openPage('profilePage')">
         👤 Profile
     </p>
 
-
     <p id="sideSchemesLabel" onclick="openPage('schemePage')">
         🏛 Schemes
     </p>
 
-
     <p id="sideNewsLabel" onclick="openPage('newsPage')">
         📰 News
     </p>
-
 
     <div class="languageSetting">
         <label id="languageSettingLabel" for="homeLanguageSelect">🌐 App Language</label>
@@ -4245,14 +4091,11 @@ Login
         </select>
     </div>
 
-
     <p id="sideLogoutLabel" onclick="logout()">
         🚪 Logout
     </p>
 
-
 </div>
-
 
 <div class="welcomeCard">
 
@@ -4262,7 +4105,6 @@ Login
 Farmer
 </span>
 </h2>
-
 
 <p><b id="homeCropLabel">🌾 मुख्य पीक निवडा</b></p>
 
@@ -4309,7 +4151,6 @@ Farmer
 </span>
 </p>
 
-
 <p>
 <span id="homeLocationLabel">📍 Location:</span>
 <span id="currentLocation">
@@ -4317,9 +4158,7 @@ Detecting...
 </span>
 </p>
 
-
 </div>
-
 
 <div class="grid">
 
@@ -4334,7 +4173,6 @@ Detecting...
 
 </div>
 
-
 <div class="item" onclick="openPage('kisanPage')">
 
     👥
@@ -4344,7 +4182,6 @@ Detecting...
     </p>
 
 </div>
-
 
 <div class="item"
      onclick="openFeature('mandi','mandiPage')">
@@ -4357,7 +4194,6 @@ Detecting...
 
 </div>
 
-
 <div class="item"
      onclick="openFeature('ai','aiPage')">
 
@@ -4368,7 +4204,6 @@ Detecting...
     </p>
 
 </div>
-
 
 <!-- PREMIUM PAGE -->
 
@@ -4383,7 +4218,6 @@ Detecting...
 
 </div>
 
-
 <div class="item"
      onclick="openFeature('advice','advicePage')">
 
@@ -4394,7 +4228,6 @@ Detecting...
     </p>
 
 </div>
-
 
 <div class="item"
      onclick="openFeature('cropGuide','cropGuidePage')">
@@ -4407,7 +4240,6 @@ Detecting...
 
 </div>
 
-
 <div class="item"
      onclick="openFeature('disease','diseasePage')">
 
@@ -4418,7 +4250,6 @@ Detecting...
     </p>
 
 </div>
-
 
 <div class="item"
      onclick="openFeature('schemes','schemePage')">
@@ -4431,7 +4262,6 @@ Detecting...
 
 </div>
 
-
 <div class="item"
      onclick="openFeature('history','historyPage')">
 
@@ -4443,7 +4273,6 @@ Detecting...
 
 </div>
 
-
 <div class="item"
      onclick="openFeature('news','newsPage')">
 
@@ -4454,7 +4283,6 @@ Detecting...
     </p>
 
 </div>
-
 
 <div class="item"
      onclick="openFeature('profile','profilePage')">
@@ -4469,7 +4297,6 @@ Detecting...
 
 </div>
 
-
 <nav>
 
     <div onclick="goHome()">
@@ -4481,7 +4308,6 @@ Detecting...
         </p>
 
     </div>
-
 
     <div onclick="openFeature('search', 'searchPage')">
 
@@ -4503,7 +4329,6 @@ Detecting...
 
     </div>
 
-
     <div
         class="navItem"
         onclick="openPage('alertPage')">
@@ -4524,7 +4349,6 @@ Detecting...
 
     </div>
 
-
     <div onclick="openFeature('profile','profilePage')">
 
         👤
@@ -4542,13 +4366,11 @@ Detecting...
 
 <h1>🌦 Weather</h1>
 
-
 <div class="weatherCard">
 
 <h2 id="weatherCity">
 📍 Your Location
 </h2>
-
 
 <h1 id="temperature">
 --°C
@@ -4561,7 +4383,6 @@ Loading Weather...
 <div class="weatherIcon" id="weatherIcon">
 ☀️
 </div>
-
 
 <div class="farmAdvice">
 
@@ -4581,9 +4402,7 @@ Weather data aane ke baad farming advice milegi
 Location not detected
 </p>
 
-
 <div class="weatherInfo">
-
 
 <div>
 💧
@@ -4593,7 +4412,6 @@ Location not detected
 </span>
 </div>
 
-
 <div>
 🌧️
 <p id="rainLabel">Rain</p>
@@ -4601,7 +4419,6 @@ Location not detected
 --%
 </span>
 </div>
-
 
 <div>
 💨
@@ -4611,9 +4428,7 @@ Location not detected
 </span>
 </div>
 
-
 </div>
-
 
 <h2 id="forecastLabel">📅 7-Day Forecast</h2>
 
@@ -4631,10 +4446,10 @@ Back Home
 
 </section>
 
-<!-- ========================= 
-     PREMIUM PLANS 
-========================= --> 
- 
+<!-- =========================
+     PREMIUM PLANS
+========================= -->
+
 <section id="premiumPage" class="featurePage" style="display:none;">
 
     <div class="premiumHeader">
@@ -4646,9 +4461,7 @@ Back Home
         Checking premium status...
     </div>
 
-
     <div class="premiumPlans">
-
 
         <!-- =========================
              BASIC
@@ -4666,7 +4479,6 @@ Back Home
                 </p>
             </div>
 
-
             <div class="planFeatureList">
 
                 <div>💰 Mandi Prices</div>
@@ -4682,7 +4494,6 @@ Back Home
                 <div>📜 Disease History</div>
 
             </div>
-
 
             <!-- MONTHLY -->
 
@@ -4708,7 +4519,6 @@ Back Home
 
             </div>
 
-
             <!-- 6 MONTHS -->
 
             <div class="priceOption">
@@ -4732,7 +4542,6 @@ Back Home
                 </button>
 
             </div>
-
 
             <!-- YEARLY -->
 
@@ -4760,8 +4569,6 @@ Back Home
 
         </div>
 
-
-
         <!-- =========================
              ADVANCED
         ========================== -->
@@ -4780,7 +4587,6 @@ Back Home
 
             </div>
 
-
             <div class="planFeatureList">
 
                 <div>👑 All app access free</div>
@@ -4796,7 +4602,6 @@ Back Home
                 <div>🔔 Premium Farming Alerts</div>
 
             </div>
-
 
             <!-- MONTHLY -->
 
@@ -4822,7 +4627,6 @@ Back Home
 
             </div>
 
-
             <!-- 6 MONTHS -->
 
             <div class="priceOption">
@@ -4846,7 +4650,6 @@ Back Home
                 </button>
 
             </div>
-
 
             <!-- YEARLY -->
 
@@ -4932,14 +4735,11 @@ Pesticide, Fertilizer, Weather, Market
 
 <h1>🔔 Farmer Alerts</h1>
 
-
 <div class="alertLocation">
 
 📍 <span id="alertLocation">Loading Location...</span>
 
 </div>
-
-
 
 <div class="alertCard weatherAlert">
 
@@ -4951,9 +4751,6 @@ Loading...
 
 </div>
 
-
-
-
 <div class="alertCard cropAlert">
 
 <h2>🌱 Crop Alert</h2>
@@ -4963,10 +4760,6 @@ Loading...
 </p>
 
 </div>
-
-
-
-
 
 <div id="diseaseCard" class="alertCard diseaseAlert">
 
@@ -4978,10 +4771,6 @@ Loading...
 
 </div>
 
-
-
-
-
 <div class="alertCard reminderAlert">
 
 <h2>📅 Farming Reminder</h2>
@@ -4991,10 +4780,6 @@ Loading...
 </p>
 
 </div>
-
-
-
-
 
 <div class="alertCard">
 
@@ -5006,12 +4791,7 @@ Loading...
 
 </div>
 
-
 </div>
-
-
-
-
 
 <button onclick="loadAlerts()">
 
@@ -5019,16 +4799,13 @@ Loading...
 
 </button>
 
-
 <br><br>
-
 
 <button onclick="goHome()">
 
 🏠 Back Home
 
 </button>
-
 
 </section>
 
@@ -5064,7 +4841,6 @@ Loading...
 
     </div>
 
-
     <div
         id="mandiList"
         class="mandiList"
@@ -5076,7 +4852,6 @@ Loading...
 
     </div>
 
-
     <button onclick="goHome()">
         Back Home
     </button>
@@ -5087,16 +4862,13 @@ Loading...
 
 <h1>🤖 AI Kisan Assistant</h1>
 
-
 <div class="weatherCard">
-
 
 <h2>
 🌱 Kisan ka Sawal
 </h2>
 
-
-<textarea 
+<textarea
 id="farmerQuestion"
 placeholder="शेतकरी भाऊ 👨‍🌾 आपल्या शेतीबद्दल प्रश्न विचारा..."
 style="
@@ -5108,10 +4880,7 @@ font-size:16px;
 ">
 </textarea>
 
-
-
 <br><br>
-
 
 <button onclick="askAI()">
 
@@ -5119,16 +4888,11 @@ font-size:16px;
 
 </button>
 
-
-
 <hr>
-
-
 
 <h2>
 💡 AI Advice
 </h2>
-
 
 <p id="aiAnswer">
 
@@ -5152,9 +4916,7 @@ Aapke sawal ka AI farming answer yaha aayega.
 🤖 AI Farming Advice
 </h1>
 
-
 <div class="weatherCard">
-
 
 <div id="adviceBox">
 
@@ -5162,9 +4924,7 @@ Loading AI Advice...
 
 </div>
 
-
 </div>
-
 
 <button onclick="goHome()">
 
@@ -5172,17 +4932,13 @@ Loading AI Advice...
 
 </button>
 
-
 </section>
-
 
 <section id="cropGuidePage" class="featurePage">
 
     <h1>🌱 Smart Crop Guide</h1>
 
-
     <div class="cropGuideCard">
-
 
         <!-- CROP HEADER -->
 
@@ -5203,14 +4959,11 @@ Loading AI Advice...
 
             </div>
 
-
             <div class="cropEmoji">
                 🌱
             </div>
 
         </div>
-
-
 
         <!-- CROP SELECT -->
 
@@ -5262,9 +5015,7 @@ Loading AI Advice...
 
             </select>
 
-
             <br><br>
-
 
             <input
                 type="text"
@@ -5281,8 +5032,6 @@ Loading AI Advice...
 
         </div>
 
-
-
         <!-- ADMIN CROP GUIDE -->
 
         <div class="guideBox">
@@ -5294,8 +5043,6 @@ Loading AI Advice...
             </p>
 
         </div>
-
-
 
         <!-- CROP STAGE -->
 
@@ -5309,8 +5056,6 @@ Loading AI Advice...
 
         </div>
 
-
-
         <!-- IRRIGATION -->
 
         <div class="guideBox waterBox">
@@ -5322,8 +5067,6 @@ Loading AI Advice...
             </p>
 
         </div>
-
-
 
         <!-- FERTILIZER -->
 
@@ -5337,8 +5080,6 @@ Loading AI Advice...
 
         </div>
 
-
-
         <!-- WEATHER -->
 
         <div class="guideBox weatherBox">
@@ -5350,8 +5091,6 @@ Loading AI Advice...
             </p>
 
         </div>
-
-
 
         <!-- PEST -->
 
@@ -5365,8 +5104,6 @@ Loading AI Advice...
 
         </div>
 
-
-
         <!-- AI -->
 
         <div class="guideBox aiBox">
@@ -5379,18 +5116,13 @@ Loading AI Advice...
 
         </div>
 
-
     </div>
-
-
 
     <button onclick="goHome()">
         🏠 Back Home
     </button>
 
-
 </section>
-
 
 <section id="diseasePage" class="featurePage">
 
@@ -5470,14 +5202,11 @@ border:2px solid #ddd;
 
 <h1>🏛 Government Schemes</h1>
 
-
 <div class="weatherCard">
-
 
 <h2>
 👨‍🌾 Farmer Schemes
 </h2>
-
 
 <select id="schemeState">
 
@@ -5495,9 +5224,7 @@ Karnataka
 
 </select>
 
-
 <br><br>
-
 
 <button onclick="loadSchemes()">
 
@@ -5505,11 +5232,7 @@ Karnataka
 
 </button>
 
-
-
 <hr>
-
-
 
 <div id="schemeList">
 
@@ -5517,18 +5240,13 @@ Select your state to view schemes
 
 </div>
 
-
-
 </div>
-
-
 
 <button onclick="goHome()">
 
 🏠 Back Home
 
 </button>
-
 
 </section>
 
@@ -5552,7 +5270,6 @@ Loading...
 
 <h1>🤖 AI Disease Report</h1>
 
-
 <div class="weatherCard" id="reportBox">
 
 Loading Report...
@@ -5571,9 +5288,7 @@ Loading Report...
 
 </button>
 
-
 </section>
-
 
 <section id="newsPage" class="featurePage">
 
@@ -5607,18 +5322,15 @@ Loading Report...
 
 </div>
 
-
 <div class="newsContainer" id="newsList">
 
 🔄 Loading news...
 
 </div>
 
-
 <button onclick="goHome()">
 🏠 Back Home
 </button>
-
 
 </section>
 
@@ -5626,19 +5338,15 @@ Loading Report...
 
 <h1>👤 Farmer Profile</h1>
 
-
 <div class="profileBox">
-
 
 <h2 id="profileName">
 Name
 </h2>
 
-
 <p id="profileMobile">
 Mobile
 </p>
-
 
 <p id="profileVillage">
 Village
@@ -5701,14 +5409,11 @@ Village
 
 </form>
 
-
 </div>
-
 
 <button onclick="goHome()">
 Back Home
 </button>
-
 
 </section>
 
@@ -5724,13 +5429,11 @@ Back Home
 
     </div>
 
-
     <div id="farmerList">
 
         🔄 Loading farmers...
 
     </div>
-
 
     <button onclick="goHome()">
 
@@ -5749,7 +5452,6 @@ Back Home
     <div id="chatBox">
     </div>
 
-
     <!-- TYPE MESSAGE -->
 
     <div class="chatInputArea">
@@ -5764,7 +5466,6 @@ Back Home
         onchange="sendChatImage()"
     >
 
-
     <!-- Send Photo -->
 
     <button
@@ -5774,7 +5475,6 @@ Back Home
     >
         📷
     </button>
-
 
     <!-- Send Location -->
 
@@ -5786,7 +5486,6 @@ Back Home
         📍
     </button>
 
-
     <!-- Text Message -->
 
     <input
@@ -5796,7 +5495,6 @@ Back Home
         autocomplete="off"
         onkeydown="if(event.key === 'Enter'){sendChat()}"
     >
-
 
     <!-- Send Message -->
 
@@ -5809,7 +5507,6 @@ Back Home
     </button>
 
 </div>
-
 
     <!-- BACK BUTTONS -->
 
@@ -5895,7 +5592,6 @@ let crop = document.getElementById("crop").value;
 
 let password=document.getElementById("regPassword").value.trim();
 
-
 if(name==""){
 alert("Enter Full Name");
 return;
@@ -5915,7 +5611,6 @@ if(password.length<6){
 alert("Password minimum 6 characters");
 return;
 }
-
 
 let response = await fetch(
 "https://kisan-app-1.onrender.com/register",
@@ -5938,9 +5633,7 @@ body: JSON.stringify({
 
 });
 
-
 let data = await response.json();
-
 
 if(data.status){
 
@@ -6009,17 +5702,14 @@ async function loginUser(){
             data.user.id
         );
 
-
         document.getElementById("loginSection").style.display="none";
 
         document.getElementById("homeSection").style.display="block";
 
         updateUserUI(data.user);
 
-
         // ⭐ Selected language Home par apply karo
         applyLanguage();
-
 
         loadDiseaseSummary();
 
@@ -6105,12 +5795,10 @@ function checkSavedLogin(){
 
     }
 
-
     try{
 
         const user =
             JSON.parse(userData);
-
 
         if(
             !user ||
@@ -6123,7 +5811,6 @@ function checkSavedLogin(){
 
         }
 
-
         // ==========================
         // USER IS ALREADY LOGGED IN
         // ==========================
@@ -6132,14 +5819,12 @@ function checkSavedLogin(){
             "loginSection"
         ).style.display = "none";
 
-
         document.getElementById(
             "homeSection"
         ).style.display = "block";
 
         updateUserUI(user);
         applyLanguage();
-
 
         // Keep user ID also available
 
@@ -6148,15 +5833,12 @@ function checkSavedLogin(){
             user.id
         );
 
-
         // Load premium status
 
         loadPremiumStatus();
 
-
         // If your app has profile/home loading
         // functions, keep them here if needed.
-
 
     }
     catch(error){
@@ -6305,7 +5987,6 @@ function openPage(page, fromHistory = false){
 
 }
 
-
 async function loadFarmers(){
 
     let box =
@@ -6317,10 +5998,8 @@ async function loadFarmers(){
         return;
     }
 
-
     box.innerHTML =
         "🔄 Loading farmers...";
-
 
     try{
 
@@ -6329,7 +6008,6 @@ async function loadFarmers(){
                 API + "/farmers"
             );
 
-
         let data =
             await res.json();
 
@@ -6337,15 +6015,12 @@ async function loadFarmers(){
             throw new Error(data.message || "Unable to load farmers");
         }
 
-
         let html = "";
-
 
         let farmers =
             data.farmers.filter(
                 f => f.id != user.id
             );
-
 
         if(farmers.length === 0){
 
@@ -6366,9 +6041,7 @@ async function loadFarmers(){
 
         }
 
-
         farmers.forEach(f => {
-
 
             html += `
 
@@ -6386,7 +6059,6 @@ async function loadFarmers(){
                     📍 ${f.village || "Not Added"}
                 </p>
 
-
                 <button
                     onclick="openChat('${encodeURIComponent(String(f.id))}', '${encodeURIComponent(f.name || "Farmer")}')"
                 >
@@ -6395,17 +6067,14 @@ async function loadFarmers(){
 
                 </button>
 
-
             </div>
 
             `;
 
         });
 
-
         box.innerHTML =
             html;
-
 
     }
     catch(error){
@@ -6414,7 +6083,6 @@ async function loadFarmers(){
             "Farmer loading error:",
             error
         );
-
 
         box.innerHTML =
             "❌ Unable to load farmers.";
@@ -6429,15 +6097,12 @@ function openChat(id, name){
 
     chatUserName = decodeURIComponent(name);
 
-
     openPage("chatPage");
-
 
     document.getElementById(
         "chatTitle"
     ).innerHTML =
         "💬 Chat with " + chatUserName;
-
 
     loadChat();
 
@@ -6452,13 +6117,11 @@ async function loadChat(){
                 localStorage.getItem("user")
             );
 
-
         if(!user || !chatUserId){
 
             return;
 
         }
-
 
         let res =
             await fetch(
@@ -6471,7 +6134,6 @@ async function loadChat(){
 
             );
 
-
         let data =
             await res.json();
 
@@ -6479,15 +6141,11 @@ async function loadChat(){
             throw new Error(data.message || "Unable to load chat");
         }
 
-
         let html = "";
-
 
         data.chat.forEach(c => {
 
-
             let side = "";
-
 
             if(c.sender == user.id){
 
@@ -6503,9 +6161,7 @@ async function loadChat(){
 
             }
 
-
             let messageContent = "";
-
 
             /* =========================
                TEXT MESSAGE
@@ -6529,7 +6185,6 @@ async function loadChat(){
 
             }
 
-
             /* =========================
                IMAGE MESSAGE
             ========================= */
@@ -6540,12 +6195,9 @@ async function loadChat(){
 
             ){
 
-
                 if(c.image){
 
-
                     let imageUrl = "";
-
 
                     if(
                         c.image.startsWith("http")
@@ -6562,7 +6214,6 @@ async function loadChat(){
                             API + c.image;
 
                     }
-
 
                     messageContent = `
 
@@ -6585,9 +6236,7 @@ async function loadChat(){
 
                 }
 
-
             }
-
 
             /* =========================
                LOCATION MESSAGE
@@ -6598,7 +6247,6 @@ async function loadChat(){
                 c.message_type == "location"
 
             ){
-
 
                 let mapUrl =
 
@@ -6616,7 +6264,6 @@ async function loadChat(){
 
                     c.longitude;
 
-
                 messageContent = `
 
                     <div class="locationMessage">
@@ -6626,7 +6273,6 @@ async function loadChat(){
                             📍 Location Shared
 
                         </div>
-
 
                         <a
 
@@ -6645,7 +6291,6 @@ async function loadChat(){
                 `;
 
             }
-
 
             /* =========================
                CREATE MESSAGE
@@ -6673,23 +6318,18 @@ async function loadChat(){
 
             `;
 
-
         });
-
 
         let chatBox =
             document.getElementById(
                 "chatBox"
             );
 
-
         chatBox.innerHTML =
             html;
 
-
         chatBox.scrollTop =
             chatBox.scrollHeight;
-
 
     }
 
@@ -6709,35 +6349,25 @@ async function loadChat(){
 
 async function sendChat(){
 
-
 if(sendingMessage){
     return;
 }
-
 
 let user=JSON.parse(
 localStorage.getItem("user")
 );
 
-
 let input=document.getElementById("chatMessage");
 
-
 let msg=input.value.trim();
-
 
 if(!msg){
     return;
 }
 
-
-
 sendingMessage=true;
 
-
-
 try{
-
 
 let response = await fetch(
 API+"/send-chat",
@@ -6759,7 +6389,6 @@ message:msg
 
 })
 
-
 });
 
 let data = await response.json();
@@ -6768,13 +6397,9 @@ if(!response.ok || !data.status){
     throw new Error(data.message || "Message could not be sent");
 }
 
-
 input.value="";
 
-
 loadChat();
-
-
 
 }
 catch(e){
@@ -6783,18 +6408,13 @@ console.log(e);
 
 }
 
-
 finally{
-
 
 sendingMessage=false;
 
-
 }
 
-
 }
-
 
 async function sendChatImage(){
 
@@ -6804,19 +6424,15 @@ async function sendChatImage(){
 
     }
 
-
     let user = JSON.parse(
         localStorage.getItem("user")
     );
-
 
     let input = document.getElementById(
         "chatImageInput"
     );
 
-
     let file = input.files[0];
-
 
     if(!file){
 
@@ -6824,21 +6440,16 @@ async function sendChatImage(){
 
     }
 
-
     sendingMessage = true;
-
 
     try{
 
-
         let formData = new FormData();
-
 
         formData.append(
             "file",
             file
         );
-
 
         let uploadRes = await fetch(
 
@@ -6854,10 +6465,8 @@ async function sendChatImage(){
 
         );
 
-
         let uploadData =
             await uploadRes.json();
-
 
         if(!uploadData.status){
 
@@ -6868,7 +6477,6 @@ async function sendChatImage(){
             return;
 
         }
-
 
         let sendRes = await fetch(
 
@@ -6907,10 +6515,8 @@ async function sendChatImage(){
 
         );
 
-
         let sendData =
             await sendRes.json();
-
 
         if(!sendData.status){
 
@@ -6922,12 +6528,9 @@ async function sendChatImage(){
 
         }
 
-
         input.value = "";
 
-
         await loadChat();
-
 
     }
 
@@ -6938,13 +6541,11 @@ async function sendChatImage(){
             e
         );
 
-
         alert(
             "Photo send failed"
         );
 
     }
-
 
     finally{
 
@@ -6962,7 +6563,6 @@ function sendLocation(){
 
     }
 
-
     if(!navigator.geolocation){
 
         alert(
@@ -6973,30 +6573,23 @@ function sendLocation(){
 
     }
 
-
     navigator.geolocation.getCurrentPosition(
 
         async function(position){
-
 
             let user = JSON.parse(
                 localStorage.getItem("user")
             );
 
-
             let latitude =
                 position.coords.latitude;
-
 
             let longitude =
                 position.coords.longitude;
 
-
             sendingMessage = true;
 
-
             try{
-
 
                 let res = await fetch(
 
@@ -7039,10 +6632,8 @@ function sendLocation(){
 
                 );
 
-
                 let data =
                     await res.json();
-
 
                 if(!data.status){
 
@@ -7054,9 +6645,7 @@ function sendLocation(){
 
                 }
 
-
                 await loadChat();
-
 
             }
 
@@ -7067,13 +6656,11 @@ function sendLocation(){
                     e
                 );
 
-
                 alert(
                     "Location send failed"
                 );
 
             }
-
 
             finally{
 
@@ -7083,14 +6670,12 @@ function sendLocation(){
 
         },
 
-
         function(error){
 
             console.log(
                 "LOCATION ERROR:",
                 error
             );
-
 
             if(
                 error.code === 1
@@ -7112,7 +6697,6 @@ function sendLocation(){
 
         },
 
-
         {
 
             enableHighAccuracy:true,
@@ -7129,52 +6713,35 @@ function sendLocation(){
 
 async function loadNews(){
 
-
 let user = JSON.parse(localStorage.getItem("user"));
-
 
 if(!user){
     return;
 }
 
-
-
 let box=document.getElementById("newsList");
-
 
 box.innerHTML="🔄 Loading latest agriculture news...";
 
-
-
 try{
-
 
 let response = await fetch(
 API + "/agri-news/" + user.id
 );
 
-
 let data = await response.json();
-
 
 console.log(data);
 
-
-
 if(data.status && data.news.length){
 
-
-
 let html="";
-
 
  allNews=data.news;
 
 data.news.forEach(n=>{
 
-
 let badge="cropBadge";
-
 
 if(n.category=="Weather"){
 
@@ -7200,13 +6767,9 @@ else if(n.category=="Government"){
 
 }
 
-
-
 html += `
 
-
 <div class="newsCard">
-
 
 <div class="newsCategory ${badge}">
 
@@ -7214,15 +6777,11 @@ ${n.icon} ${n.category}
 
 </div>
 
-
-
 <h3>
 
 ${n.title}
 
 </h3>
-
-
 
 <p>
 ${
@@ -7232,10 +6791,7 @@ ${
 ...
 </p>
 
-
-
 <div class="newsFooter">
-
 
 📰 ${n.source}
 
@@ -7243,64 +6799,43 @@ ${
 
 📅 ${n.date}
 
-
 </div>
 
-
 </div>
-
 
 `;
 
-
-
 });
 
-
-
 box.innerHTML=html;
-
-
 
 }
 
 else{
 
-
 box.innerHTML=
 "❌ No agriculture news found";
 
-
 }
 
-
-
 }
-
 
 catch(e){
 
-
 console.log(e);
-
 
 box.innerHTML=
 "❌ Server Error";
 
-
 }
-
 
 }
 
 function filterNews(category){
 
-
 let box=document.getElementById("newsList");
 
-
 let list=allNews;
-
 
 if(category!="All"){
 
@@ -7310,19 +6845,13 @@ n=>n.category==category
 
 }
 
-
-
 let html="";
-
 
 list.forEach(n=>{
 
-
 html += `
 
-
 <div class="newsCard">
-
 
 <div class="newsCategory">
 
@@ -7330,11 +6859,9 @@ ${n.icon} ${n.category}
 
 </div>
 
-
 <h3>
 ${n.title}
 </h3>
-
 
 <p>
 ${n.description || "Latest agriculture update"}
@@ -7350,7 +6877,6 @@ ${n.description || "Latest agriculture update"}
 
 </div>
 
-
 <div class="newsFooter">
 
 📰 ${n.source}
@@ -7361,21 +6887,15 @@ ${n.description || "Latest agriculture update"}
 
 </div>
 
-
 </div>
-
 
 `;
 
-
 });
-
 
 box.innerHTML=html;
 
-
 }
-
 
 async function loadNotificationPage(){
 
@@ -7386,14 +6906,11 @@ async function loadNotificationPage(){
         return;
     }
 
-
     let box =
         document.getElementById("notificationContent");
 
-
     box.innerHTML =
         "🔄 Loading farmer notifications...";
-
 
     try{
 
@@ -7412,16 +6929,13 @@ async function loadNotificationPage(){
 
         );
 
-
         let adminData =
             await adminResponse.json();
-
 
         console.log(
             "ADMIN NOTIFICATIONS:",
             adminData
         );
-
 
         // ==========================
         // AI WEATHER ALERT
@@ -7438,19 +6952,15 @@ async function loadNotificationPage(){
 
         );
 
-
         let rainData =
             await rainResponse.json();
-
 
         console.log(
             "RAIN ALERT DATA:",
             rainData
         );
 
-
         let html = "";
-
 
         // ==========================
         // ADMIN NOTIFICATIONS
@@ -7472,7 +6982,6 @@ async function loadNotificationPage(){
                 </h3>
 
             `;
-
 
             adminData.notifications.forEach(
 
@@ -7508,7 +7017,6 @@ async function loadNotificationPage(){
 
         }
 
-
         // ==========================
         // AI WEATHER NOTIFICATION
         // ==========================
@@ -7523,7 +7031,6 @@ async function loadNotificationPage(){
                 ">
                     🌦 Today's Farming Alerts
                 </h3>
-
 
                 <div class="aiCard">
 
@@ -7564,7 +7071,6 @@ async function loadNotificationPage(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -7584,7 +7090,6 @@ async function loadNotificationPage(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -7599,7 +7104,6 @@ async function loadNotificationPage(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -7613,7 +7117,6 @@ async function loadNotificationPage(){
                     </div>
 
                 </div>
-
 
                 <div class="aiCard">
 
@@ -7632,7 +7135,6 @@ async function loadNotificationPage(){
             `;
 
         }
-
 
         // ==========================
         // NOTHING AVAILABLE
@@ -7660,9 +7162,7 @@ async function loadNotificationPage(){
 
         }
 
-
         box.innerHTML = html;
-
 
     }
     catch(error){
@@ -7671,7 +7171,6 @@ async function loadNotificationPage(){
             "Notification Error:",
             error
         );
-
 
         box.innerHTML = `
 
@@ -7693,7 +7192,6 @@ async function loadNotificationPage(){
     }
 
 }
-
 
 function goHome(fromHistory = false){
 
@@ -7743,8 +7241,6 @@ if(user){
 
     }
 
-
-
 function openMenu(){
 
     document
@@ -7753,7 +7249,6 @@ function openMenu(){
 
 }
 
-
 // Side menu ke bahar click karne par close
 document.addEventListener("click", function(event){
 
@@ -7761,7 +7256,6 @@ document.addEventListener("click", function(event){
     const menuBtn = document.querySelector(".menuBtn");
 
     if(!sideMenu || !menuBtn) return;
-
 
     // Menu open hai
     if(sideMenu.classList.contains("active")){
@@ -7781,7 +7275,6 @@ document.addEventListener("click", function(event){
 
 });
 
-
 function getLiveLocation(){
 
 if(!navigator.geolocation){
@@ -7793,15 +7286,11 @@ navigator.geolocation.getCurrentPosition(
 
 async function(position){
 
-
 let lat =
 position.coords.latitude;
 
-
 let lon =
 position.coords.longitude;
-
-
 
 console.log(
 "Location:",
@@ -7811,8 +7300,6 @@ lon
 
 saveUserLocation(lat, lon);
 
-
-
 getLocationName(
 lat,
 lon
@@ -7820,17 +7307,12 @@ lon
 
 loadLocationName(lat, lon);
 
-
-
 loadWeather(
 lat,
 lon
 );
 
-
-
 },
-
 
 function(error){
 
@@ -7842,20 +7324,15 @@ function(error){
 
     alert(messageByCode[error.code] || "Location detect nahi ho pa rahi.");
 
-
 }
 
 );
 
-
 }
-
 
 async function getLocationName(lat,lon){
 
-
 try{
-
 
 let response =
 await fetch(
@@ -7864,21 +7341,15 @@ await fetch(
 
 );
 
-
-
 let data =
 await response.json();
 
-
-
 if(data.status){
-
 
 document.getElementById(
 "currentLocation"
 ).innerHTML =
 data.location;
-
 
 }
 
@@ -7890,9 +7361,7 @@ console.log(e);
 
 }
 
-
 }
-
 
 async function loadWeather(lat, lon) {
 
@@ -7921,7 +7390,6 @@ async function loadWeather(lat, lon) {
     document.getElementById("rain").innerHTML =
         data.rain_probability + "%";
 
-
     // Weather Code Mapping
     const weatherMap = {
 
@@ -7946,7 +7414,6 @@ async function loadWeather(lat, lon) {
         95: { icon: "⛈️", text: "Thunderstorm" }
 
     };
-
 
     let weather = weatherMap[data.weather_code] || {
 
@@ -7975,13 +7442,11 @@ async function loadWeather(lat, lon) {
     weather.text = weatherTranslations[selectedLanguage]?.[data.weather_code]
         || weather.text;
 
-
     document.getElementById("weatherStatus").innerHTML =
         weather.text;
 
     document.getElementById("weatherIcon").innerHTML =
         weather.icon;
-
 
     document.getElementById("advice").innerHTML =
         weatherText ? weatherText.advice :
@@ -8131,7 +7596,6 @@ function toggleForecast(i){
 
     let box = document.getElementById("forecastDetails"+i);
 
-
     if(box.style.display=="block"){
 
         box.style.display="none";
@@ -8140,14 +7604,11 @@ function toggleForecast(i){
 
     }
 
-
     document.querySelectorAll(".forecastDetails").forEach(d=>{
 
         d.style.display="none";
 
     });
-
-
 
     let sunrise = new Date(weatherForecastData.sunrise[i])
     .toLocaleTimeString([],{
@@ -8155,20 +7616,15 @@ function toggleForecast(i){
         minute:"2-digit"
     });
 
-
     let sunset = new Date(weatherForecastData.sunset[i])
     .toLocaleTimeString([],{
         hour:"2-digit",
         minute:"2-digit"
     });
 
-
-
     box.innerHTML = `
 
-
     <div class="forecastGrid">
-
 
         <div class="detailCard">
 
@@ -8180,13 +7636,7 @@ function toggleForecast(i){
 
         </div>
 
-
-
         <div class="detailCard">
-
-
-
-
 
             <h3>🌅 Sunrise</h3>
 
@@ -8195,8 +7645,6 @@ function toggleForecast(i){
             </p>
 
         </div>
-
-
 
         <div class="detailCard">
 
@@ -8208,8 +7656,6 @@ function toggleForecast(i){
 
         </div>
 
-
-
         <div class="detailCard">
 
             <h3>🌡 Temperature</h3>
@@ -8220,9 +7666,7 @@ function toggleForecast(i){
 
         </div>
 
-
     </div>
-
 
     <div class="adviceBox">
 
@@ -8234,9 +7678,7 @@ function toggleForecast(i){
 
     </div>
 
-
     `;
-
 
     box.style.display="block";
 
@@ -8259,12 +7701,10 @@ async function loadLocationName(lat, lon){
 
 }
 
-
 async function loadMandi(){
 
     let state =
         localStorage.getItem("userState");
-
 
     if(!state){
 
@@ -8272,25 +7712,21 @@ async function loadMandi(){
 
     }
 
-
     document.getElementById(
         "mandiState"
     ).innerText =
         "📍 " + state;
-
 
     const list =
         document.getElementById(
             "mandiList"
         );
 
-
     list.innerHTML = `
         <div class="mandiLoading">
             🌾 Loading Mandi Rates...
         </div>
     `;
-
 
     try{
 
@@ -8299,16 +7735,13 @@ async function loadMandi(){
                 `https://kisan-app-1.onrender.com/mandi-all/${encodeURIComponent(state)}`
             );
 
-
         const data =
             await response.json();
-
 
         console.log(
             "ALL MANDI DATA:",
             data
         );
-
 
         if(
             data.status &&
@@ -8317,7 +7750,6 @@ async function loadMandi(){
         ){
 
             list.innerHTML = "";
-
 
             data.records.forEach(
                 function(mandi){
@@ -8348,7 +7780,6 @@ async function loadMandi(){
 
                         </div>
 
-
                         <div class="mandiMainPrice">
 
                             ₹ ${mandi.Modal_Price}
@@ -8356,7 +7787,6 @@ async function loadMandi(){
                             <span>
                                 / quintal
                             </div>
-
 
                             <div>
 
@@ -8369,7 +7799,6 @@ async function loadMandi(){
                             </div>
 
                         </div>
-
 
                         <div class="mandiFooter">
 
@@ -8403,7 +7832,6 @@ async function loadMandi(){
 
         }
 
-
     }
     catch(error){
 
@@ -8411,7 +7839,6 @@ async function loadMandi(){
             "MANDI ERROR:",
             error
         );
-
 
         list.innerHTML = `
 
@@ -8523,7 +7950,6 @@ async function loadCropGuide(){
                 localStorage.getItem("user")
             );
 
-
         if(!user || !user.id){
 
             alert("User not found");
@@ -8532,12 +7958,10 @@ async function loadCropGuide(){
 
         }
 
-
         let crop =
             document
             .getElementById("guideCropSelect")
             .value;
-
 
         if(crop == "Other"){
 
@@ -8549,13 +7973,11 @@ async function loadCropGuide(){
 
         }
 
-
         if(!crop){
 
             crop = "General Crop";
 
         }
-
 
         const response =
             await fetch(
@@ -8564,16 +7986,13 @@ async function loadCropGuide(){
 
             );
 
-
         const data =
             await response.json();
-
 
         console.log(
             "CROP GUIDE DATA:",
             data
         );
-
 
         if(data.status){
 
@@ -8583,13 +8002,11 @@ async function loadCropGuide(){
             .innerHTML =
                 "🌾 " + data.crop;
 
-
             // Location
             document
             .getElementById("guideLocation")
             .innerHTML =
                 "📍 " + data.location;
-
 
             // Stage
             document
@@ -8597,13 +8014,11 @@ async function loadCropGuide(){
             .innerHTML =
                 data.stage;
 
-
             // Irrigation
             document
             .getElementById("guideWater")
             .innerHTML =
                 data.irrigation;
-
 
             // Fertilizer
             document
@@ -8611,13 +8026,11 @@ async function loadCropGuide(){
             .innerHTML =
                 data.fertilizer;
 
-
             // Weather
             document
             .getElementById("guideWeather")
             .innerHTML =
                 data.weather;
-
 
             // Pest
             document
@@ -8625,13 +8038,11 @@ async function loadCropGuide(){
             .innerHTML =
                 data.pest;
 
-
             // AI Advice
             document
             .getElementById("guideAI")
             .innerHTML =
                 data.ai;
-
 
             // --------------------------------
             // ADMIN CROP GUIDE
@@ -8643,7 +8054,6 @@ async function loadCropGuide(){
                     "adminCropGuide"
                 );
 
-
             if(adminGuide){
 
                 adminGuide.innerText =
@@ -8651,7 +8061,6 @@ async function loadCropGuide(){
                     "No additional crop guide available.";
 
             }
-
 
         }
         else{
@@ -8671,7 +8080,6 @@ async function loadCropGuide(){
             error
         );
 
-
         alert(
             "Server connection failed"
         );
@@ -8680,13 +8088,11 @@ async function loadCropGuide(){
 
 }
 
-
 async function scanDisease(){
 
     let file =
         document.getElementById("cameraImage").files[0] ||
         document.getElementById("galleryImage").files[0];
-
 
     if(!file){
 
@@ -8696,13 +8102,11 @@ async function scanDisease(){
 
     }
 
-
     // ==========================
     // IMAGE PREVIEW
     // ==========================
 
     let reader = new FileReader();
-
 
     reader.onload = function(e){
 
@@ -8715,9 +8119,7 @@ async function scanDisease(){
 
     };
 
-
     reader.readAsDataURL(file);
-
 
     // ==========================
     // FORM DATA
@@ -8730,12 +8132,10 @@ async function scanDisease(){
         file
     );
 
-
     let user =
         JSON.parse(
             localStorage.getItem("user")
         );
-
 
     if(!user || !user.id){
 
@@ -8745,18 +8145,15 @@ async function scanDisease(){
 
     }
 
-
     formData.append(
         "user_id",
         user.id
     );
 
-
     document
     .getElementById("scanResult")
     .innerHTML =
         "🔍 AI is analyzing image...";
-
 
     try{
 
@@ -8772,16 +8169,13 @@ async function scanDisease(){
 
             );
 
-
         let data =
             await response.json();
-
 
         console.log(
             "DISEASE SCAN DATA:",
             data
         );
-
 
         if(data.status){
 
@@ -8795,11 +8189,9 @@ async function scanDisease(){
             let badgeClass =
                 "badgeGreen";
 
-
             let diseaseText =
                 data.disease
                 .toLowerCase();
-
 
             if(
 
@@ -8821,13 +8213,12 @@ async function scanDisease(){
             else{
 
                 badge =
-                    "🔴 Disease Detected";
+                    "[old] Disease Detected";
 
                 badgeClass =
                     "badgeRed";
 
             }
-
 
             // ==========================
             // SEVERITY
@@ -8836,12 +8227,10 @@ async function scanDisease(){
             let severityColor =
                 "#2e7d32";
 
-
             if(data.severity){
 
                 let sev =
                     data.severity.toLowerCase();
-
 
                 if(
                     sev.includes("high")
@@ -8867,7 +8256,6 @@ async function scanDisease(){
 
             }
 
-
             // ==========================
             // RESULT
             // ==========================
@@ -8887,7 +8275,6 @@ async function scanDisease(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -8900,7 +8287,6 @@ async function scanDisease(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -8912,7 +8298,6 @@ async function scanDisease(){
                     </div>
 
                 </div>
-
 
                 <div class="aiCard">
 
@@ -8932,7 +8317,6 @@ async function scanDisease(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -8944,7 +8328,6 @@ async function scanDisease(){
                     </div>
 
                 </div>
-
 
                 <div class="aiCard">
 
@@ -8958,7 +8341,6 @@ async function scanDisease(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -8970,7 +8352,6 @@ async function scanDisease(){
                     </div>
 
                 </div>
-
 
                 <div class="aiCard">
 
@@ -8984,7 +8365,6 @@ async function scanDisease(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -8996,7 +8376,6 @@ async function scanDisease(){
                     </div>
 
                 </div>
-
 
                 <div class="aiCard">
 
@@ -9013,7 +8392,6 @@ async function scanDisease(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -9025,7 +8403,6 @@ async function scanDisease(){
                     </div>
 
                 </div>
-
 
                 <div class="aiCard">
 
@@ -9039,7 +8416,6 @@ async function scanDisease(){
 
                 </div>
 
-
                 <div class="aiCard">
 
                     <div class="aiTitle">
@@ -9051,7 +8427,6 @@ async function scanDisease(){
                     </div>
 
                 </div>
-
 
                 <div class="aiCard">
 
@@ -9087,7 +8462,6 @@ async function scanDisease(){
             error
         );
 
-
         document
         .getElementById("scanResult")
         .innerHTML =
@@ -9097,13 +8471,11 @@ async function scanDisease(){
 
 }
 
-
 async function loadDiseaseHistory(){
 
     let user = JSON.parse(
         localStorage.getItem("user")
     );
-
 
     if(!user){
 
@@ -9113,37 +8485,26 @@ async function loadDiseaseHistory(){
 
     }
 
-
     try{
-
 
         let response = await fetch(
             API + "/disease-history/" + user.id
         );
 
-
         let data = await response.json();
-
 
         console.log(data);
 
-
-
         let html = "";
-
-
 
         if(data.status && data.history.length > 0){
 
-
             data.history.forEach(item => {
-
 
                 html += `
 
 <div class="historyCard"
 onclick='openReport(${JSON.stringify(item)})'>
-
 
 <div class="historyCrop">
 
@@ -9151,13 +8512,11 @@ onclick='openReport(${JSON.stringify(item)})'>
 
 </div>
 
-
 <div class="historyDisease">
 
 🦠 ${item.disease}
 
 </div>
-
 
 <p>
 
@@ -9166,7 +8525,6 @@ ${item.confidence}
 
 </p>
 
-
 <p>
 
 ⚠ Severity:
@@ -9174,13 +8532,11 @@ ${item.severity}
 
 </p>
 
-
 <p>
 
 📅 ${item.date}
 
 </p>
-
 
 <button class="historyBtn">
 
@@ -9188,21 +8544,15 @@ View Full Report
 
 </button>
 
-
 </div>
-
 
                 `;
 
-
             });
-
-
 
         }
 
         else{
-
 
             html = `
 
@@ -9214,20 +8564,15 @@ No Disease History Found
 
         }
 
-
-
         document.getElementById(
             "historyList"
         ).innerHTML = html;
-
-
 
     }
 
     catch(error){
 
         console.log(error);
-
 
         document.getElementById(
             "historyList"
@@ -9238,26 +8583,20 @@ No Disease History Found
 
 }
 
-
 function openReport(item){
-
 
 localStorage.setItem(
 "selectedReport",
 JSON.stringify(item)
 );
 
-
 openPage("reportPage");
 
-
 let html = `
-
 
 <h2>
 🌾 ${item.crop}
 </h2>
-
 
 <h2 style="color:red">
 
@@ -9265,9 +8604,7 @@ let html = `
 
 </h2>
 
-
 <hr>
-
 
 <h3>
 🎯 Confidence
@@ -9277,7 +8614,6 @@ let html = `
 ${item.confidence}
 </p>
 
-
 <h3>
 ⚠ Severity
 </h3>
@@ -9286,9 +8622,7 @@ ${item.confidence}
 ${item.severity}
 </p>
 
-
 <hr>
-
 
 <h3>
 ❓ Reason
@@ -9298,7 +8632,6 @@ ${item.severity}
 ${item.reason || "--"}
 </p>
 
-
 <h3>
 📋 Symptoms
 </h3>
@@ -9306,8 +8639,6 @@ ${item.reason || "--"}
 <p>
 ${item.symptoms || "--"}
 </p>
-
-
 
 <h3>
 💊 Chemical Medicine
@@ -9317,8 +8648,6 @@ ${item.symptoms || "--"}
 ${item.medicine || "--"}
 </p>
 
-
-
 <h3>
 🌿 Organic Treatment
 </h3>
@@ -9326,8 +8655,6 @@ ${item.medicine || "--"}
 <p>
 ${item.organic || "--"}
 </p>
-
-
 
 <h3>
 ⏳ Recovery
@@ -9337,8 +8664,6 @@ ${item.organic || "--"}
 ${item.recovery || "--"}
 </p>
 
-
-
 <h3>
 📉 Yield Loss
 </h3>
@@ -9346,8 +8671,6 @@ ${item.recovery || "--"}
 <p>
 ${item.yield_loss || "--"}
 </p>
-
-
 
 <h3>
 🛡 Prevention
@@ -9357,8 +8680,6 @@ ${item.yield_loss || "--"}
 ${item.prevention || "--"}
 </p>
 
-
-
 <h3>
 🤖 AI Recommendation
 </h3>
@@ -9366,8 +8687,6 @@ ${item.prevention || "--"}
 <p>
 ${item.ai || "--"}
 </p>
-
-
 
 <h3>
 🌦 Weather
@@ -9377,18 +8696,13 @@ ${item.ai || "--"}
 ${item.weather || "--"}
 </p>
 
-
 `;
-
-
 
 document.getElementById(
 "reportBox"
 ).innerHTML = html;
 
-
 }
-
 
 function closeReport(){
 
@@ -9396,14 +8710,11 @@ loadDiseaseHistory();
 
 }
 
-
 function downloadDiseaseReport(){
-
 
 let item = JSON.parse(
 localStorage.getItem("selectedReport")
 );
-
 
 if(!item){
 
@@ -9413,76 +8724,56 @@ return;
 
 }
 
-
-
 let report = `
 
 Shrimant Shetkari - Disease Report
 
-
 Crop:
 ${item.crop}
-
 
 Disease:
 ${item.disease}
 
-
 Confidence:
 ${item.confidence}
-
 
 Severity:
 ${item.severity}
 
-
 Affected Part:
 ${item.affected}
-
 
 Reason:
 ${item.reason}
 
-
 Symptoms:
 ${item.symptoms}
-
 
 Chemical Medicine:
 ${item.medicine}
 
-
 Organic Treatment:
 ${item.organic}
-
 
 Recovery Time:
 ${item.recovery}
 
-
 Yield Loss:
 ${item.yield_loss}
-
 
 Prevention:
 ${item.prevention}
 
-
 AI Recommendation:
 ${item.ai}
-
 
 Weather:
 ${item.weather}
 
-
 Date:
 ${item.date}
 
-
 `;
-
-
 
 let blob = new Blob(
 [report],
@@ -9491,11 +8782,7 @@ type:"text/plain"
 }
 );
 
-
-
 let url = URL.createObjectURL(blob);
-
-
 
 let a=document.createElement("a");
 
@@ -9504,31 +8791,23 @@ a.href=url;
 a.download=
 "Kisan_AI_Disease_Report.txt";
 
-
 a.click();
-
 
 URL.revokeObjectURL(url);
 
-
 }
 
-
 async function loadDiseaseSummary(){
-
 
 let user = JSON.parse(
 localStorage.getItem("user")
 );
-
 
 if(!user){
 
 return;
 
 }
-
-
 
 let response = await fetch(
 
@@ -9539,19 +8818,12 @@ user.id
 
 );
 
-
-
 let data = await response.json();
-
-
 
 if(data.status && data.history.length){
 
-
 let latest =
 data.history[0];
-
-
 
     const totalScans = document.getElementById("totalScans");
 
@@ -9559,15 +8831,11 @@ data.history[0];
         totalScans.innerHTML = data.count;
     }
 
-
-
     const lastCrop = document.getElementById("lastCrop");
 
     if(lastCrop){
         lastCrop.innerHTML = latest.crop || "--";
     }
-
-
 
     const lastDisease = document.getElementById("lastDisease");
 
@@ -9575,44 +8843,31 @@ data.history[0];
         lastDisease.innerHTML = latest.disease || "--";
     }
 
-
-
     const riskLevel = document.getElementById("riskLevel");
 
     if(riskLevel){
         riskLevel.innerHTML = latest.severity || "--";
     }
 
-
-
 }
 
 }
-
 
 async function loadFarmingAdvice(){
-
 
 let user =
 JSON.parse(
 localStorage.getItem("user")
 );
 
-
-
 let res = await fetch(
     `${API}/farming-advice/${user.id}?language=${encodeURIComponent(getSelectedLanguage())}`
 );
 
-
-
 let data =
 await res.json();
 
-
-
 if(data.status){
-
 
 document.getElementById(
 "adviceBox"
@@ -9634,7 +8889,6 @@ ${data.advice}
 </pre>
 
 `;
-
 
 }
 
@@ -9705,14 +8959,10 @@ async function askAI(){
 
 }
 
-
 async function loadSchemes(){
-
 
 let state =
 document.getElementById("schemeState").value;
-
-
 
 let response = await fetch(
 
@@ -9720,41 +8970,28 @@ let response = await fetch(
 
 );
 
-
-
 let data = await response.json();
-
-
 
 let html="";
 
-
-
 if(data.status){
 
-
 data.schemes.forEach(s=>{
-
 
 html += `
 
 <div class="weatherCard">
 
-
-
 <h2>🏛 ${s.name}</h2>
-
 
 <p>
 📝 ${s.description}
 </p>
 
-
 <p>
 💰 Benefit:
 ${s.benefit}
 </p>
-
 
 <p>
 👨‍🌾 Eligibility:
@@ -9773,16 +9010,11 @@ ${s.eligibility}
 
 `;
 
-
 });
-
-
 
 }
 
-
 else{
-
 
 html="No schemes found";
 
@@ -9791,7 +9023,6 @@ html="No schemes found";
 document.getElementById("schemeList").innerHTML=html;
 
 }
-
 
 document.getElementById("guideCropSelect").addEventListener("change",function(){
 
@@ -9903,7 +9134,6 @@ async function loadAlerts(){
         return;
     }
 
-
     // Show quick local data immediately
 
     if(user.village){
@@ -9912,7 +9142,6 @@ async function loadAlerts(){
         " " + user.village;
 
     }
-
 
     document.getElementById("weatherAlert").innerHTML =
     "🌦 Checking live weather...";
@@ -9929,7 +9158,6 @@ async function loadAlerts(){
     document.getElementById("farmTasks").innerHTML =
     "🔄 Loading today's tasks...";
 
-
     try{
 
         let response = await fetch(
@@ -9944,12 +9172,9 @@ async function loadAlerts(){
 
         );
 
-
         let data = await response.json();
 
-
         console.log("ALERT DATA:",data);
-
 
         if(!data.status){
 
@@ -9960,12 +9185,10 @@ async function loadAlerts(){
 
         }
 
-
         // Location
 
         document.getElementById("alertLocation").innerHTML =
         "📍 " + data.location;
-
 
         // Weather
 
@@ -9984,7 +9207,6 @@ async function loadAlerts(){
         ${data.weather_alert}
         `;
 
-
         // Crop
 
         document.getElementById("cropAlert").innerHTML =
@@ -9993,7 +9215,6 @@ async function loadAlerts(){
         <br><br>
         ${data.crop_alert}
         `;
-
 
         // Disease
 
@@ -10004,14 +9225,12 @@ async function loadAlerts(){
         ${disease.message}
         `;
 
-
         // Reminder
 
         document.getElementById("farmReminder").innerHTML =
         `
         ${data.reminder}
         `;
-
 
         // Tasks
 
@@ -10029,17 +9248,14 @@ async function loadAlerts(){
 
         });
 
-
         document.getElementById("farmTasks").innerHTML =
         taskHTML;
-
 
     }
 
     catch(error){
 
         console.log("Alert Error:",error);
-
 
         document.getElementById("weatherAlert").innerHTML =
         "⚠️ Live weather temporarily unavailable.";
@@ -10062,30 +9278,21 @@ async function loadAlerts(){
 
 async function loadAlertCount(){
 
-
 let user = JSON.parse(localStorage.getItem("user"));
-
 
 if(!user){
     return;
 }
 
-
 let res = await fetch(
 `https://kisan-app-1.onrender.com/alerts/${user.id}`
 );
 
-
 let data = await res.json();
-
-
 
 if(data.status){
 
-
 let count = 0;
-
-
 
 // Weather risk
 
@@ -10098,8 +9305,6 @@ count++;
 
 }
 
-
-
 // Disease risk
 
 if(
@@ -10111,8 +9316,6 @@ count++;
 
 }
 
-
-
 // Reminder
 
 if(
@@ -10123,11 +9326,7 @@ count++;
 
 }
 
-
-
 document.getElementById("alertCount").innerHTML=count;
-
-
 
 }
 
@@ -10142,7 +9341,6 @@ async function toggleNotifications(){
         return;
     }
 
-
     if(popup.style.display === "block"){
 
         popup.style.display = "none";
@@ -10151,14 +9349,11 @@ async function toggleNotifications(){
 
     }
 
-
     popup.style.display = "block";
-
 
     await loadNotificationPopup();
 
 }
-
 
 function closeNotifications(){
 
@@ -10170,19 +9365,16 @@ function closeNotifications(){
 
 }
 
-
 async function loadNotificationPopup(){
 
     let user =
     JSON.parse(localStorage.getItem("user"));
-
 
     if(!user){
 
         return;
 
     }
-
 
     let box =
     document.getElementById(
@@ -10192,7 +9384,6 @@ async function loadNotificationPopup(){
     if(!box){
         return;
     }
-
 
     try{
 
@@ -10206,9 +9397,7 @@ async function loadNotificationPopup(){
 
         );
 
-
         let data = await response.json();
-
 
         if(!data.status){
 
@@ -10219,11 +9408,9 @@ async function loadNotificationPopup(){
 
         }
 
-
         let count = 0;
 
         let html = "";
-
 
         if(data.weather_alert){
 
@@ -10237,7 +9424,6 @@ async function loadNotificationPopup(){
 
         }
 
-
         if(data.crop_alert){
 
             html += `
@@ -10249,7 +9435,6 @@ async function loadNotificationPopup(){
             count++;
 
         }
-
 
         if(data.disease_alert){
 
@@ -10270,7 +9455,6 @@ async function loadNotificationPopup(){
 
         }
 
-
         if(data.reminder){
 
             html += `
@@ -10283,14 +9467,11 @@ async function loadNotificationPopup(){
 
         }
 
-
         box.innerHTML = html;
-
 
         document.getElementById(
             "notificationBadge"
         ).innerHTML = count;
-
 
     }
 
@@ -10342,9 +9523,7 @@ async function loadNotificationCount(){
 
         }
 
-
         let count = 0;
-
 
         // 🌧 Rain alert
         if(
@@ -10359,7 +9538,6 @@ async function loadNotificationCount(){
 
         }
 
-
         // 🌱 Crop risk
         if(
             data.crop_risk &&
@@ -10370,7 +9548,6 @@ async function loadNotificationCount(){
 
         }
 
-
         // 💡 AI advice/action
         if(
             data.advice &&
@@ -10380,7 +9557,6 @@ async function loadNotificationCount(){
             count++;
 
         }
-
 
         if(count > 0){
 
@@ -10414,7 +9590,6 @@ async function loadNotificationCount(){
 
 }
 
-
 const appPages=[
 
 {type:"page",name:"Weather",page:"weatherPage"},
@@ -10427,7 +9602,6 @@ const appPages=[
 {type:"page",name:"Profile",page:"profilePage"}
 
 ];
-
 
 function smartSearch(){
 
@@ -10500,7 +9674,6 @@ box.innerHTML=html;
 
 }
 
-
 function searchCrop(crop){
 
 crop = decodeURIComponent(crop);
@@ -10527,7 +9700,6 @@ function startVoiceSearch(){
 
     btn.innerHTML = "🎙 Listening...";
 
-
     // ==========================
     // ANDROID NATIVE VOICE
     // ==========================
@@ -10541,7 +9713,6 @@ function startVoiceSearch(){
 
         return;
     }
-
 
     // ==========================
     // BROWSER VOICE FALLBACK
@@ -10559,15 +9730,12 @@ function startVoiceSearch(){
         return;
     }
 
-
     const SpeechRecognition =
         window.SpeechRecognition ||
         window.webkitSpeechRecognition;
 
-
     const recognition =
         new SpeechRecognition();
-
 
     recognition.lang = "en-IN";
 
@@ -10575,24 +9743,19 @@ function startVoiceSearch(){
 
     recognition.maxAlternatives = 1;
 
-
     recognition.start();
-
 
     recognition.onresult = function(event){
 
         let text =
             event.results[0][0].transcript;
 
-
         document.getElementById(
             "searchInput"
         ).value = text;
 
-
         smartSearch();
     };
-
 
     recognition.onerror = function(event){
 
@@ -10604,7 +9767,6 @@ function startVoiceSearch(){
         btn.innerHTML = "🎤";
     };
 
-
     recognition.onend = function(){
 
         btn.innerHTML = "🎤";
@@ -10612,23 +9774,19 @@ function startVoiceSearch(){
 
 }
 
-
 function setVoiceSearchResult(text){
 
     document.getElementById(
         "searchInput"
     ).value = text;
 
-
     document.getElementById(
         "voiceBtn"
     ).innerHTML = "🎤";
 
-
     smartSearch();
 
 }
-
 
 function selectLanguage(lang){
 
@@ -10642,12 +9800,10 @@ function selectLanguage(lang){
 
     updateLanguageUI(lang);
 
-
     // Language page hide
     document.getElementById(
         "languagePage"
     ).style.display = "none";
-
 
     // Registration page show
     document.getElementById(
@@ -10727,7 +9883,6 @@ const translations = {
         languageName: "English"
     },
 
-
     hi: {
         header: "🌾 AI सहायक",
         cropLabel: "🌾 मुख्य फसल चुनें",
@@ -10757,7 +9912,6 @@ const translations = {
         sideLogout: "लॉगआउट",
         languageName: "हिंदी"
     },
-
 
     mr: {
         header: "🌾 AI सहाय्यक",
@@ -10791,7 +9945,6 @@ const translations = {
 
 };
 
-
 function applyLanguage(){
 
     // Default language = Marathi
@@ -10812,7 +9965,6 @@ function applyLanguage(){
 
     document.getElementById("homeLocationLabel").innerText =
         t.locationLabel;
-
 
     document.getElementById("txtWeather").innerText =
         t.weather;
@@ -10846,7 +9998,6 @@ function applyLanguage(){
 
     document.getElementById("txtProfile").innerText =
         t.profile;
-
 
     document.getElementById("navHome").innerText =
         t.home;
@@ -10900,7 +10051,6 @@ function updateLanguageUI(lang){
 
 }
 
-
 document.addEventListener(
     "DOMContentLoaded",
     function(){
@@ -10911,13 +10061,11 @@ document.addEventListener(
     }
 );
 
-
 function getSelectedLanguage(){
 
     return localStorage.getItem("appLanguage") || "hi";
 
 }
-
 
 function getLanguageInstruction(){
 
@@ -10949,7 +10097,6 @@ Use simple farmer-friendly Hindi.
 
 }
 
-
 async function buyPlan(plan){
 
     const userData =
@@ -10962,10 +10109,8 @@ async function buyPlan(plan){
         return;
     }
 
-
     const user =
         JSON.parse(userData);
-
 
     try{
 
@@ -10995,10 +10140,8 @@ async function buyPlan(plan){
 
             );
 
-
         const data =
             await response.json();
-
 
         if(!data.status){
 
@@ -11009,7 +10152,6 @@ async function buyPlan(plan){
 
             return;
         }
-
 
         // ==========================
         // SAVE PENDING SUBSCRIPTION
@@ -11032,7 +10174,6 @@ async function buyPlan(plan){
             })
         );
 
-
         const options = {
 
             key:data.key_id,
@@ -11045,7 +10186,6 @@ async function buyPlan(plan){
 
             description:
                 "Premium Farming Subscription",
-
 
             handler:
                 async function(payment){
@@ -11062,7 +10202,6 @@ async function buyPlan(plan){
 
                 },
 
-
             modal:{
 
                 ondismiss:function(){
@@ -11075,7 +10214,6 @@ async function buyPlan(plan){
 
             },
 
-
             theme:{
 
                 color:"#2e7d32"
@@ -11084,13 +10222,10 @@ async function buyPlan(plan){
 
         };
 
-
         const rzp =
             new Razorpay(options);
 
-
         rzp.open();
-
 
     }
     catch(error){
@@ -11151,10 +10286,8 @@ async function verifyPremiumPayment(
 
             );
 
-
         const data =
             await response.json();
-
 
         if(data.status){
 
@@ -11167,13 +10300,11 @@ async function verifyPremiumPayment(
                 "pendingPremiumPayment"
             );
 
-
             // ==========================
             // UPDATE PREMIUM STATUS
             // ==========================
 
             await loadPremiumStatus();
-
 
             // ==========================
             // SUCCESS POPUP
@@ -11182,7 +10313,6 @@ async function verifyPremiumPayment(
             alert(
                 "🎉 Payment Successful! Premium activated successfully!"
             );
-
 
             // ==========================
             // OPEN FEATURE USER CLICKED
@@ -11193,13 +10323,11 @@ async function verifyPremiumPayment(
                     "pendingPremiumFeature"
                 );
 
-
             if(pendingFeature){
 
                 localStorage.removeItem(
                     "pendingPremiumFeature"
                 );
-
 
                 setTimeout(function(){
 
@@ -11229,7 +10357,6 @@ async function verifyPremiumPayment(
             error
         );
 
-
         alert(
             "Payment verification failed."
         );
@@ -11237,7 +10364,6 @@ async function verifyPremiumPayment(
     }
 
 }
-
 
 // ==========================
 // PREMIUM ACCESS SYSTEM
@@ -11248,7 +10374,6 @@ let premiumInfo = {
     plan: "",
     expiry: ""
 };
-
 
 // ==========================
 // LOAD PREMIUM STATUS
@@ -11271,10 +10396,8 @@ async function loadPremiumStatus(){
 
     }
 
-
     const user =
         JSON.parse(userData);
-
 
     try{
 
@@ -11285,10 +10408,8 @@ async function loadPremiumStatus(){
 
             );
 
-
         const data =
             await response.json();
-
 
         if(
             data.status &&
@@ -11319,7 +10440,6 @@ async function loadPremiumStatus(){
 
         }
 
-
         // Update premium page also
 
         if(
@@ -11330,7 +10450,6 @@ async function loadPremiumStatus(){
             updatePremiumButtons();
 
         }
-
 
     }
     catch(error){
@@ -11364,13 +10483,11 @@ async function recoverPendingPremiumPayment(){
             "pendingPremiumPayment"
         );
 
-
     if(!pendingData){
 
         return;
 
     }
-
 
     try{
 
@@ -11378,7 +10495,6 @@ async function recoverPendingPremiumPayment(){
             JSON.parse(
                 pendingData
             );
-
 
         const response =
             await fetch(
@@ -11411,10 +10527,8 @@ async function recoverPendingPremiumPayment(){
 
             );
 
-
         const data =
             await response.json();
-
 
         if(
             data.status &&
@@ -11429,13 +10543,11 @@ async function recoverPendingPremiumPayment(){
                 "pendingPremiumPayment"
             );
 
-
             // ==========================
             // UPDATE PREMIUM STATUS
             // ==========================
 
             await loadPremiumStatus();
-
 
             // ==========================
             // SHOW SUCCESS POPUP
@@ -11444,7 +10556,6 @@ async function recoverPendingPremiumPayment(){
             alert(
                 "🎉 Payment Successful! Premium activated successfully!"
             );
-
 
             // ==========================
             // OPEN FEATURE USER CLICKED
@@ -11455,13 +10566,11 @@ async function recoverPendingPremiumPayment(){
                     "pendingPremiumFeature"
                 );
 
-
             if(pendingFeature){
 
                 localStorage.removeItem(
                     "pendingPremiumFeature"
                 );
-
 
                 setTimeout(function(){
 
@@ -11475,7 +10584,6 @@ async function recoverPendingPremiumPayment(){
 
         }
 
-
     }
     catch(error){
 
@@ -11487,7 +10595,6 @@ async function recoverPendingPremiumPayment(){
     }
 
 }
-
 
 // ==========================
 // CHECK PREMIUM ACCESS
@@ -11514,7 +10621,6 @@ function checkPremiumAccess(
 
     ];
 
-
     if(
         freeFeatures.includes(
             feature
@@ -11526,7 +10632,6 @@ function checkPremiumAccess(
         return;
 
     }
-
 
     // ==========================
     // ADVANCED USER
@@ -11542,7 +10647,6 @@ function checkPremiumAccess(
         return;
 
     }
-
 
     // ==========================
     // BASIC FEATURES
@@ -11566,7 +10670,6 @@ function checkPremiumAccess(
 
     ];
 
-
     if(
         basicFeatures.includes(
             feature
@@ -11586,7 +10689,6 @@ function checkPremiumAccess(
 
         }
 
-
         // Basic feature locked
 
         openPremiumPage(
@@ -11597,7 +10699,6 @@ function checkPremiumAccess(
 
     }
 
-
     // ==========================
     // ADVANCED FEATURES
     // ==========================
@@ -11607,7 +10708,6 @@ function checkPremiumAccess(
     );
 
 }
-
 
 // ==========================
 // OPEN PREMIUM PAGE
@@ -11621,7 +10721,6 @@ function openPremiumPage(
         "premiumPage"
     );
 
-
     setTimeout(
         function(){
 
@@ -11630,7 +10729,6 @@ function openPremiumPage(
         },
         100
     );
-
 
     if(
         requiredPlan ===
@@ -11660,7 +10758,6 @@ function openPremiumPage(
 
 }
 
-
 // ==========================
 // UPDATE PREMIUM BUTTONS
 // ==========================
@@ -11671,7 +10768,6 @@ function updatePremiumButtons(){
         document.querySelectorAll(
             ".priceOption button"
         );
-
 
     buttons.forEach(
         function(button){
@@ -11685,7 +10781,6 @@ function updatePremiumButtons(){
         }
     );
 
-
     if(
         !premiumInfo.premium ||
         !premiumInfo.plan
@@ -11695,13 +10790,11 @@ function updatePremiumButtons(){
 
     }
 
-
     const activeButton =
         document.getElementById(
             premiumInfo.plan +
             "_btn"
         );
-
 
     if(activeButton){
 
@@ -11713,12 +10806,10 @@ function updatePremiumButtons(){
 
     }
 
-
     const statusBox =
         document.getElementById(
             "premiumStatus"
         );
-
 
     if(statusBox){
 
@@ -11728,7 +10819,6 @@ function updatePremiumButtons(){
                 "_",
                 " "
             );
-
 
         planName =
             planName.replace(
@@ -11740,17 +10830,15 @@ function updatePremiumButtons(){
                 }
             );
 
-
         statusBox.innerHTML =
 
             "👑 " +
             planName +
-            " — ACTIVE";
+            " -- ACTIVE";
 
     }
 
 }
-
 
 // ==========================
 // OPEN FEATURE WITH PREMIUM CHECK
@@ -11766,7 +10854,6 @@ function openFeature(
         page
     );
 
-
     checkPremiumAccess(
 
         feature,
@@ -11777,7 +10864,6 @@ function openFeature(
                 "pendingPremiumFeature"
             );
 
-
             openPage(page);
 
         }
@@ -11785,7 +10871,6 @@ function openFeature(
     );
 
 }
-
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -11800,14 +10885,11 @@ document.addEventListener(
     }
 );
 
-
 async function loadProfile(){
-
 
 let user=JSON.parse(
 localStorage.getItem("user")
 );
-
 
 if(!user){
 
@@ -11815,28 +10897,21 @@ return;
 
 }
 
-
 let response=await fetch(
 
 "https://kisan-app-1.onrender.com/profile/"+user.id
 
 );
 
-
 let data=await response.json();
 
-
-
 if(data.status){
-
 
 document.getElementById("profileName").innerHTML=
 "👨‍🌾 "+data.user.name;
 
-
 document.getElementById("profileMobile").innerHTML=
 "📱 "+data.user.mobile;
-
 
 document.getElementById("profileVillage").innerHTML=
 "🏡 "+data.user.village;
@@ -11926,5 +11001,36 @@ window.onload = function(){
 
 </script>
 
+</body>
+</html>
+
+<!-- Performance optimization -->
+<script>
+// Preconnect done above in head
+// Lazy load offscreen images
+if (window.IntersectionObserver) {
+    const imgObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.onload = () => img.removeAttribute('data-src');
+                    imgObserver.unobserve(img);
+                }
+            }
+        });
+    });
+    document.querySelectorAll('img[data-src]').forEach(img => imgObserver.observe(img));
+}
+
+// Prefetch critical resources
+if (window.linkPrefetch) {
+    const criticalLinks = [
+        '/api/weather',
+        '/api/profile'
+    ];
+}
+</script>
 </body>
 </html>

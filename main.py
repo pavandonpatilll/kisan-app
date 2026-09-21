@@ -1,9 +1,6 @@
 from fastapi.staticfiles import StaticFiles
 import json
 from urllib import response
-from fastapi import UploadFile, File
-from PIL import Image
-import io
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -19,6 +16,8 @@ import uuid
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
+from PIL import Image
+import io
 
 load_dotenv()
 
@@ -159,8 +158,15 @@ os.makedirs(
 
 conn = sqlite3.connect(
     DATABASE_PATH,
-    check_same_thread=False
+    check_same_thread=False,
+    timeout=20
 )
+
+# Enable WAL mode for better concurrent performance
+conn.execute("PRAGMA journal_mode=WAL")
+conn.execute("PRAGMA synchronous=NORMAL")
+conn.execute("PRAGMA cache_size=-64000")  # 64MB cache
+conn.execute("PRAGMA temp_store=MEMORY")
 
 cursor = conn.cursor()
 
@@ -441,7 +447,7 @@ try:
         ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'hi'
     """)
     conn.commit()
-    print("✅ language column added")
+    print("    language column added")
 except Exception as e:
     print("Language column:", e)
 
