@@ -5228,76 +5228,34 @@ Keep each answer to one short sentence.
     
 
 def classify_news(title, description):
+    # Simple keyword-based classification (fast & reliable, no AI needed)
 
-    prompt = f"""
+    title_lower = title.lower()
+    desc_lower = description.lower()
 
-You are an agriculture news classifier.
+    # Weather
+    if any(w in title_lower or w in desc_lower for w in ['weather', 'rain', 'monsoon', 'temperature', 'mausam', 'baisand', 'hot', 'cold', 'storm']):
+        return 'Weather'
 
-News Title:
-{title}
+    # Disease
+    if any(w in title_lower or w in desc_lower for w in ['disease', 'pest', 'keede', 'bug', 'virus', 'fungus', 'fasal', 'rot', 'blight']):
+        return 'Disease'
 
-News Description:
-{description}
+    # Market
+    if any(w in title_lower or w in desc_lower for w in ['price', 'mandi', 'market', 'bhav', 'rate', 'cost', 'profit', 'sell', 'khareed']):
+        return 'Market'
 
+    # Government
+    if any(w in title_lower or w in desc_lower for w in ['government', 'sarkar', 'scheme', 'yojana', 'subsidy', 'pm kisan', 'policy', 'ministry']):
+        return 'Government'
 
-Choose only one category:
+    # Crop
+    if any(w in title_lower or w in desc_lower for w in ['crop', 'fasal', 'kheti', 'beej', 'bija', 'fertilizer', 'khad', 'irrigation', 'seeds']):
+        return 'Crop'
 
-Weather
-Crop
-Market
-Disease
-Government
-
-
-Reply only category name.
-
-"""
-
-
-    try:
-
-        response = client.models.generate_content(
-
-            model="models/gemini-3.1-flash-lite",
-
-            contents=prompt
-
-        )
+    return 'Crop'
 
 
-        category = response.text.strip()
-
-
-        allowed = [
-
-            "Weather",
-            "Crop",
-            "Market",
-            "Disease",
-            "Government"
-
-        ]
-
-
-        if category in allowed:
-
-            return category
-
-
-        return "Crop"
-
-
-
-    except Exception as e:
-
-
-        print(
-            "Category AI Error:",
-            e
-        )
-
-
-        return "Crop"
 
 
 
@@ -5593,10 +5551,6 @@ def agri_news(user_id: int):
             "status": False,
             "message": str(e)
         }
-
-
-@app.post("/admin/news")
-
 
 
 @app.post("/admin/news")
