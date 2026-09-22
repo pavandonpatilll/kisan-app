@@ -2305,6 +2305,108 @@ transform:translateY(-2px);
     box-sizing:border-box;
 }
 
+/* ==========================
+   SATBARA FEATURE
+   ========================== */
+.satbaraHeader{
+    width:100%;
+    max-width:700px;
+    text-align:center;
+    margin-bottom:4px;
+}
+.satbaraIcon{
+    font-size:58px;
+    margin-bottom:8px;
+}
+.satbaraHeader h1{
+    margin:0;
+    color:#1b5e20;
+}
+.satbaraHeader p{
+    margin:8px 0 0;
+    color:#5b6b60;
+    font-weight:600;
+}
+.satbaraCard{
+    width:100%;
+    max-width:620px;
+    background:#fff;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 6px 20px rgba(0,0,0,.10);
+    box-sizing:border-box;
+}
+.satbaraCard h2{
+    margin:0 0 8px;
+    color:#1b5e20;
+}
+.satbaraCard p{
+    margin:0 0 15px;
+    color:#555;
+    line-height:1.55;
+}
+.satbaraFields{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-bottom:14px;
+}
+.satbaraFields input{
+    width:100%;
+    padding:12px 13px;
+    border:1px solid #dce7df;
+    border-radius:11px;
+    box-sizing:border-box;
+    font-size:14px;
+    outline:none;
+}
+.satbaraFields input:focus{
+    border-color:#2e7d32;
+    box-shadow:0 0 0 3px rgba(46,125,50,.10);
+}
+.satbaraBtn{
+    width:100%;
+    padding:13px 16px !important;
+    border:none;
+    border-radius:12px;
+    background:#2e7d32;
+    color:#fff;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+}
+.officialSatbaraCard{
+    border-left:6px solid #1565c0;
+}
+.officialBtn{
+    background:#1565c0;
+}
+.officialNotice{
+    background:#fff8e1;
+    color:#6d4c00;
+    padding:11px 12px;
+    border-radius:10px;
+    margin-bottom:13px;
+    font-size:13px;
+    line-height:1.5;
+}
+.satbaraHelp{
+    width:100%;
+    max-width:620px;
+    background:#f1f8e9;
+    color:#33691e;
+    border-radius:14px;
+    padding:13px 15px;
+    box-sizing:border-box;
+    line-height:1.55;
+    font-size:13px;
+}
+@media(max-width:600px){
+    .satbaraFields{
+        grid-template-columns:1fr;
+    }
+}
+
 #premiumPage{
     align-items:center !important;
 }
@@ -4368,6 +4470,17 @@ Detecting...
 </div>
 
 <div class="item"
+     onclick="openFeature('satbara','satbaraPage')">
+
+    📜
+
+    <p id="txtSatbara">
+        Satbara
+    </p>
+
+</div>
+
+<div class="item"
      onclick="openFeature('ai','aiPage')">
 
     🤖
@@ -4616,6 +4729,57 @@ Loading Forecast...
 <button onclick="goHome()">
 Back Home
 </button>
+
+</section>
+
+<!-- =========================
+     SATBARA / 7-12 FEATURE
+========================= -->
+
+<section id="satbaraPage" class="featurePage" style="display:none;">
+
+    <div class="satbaraHeader">
+        <div class="satbaraIcon">📜</div>
+        <h1 id="satbaraTitle">सातबारा सेवा</h1>
+        <p id="satbaraSubtitle">₹5 Premium मध्ये सातबारा सुविधा</p>
+    </div>
+
+    <div class="satbaraCard freeSatbaraCard">
+        <h2 id="satbaraFreeTitle">🆓 Free 7/12 माहिती</h2>
+        <p id="satbaraFreeText">सामान्य माहितीसाठी महाराष्ट्र शासनाच्या Mahabhulekh पोर्टलवर 7/12 पहा.</p>
+
+        <div class="satbaraFields">
+            <input id="satbaraDistrict" type="text" placeholder="जिल्हा / District">
+            <input id="satbaraTaluka" type="text" placeholder="तालुका / Taluka">
+            <input id="satbaraVillage" type="text" placeholder="गाव / Village">
+            <input id="satbaraSurvey" type="text" placeholder="सर्वे नंबर / गट नंबर">
+        </div>
+
+        <button class="satbaraBtn" onclick="openSatbaraPortal('free')" id="satbaraFreeBtn">
+            🆓 Free 7/12 उघडा
+        </button>
+    </div>
+
+    <div class="satbaraCard officialSatbaraCard">
+        <h2 id="satbaraOfficialTitle">🏛️ सरकारी Digital 7/12</h2>
+        <p id="satbaraOfficialText">बँक, सरकारी किंवा कायदेशीर कामासाठी Digitally Signed 7/12 सरकारी पोर्टलवरून डाउनलोड करा.</p>
+
+        <div class="officialNotice" id="satbaraOfficialNotice">
+            सरकारी पोर्टलवरील लागू शुल्क/पेमेंट तिथेच दाखवले जाईल.
+        </div>
+
+        <button class="satbaraBtn officialBtn" onclick="openSatbaraPortal('official')" id="satbaraOfficialBtn">
+            🏛️ Official Digital 7/12 उघडा
+        </button>
+    </div>
+
+    <div class="satbaraHelp" id="satbaraHelpText">
+        ℹ️ सर्वे/गट नंबरची माहिती भरून ठेवा. सरकारी पोर्टल उघडल्यानंतर तिथल्या अधिकृत प्रक्रियेनुसार माहिती, CAPTCHA, लॉगिन/पेमेंट आणि PDF डाउनलोड पूर्ण करा.
+    </div>
+
+    <button onclick="goHome()" id="satbaraBackBtn">
+        🏠 Back Home
+    </button>
 
 </section>
 
@@ -5998,6 +6162,12 @@ function openPage(page, fromHistory = false){
     else if(page == "premiumPage"){
 
         loadPremiumStatus();
+
+    }
+
+    else if(page == "satbaraPage"){
+
+        restoreSatbaraSearchDetails();
 
     }
 
@@ -9633,6 +9803,7 @@ const appPages=[
 
 {type:"page",name:"Weather",page:"weatherPage"},
 {type:"page",name:"Mandi",page:"mandiPage"},
+{type:"page",name:"Satbara",page:"satbaraPage"},
 {type:"page",name:"Crop Guide",page:"cropGuidePage"},
 {type:"page",name:"Disease Scan",page:"diseasePage"},
 {type:"page",name:"AI Farming Advice",page:"advicePage"},
@@ -9900,6 +10071,7 @@ const translations = {
         weather: "Weather",
         kisanConnect: "Kisan Connect",
         mandi: "Mandi",
+        satbara: "Satbara",
         aiChat: "AI Chat",
         aiAdvice: "AI Farming Advice",
         cropGuide: "Crop Guide",
@@ -9930,6 +10102,7 @@ const translations = {
         weather: "मौसम",
         kisanConnect: "किसान कनेक्ट",
         mandi: "मंडी भाव",
+        satbara: "सातबारा",
         aiChat: "AI चैट",
         aiAdvice: "कृषि AI सलाह",
         cropGuide: "फसल गाइड",
@@ -9960,6 +10133,7 @@ const translations = {
         weather: "हवामान",
         kisanConnect: "किसान कनेक्ट",
         mandi: "बाजार भाव",
+        satbara: "सातबारा",
         aiChat: "AI चॅट",
         aiAdvice: "शेतीसाठी AI सल्ला",
         cropGuide: "पीक मार्गदर्शक",
@@ -10013,6 +10187,9 @@ function applyLanguage(){
 
     document.getElementById("txtMandi").innerText =
         t.mandi;
+
+    document.getElementById("txtSatbara").innerText =
+        t.satbara;
 
     document.getElementById("txtAIChat").innerText =
         t.aiChat;
@@ -10074,8 +10251,84 @@ function applyLanguage(){
     document.getElementById("currentLanguageLabel").innerText =
         t.languageName;
 
+    updateSatbaraLanguage(lang);
+
     document.getElementById("homeLanguageSelect").value = lang;
 
+}
+
+function updateSatbaraLanguage(lang){
+
+    const text = {
+        en: {
+            title:"7/12 Land Record Service",
+            subtitle:"Available with ₹5 Premium",
+            freeTitle:"🆓 Free 7/12 Information",
+            freeText:"For general information, open Maharashtra Government's Mahabhulekh portal to view 7/12.",
+            district:"District",
+            taluka:"Taluka",
+            village:"Village",
+            survey:"Survey No. / Gat No.",
+            freeBtn:"🆓 Open Free 7/12",
+            officialTitle:"🏛️ Government Digital 7/12",
+            officialText:"For bank, government or legal work, download the digitally signed 7/12 from the official government portal.",
+            notice:"Any applicable government fee/payment will be shown on the official portal.",
+            help:"ℹ️ Keep your Survey/Gat details ready. After opening the official portal, complete its official process, CAPTCHA, login/payment and PDF download.",
+            back:"🏠 Back Home"
+        },
+        hi: {
+            title:"सातबारा सेवा",
+            subtitle:"₹5 Premium में उपलब्ध",
+            freeTitle:"🆓 फ्री 7/12 जानकारी",
+            freeText:"सामान्य जानकारी के लिए महाराष्ट्र सरकार के Mahabhulekh पोर्टल पर 7/12 देखें।",
+            district:"जिला",
+            taluka:"तालुका",
+            village:"गांव",
+            survey:"सर्वे नंबर / गट नंबर",
+            freeBtn:"🆓 फ्री 7/12 खोलें",
+            officialTitle:"🏛️ सरकारी Digital 7/12",
+            officialText:"बैंक, सरकारी या कानूनी काम के लिए Digitally Signed 7/12 आधिकारिक सरकारी पोर्टल से डाउनलोड करें।",
+            notice:"लागू सरकारी शुल्क/पेमेंट आधिकारिक पोर्टल पर ही दिखाया जाएगा।",
+            help:"ℹ️ सर्वे/गट नंबर की जानकारी तैयार रखें। आधिकारिक पोर्टल खुलने के बाद उसकी प्रक्रिया, CAPTCHA, लॉगिन/पेमेंट और PDF डाउनलोड पूरा करें।",
+            back:"🏠 होम पर जाएं"
+        },
+        mr: {
+            title:"सातबारा सेवा",
+            subtitle:"₹5 Premium मध्ये उपलब्ध",
+            freeTitle:"🆓 मोफत 7/12 माहिती",
+            freeText:"सामान्य माहितीसाठी महाराष्ट्र शासनाच्या Mahabhulekh पोर्टलवर 7/12 पहा.",
+            district:"जिल्हा",
+            taluka:"तालुका",
+            village:"गाव",
+            survey:"सर्वे नंबर / गट नंबर",
+            freeBtn:"🆓 मोफत 7/12 उघडा",
+            officialTitle:"🏛️ सरकारी Digital 7/12",
+            officialText:"बँक, सरकारी किंवा कायदेशीर कामासाठी Digitally Signed 7/12 अधिकृत सरकारी पोर्टलवरून डाउनलोड करा.",
+            notice:"लागू सरकारी शुल्क/पेमेंट अधिकृत पोर्टलवरच दाखवले जाईल.",
+            help:"ℹ️ सर्वे/गट नंबरची माहिती तयार ठेवा. अधिकृत पोर्टल उघडल्यानंतर त्याची प्रक्रिया, CAPTCHA, लॉगिन/पेमेंट आणि PDF डाउनलोड पूर्ण करा.",
+            back:"🏠 मुख्यपृष्ठावर जा"
+        }
+    }[lang] || null;
+
+    if(!text) return;
+
+    const setText=(id,value)=>{ const el=document.getElementById(id); if(el) el.innerText=value; };
+    const setPlaceholder=(id,value)=>{ const el=document.getElementById(id); if(el) el.placeholder=value; };
+
+    setText("satbaraTitle",text.title);
+    setText("satbaraSubtitle",text.subtitle);
+    setText("satbaraFreeTitle",text.freeTitle);
+    setText("satbaraFreeText",text.freeText);
+    setPlaceholder("satbaraDistrict",text.district);
+    setPlaceholder("satbaraTaluka",text.taluka);
+    setPlaceholder("satbaraVillage",text.village);
+    setPlaceholder("satbaraSurvey",text.survey);
+    setText("satbaraFreeBtn",text.freeBtn);
+    setText("satbaraOfficialTitle",text.officialTitle);
+    setText("satbaraOfficialText",text.officialText);
+    setText("satbaraOfficialNotice",text.notice);
+    setText("satbaraHelpText",text.help);
+    setText("satbaraBackBtn",text.back);
 }
 
 function updateLanguageUI(lang){
@@ -10849,6 +11102,42 @@ function updatePremiumButtons(){
 
     }
 
+}
+
+// ==========================
+// SATBARA PORTAL LINKS
+// ==========================
+
+function openSatbaraPortal(type){
+
+    const district = (document.getElementById("satbaraDistrict")?.value || "").trim();
+    const taluka = (document.getElementById("satbaraTaluka")?.value || "").trim();
+    const village = (document.getElementById("satbaraVillage")?.value || "").trim();
+    const survey = (document.getElementById("satbaraSurvey")?.value || "").trim();
+
+    localStorage.setItem("satbaraSearchDetails", JSON.stringify({
+        district,
+        taluka,
+        village,
+        survey
+    }));
+
+    const url = type === "official"
+        ? "https://digitalsatbara.mahabhumi.gov.in/"
+        : "https://bhulekh.mahabhumi.gov.in/";
+
+    window.location.href = url;
+}
+
+function restoreSatbaraSearchDetails(){
+
+    try{
+        const saved = JSON.parse(localStorage.getItem("satbaraSearchDetails") || "{}");
+        if(document.getElementById("satbaraDistrict")) document.getElementById("satbaraDistrict").value = saved.district || "";
+        if(document.getElementById("satbaraTaluka")) document.getElementById("satbaraTaluka").value = saved.taluka || "";
+        if(document.getElementById("satbaraVillage")) document.getElementById("satbaraVillage").value = saved.village || "";
+        if(document.getElementById("satbaraSurvey")) document.getElementById("satbaraSurvey").value = saved.survey || "";
+    }catch(e){}
 }
 
 // ==========================
