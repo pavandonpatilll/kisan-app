@@ -57,7 +57,7 @@ align-items:center;
 
 z-index:9999;
 
-animation:hideSplash .8s ease 2.5s forwards;
+animation:hideSplash .6s ease .8s forwards;
 
 }
 
@@ -3928,8 +3928,44 @@ button:active,
     }
 }
 
+
+/* =========================================================
+   AGRICULTURE NEWS FILTER - MOBILE SAFE
+========================================================= */
+.newsFilter{
+    width:100%;
+    max-width:720px;
+    display:flex !important;
+    flex-wrap:wrap !important;
+    justify-content:center !important;
+    align-items:center;
+    gap:8px !important;
+    overflow-x:hidden !important;
+    padding:10px 0 !important;
+    margin:0 auto 15px !important;
+}
+
+.newsFilter button{
+    flex:0 0 auto !important;
+    max-width:100%;
+    white-space:nowrap !important;
+}
+
+@media(max-width:600px){
+    .newsFilter{
+        width:100%;
+        padding:8px 2px !important;
+        gap:7px !important;
+    }
+
+    .newsFilter button{
+        padding:8px 11px !important;
+        font-size:14px !important;
+    }
+}
+
 </style>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 </head>
 <body>
 
@@ -5806,12 +5842,8 @@ function checkSavedLogin(){
             user.id
         );
 
-        // Load premium status
-
-        loadPremiumStatus();
-
-        // If your app has profile/home loading
-        // functions, keep them here if needed.
+        // Premium status is loaded in parallel during app startup.
+        // Do not block the home screen here.
 
     }
     catch(error){
@@ -5892,23 +5924,8 @@ function openPage(page, fromHistory = false){
 
     targetPage.style.display = "flex";
 
-    // हर feature खोलते ही page ऊपर से शुरू हो — किसान को manually scroll करके top ढूँढना न पड़े
-    window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: "instant"
-    });
-
-    targetPage.scrollIntoView({
-        behavior: "instant",
-        block: "start"
-    });
-
-    window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: "instant"
-    });
+    // हर feature हमेशा ऊपर से खुले
+    window.scrollTo(0, 0);
 
     if(page == "profilePage"){
 
@@ -10088,6 +10105,71 @@ Use simple farmer-friendly Hindi.
 
 }
 
+function loadRazorpayCheckout(){
+
+    if(window.Razorpay){
+        return Promise.resolve();
+    }
+
+    return new Promise(function(resolve, reject){
+
+        const existing =
+            document.querySelector(
+                'script[data-razorpay-checkout="true"]'
+            );
+
+        if(existing){
+
+            existing.addEventListener(
+                "load",
+                resolve,
+                {once:true}
+            );
+
+            existing.addEventListener(
+                "error",
+                function(){
+                    reject(
+                        new Error(
+                            "Razorpay checkout failed to load."
+                        )
+                    );
+                },
+                {once:true}
+            );
+
+            return;
+        }
+
+        const script =
+            document.createElement("script");
+
+        script.src =
+            "https://checkout.razorpay.com/v1/checkout.js";
+
+        script.async = true;
+
+        script.dataset.razorpayCheckout =
+            "true";
+
+        script.onload = resolve;
+
+        script.onerror = function(){
+
+            reject(
+                new Error(
+                    "Razorpay checkout failed to load."
+                )
+            );
+
+        };
+
+        document.head.appendChild(script);
+
+    });
+
+}
+
 async function buyPlan(plan){
 
     const userData =
@@ -10212,6 +10294,9 @@ async function buyPlan(plan){
             }
 
         };
+
+        // Load Razorpay only when Premium payment is started.
+        await loadRazorpayCheckout();
 
         const rzp =
             new Razorpay(options);
@@ -10769,13 +10854,16 @@ function openFeature(
 
 document.addEventListener(
     "DOMContentLoaded",
-    async function(){
+    function(){
 
+        // Show the app immediately.
         checkSavedLogin();
 
-        await loadPremiumStatus();
-
-        await recoverPendingPremiumPayment();
+        // Do background startup work in parallel.
+        Promise.allSettled([
+            loadPremiumStatus(),
+            recoverPendingPremiumPayment()
+        ]);
 
     }
 );
@@ -10887,9 +10975,18 @@ async function saveProfile(event){
 window.onload = function(){
 
     if(localStorage.getItem("user")){
-        loadAlertCount().catch(console.error);
-        loadAlerts().catch(console.error);
-        loadNotificationCount().catch(console.error);
+
+        // Let the home screen render first.
+        setTimeout(function(){
+
+            Promise.allSettled([
+                loadAlertCount(),
+                loadAlerts(),
+                loadNotificationCount()
+            ]);
+
+        }, 300);
+
     }
 
 }
