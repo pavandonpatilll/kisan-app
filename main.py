@@ -3975,39 +3975,27 @@ def smart_alerts(user_id: str):
 
 
                 # =================================================
-                # CURRENT HOUR RAIN PROBABILITY
-                # =================================================
+                # LIVE RAIN + SPRAY WINDOW
+                current_time = current["time"]
+                try:
+                    current_hour = weather_data["hourly"]["time"].index(current_time)
+                except Exception:
+                    current_hour = 0
+
+                hourly_times = weather_data.get("hourly", {}).get("time", [])
+                hourly_rain = weather_data.get("hourly", {}).get("precipitation_probability", [])
 
                 try:
-
-                    current_time = current["time"]
-
-                    current_hour = (
-                        weather_data["hourly"]["time"]
-                        .index(current_time)
-                    )
-
-                    rain = weather_data[
-                        "hourly"
-                    ][
-                        "precipitation_probability"
-                    ][current_hour]
-
+                    rain = hourly_rain[current_hour]
                 except Exception:
-
                     rain = 0
 
-
+                next_6_rain = [x for x in hourly_rain[current_hour:current_hour + 6] if isinstance(x, (int, float))]
+                rain_6h_max = max(next_6_rain) if next_6_rain else 0
+                rain_6h_times = hourly_times[current_hour:current_hour + 6]
                 weather_available = True
 
-
-                print(
-                    "ALERT LIVE WEATHER:",
-                    temperature,
-                    humidity,
-                    wind,
-                    rain
-                )
+                print("ALERT LIVE WEATHER:", temperature, humidity, wind, rain, "next_6h_max_rain=", rain_6h_max)
 
 
             except Exception as e:
@@ -4204,34 +4192,34 @@ Generate today's REAL farmer alerts.
 
 Analyze:
 
-1. Weather
+1. Live weather
 2. Current crop
-3. Disease risk
-4. Farming reminder
-5. Today's practical tasks
+3. Disease/pest early-warning risk
+4. Spray timing
+5. Farming reminder
+6. Today's practical tasks
 
 IMPORTANT:
 
 Never invent weather values.
-
 Never invent disease history.
+Never say an old disease is currently active without evidence.
 
-Never say an old disease is currently active
-without evidence.
+The disease alert is an EARLY WARNING only, not a diagnosis.
+Base it on the current crop plus live temperature, humidity, rain probability and wind.
+If conditions suggest higher fungal/pest risk, clearly tell the farmer which visible symptoms to check in the field.
+Do not claim a disease is confirmed.
+
+SPRAY ADVISOR:
+Use the LIVE next-6-hour rain forecast supplied to you.
+If rain probability is high in the next 6 hours, warn the farmer that spraying may be washed off and advise postponing when practical.
+If rain probability is low, say the next few hours may be a better spray window, while reminding the farmer to follow the product label and local agricultural guidance.
+Do not invent a pesticide name or dosage.
 
 Advice must be relevant to the current crop.
-
-If weather is unavailable, clearly say
-live weather data is unavailable.
-
-If rain probability is high:
-consider irrigation, spraying and fertilizer timing.
-
-If humidity is high:
-consider fungal disease risk.
-
-If temperature is high:
-consider heat stress.
+If weather is unavailable, clearly say live weather data is unavailable and do not make a weather-based spray claim.
+If humidity is high: consider fungal disease risk.
+If temperature is high: consider heat stress.
 
 Return ONLY valid JSON.
 
@@ -4244,14 +4232,12 @@ Use exactly:
 {{
     "weather_alert": "...",
     "crop_alert": "...",
+    "spray_alert": "...",
     "disease_risk": "Low",
     "disease_message": "...",
+    "disease_symptoms_to_check": ["...", "..."],
     "reminder": "...",
-    "tasks": [
-        "...",
-        "...",
-        "..."
-    ]
+    "tasks": ["...", "...", "..."]
 }}
 
 disease_risk must be:
@@ -4426,22 +4412,13 @@ All descriptive text must be in {selected_language}.
 
 
             "weather_data": {
-
-                "available":
-                weather_available,
-
-                "temperature":
-                temperature,
-
-                "humidity":
-                humidity,
-
-                "wind":
-                wind,
-
-                "rain":
-                rain
-
+                "available": weather_available,
+                "temperature": temperature,
+                "humidity": humidity,
+                "wind": wind,
+                "rain": rain,
+                "rain_6h_max": rain_6h_max if weather_available else None,
+                "rain_6h_times": rain_6h_times if weather_available else []
             },
 
 
@@ -4453,28 +4430,16 @@ All descriptive text must be in {selected_language}.
 
 
             "crop_alert":
-            result.get(
-                "crop_alert",
-                "--"
-            ),
+            result.get("crop_alert", "--"),
 
+            "spray_alert":
+            result.get("spray_alert", "--"),
 
             "disease_alert": {
-
-                "risk":
-                result.get(
-                    "disease_risk",
-                    "Low"
-                ),
-
-                "message":
-                result.get(
-                    "disease_message",
-                    "--"
-                )
-
+                "risk": result.get("disease_risk", "Low"),
+                "message": result.get("disease_message", "--"),
+                "symptoms_to_check": result.get("disease_symptoms_to_check", [])
             },
-
 
             "reminder":
             result.get(

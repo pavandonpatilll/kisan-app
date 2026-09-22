@@ -1285,6 +1285,9 @@ background:#fff3e0;
 
 }
 
+.sprayAlert{border-left-color:#1565c0;background:#e3f2fd;}
+.diseaseCheckList{margin-top:10px;padding-left:20px;color:#444;line-height:1.7;}
+
 .reminderAlert{
 
 border-left-color:#9c27b0;
@@ -4768,6 +4771,11 @@ Loading...
 Loading...
 </p>
 
+</div>
+
+<div class="alertCard sprayAlert">
+<h2>☔ Spray Advisor</h2>
+<p id="sprayAlert">Loading live spray advice...</p>
 </div>
 
 <div id="diseaseCard" class="alertCard diseaseAlert">
@@ -9157,6 +9165,9 @@ async function loadAlerts(){
     document.getElementById("cropAlert").innerHTML =
     "🌱 Checking crop...";
 
+    document.getElementById("sprayAlert").innerHTML =
+    "☔ Checking next 6 hours of live rain forecast...";
+
     document.getElementById("diseaseRisk").innerHTML =
     "🐛 Checking disease risk...";
 
@@ -9224,13 +9235,30 @@ async function loadAlerts(){
         ${data.crop_alert}
         `;
 
-        // Disease
+        // Spray Advisor — live next 6-hour rain forecast
+        let sprayText = data.spray_alert || "Live spray advice unavailable.";
+        let rain6 = weather.rain_6h_max;
 
+        document.getElementById("sprayAlert").innerHTML =
+        `
+        🌧️ Next 6-hour rain risk: ${rain6 != null ? rain6 + " %" : "Unavailable"}
+        <br><br>
+        ${sprayText}
+        `;
+
+        // Disease / Pest Early Warning
         let disease = data.disease_alert || {};
+        let symptoms = Array.isArray(disease.symptoms_to_check) ? disease.symptoms_to_check : [];
+        let symptomHTML = symptoms.length
+            ? `<ul class="diseaseCheckList">${symptoms.map(function(item){ return `<li>${item}</li>`; }).join("")}</ul>`
+            : "";
 
         document.getElementById("diseaseRisk").innerHTML =
         `
-        ${disease.message}
+        ⚠️ Risk: ${disease.risk || "Low"}
+        <br><br>
+        ${disease.message || "No specific early warning right now."}
+        ${symptomHTML}
         `;
 
         // Reminder
@@ -9270,6 +9298,9 @@ async function loadAlerts(){
 
         document.getElementById("cropAlert").innerHTML =
         `🌱 ${user.crop || "Crop"} crop selected.`;
+
+        document.getElementById("sprayAlert").innerHTML =
+        "⚠️ Live rain forecast temporarily unavailable. Spray timing could not be checked.";
 
         document.getElementById("diseaseRisk").innerHTML =
         "ℹ️ Disease risk data temporarily unavailable.";
