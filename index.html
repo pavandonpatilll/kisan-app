@@ -3807,6 +3807,127 @@ button:active,
     transform:scale(.985);
 }
 
+
+/* ==========================
+   PREMIUM PAGE
+   CENTER + TOP
+   ========================== */
+
+#premiumPage {
+    width: 100%;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    text-align: center;
+
+    padding: 20px 15px 40px;
+
+    box-sizing: border-box;
+}
+
+
+/* Premium Header */
+
+#premiumPage .premiumHeader {
+    width: 100%;
+    max-width: 600px;
+
+    margin: 0 auto 15px;
+
+    text-align: center;
+}
+
+
+/* Premium Status */
+
+#premiumPage #premiumStatus {
+    width: 100%;
+    max-width: 600px;
+
+    margin: 0 auto 15px;
+
+    text-align: center;
+}
+
+
+/* Premium Card */
+
+#premiumPage .premiumPlans {
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: flex-start;
+
+    margin: 0 auto;
+}
+
+
+/* Card */
+
+#premiumPage .premiumPlan {
+    width: 100%;
+    max-width: 500px;
+
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+
+/* Features */
+
+#premiumPage .planFeatureList {
+    text-align: left;
+}
+
+
+/* Price section */
+
+#premiumPage .priceOption {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    text-align: left;
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    #premiumPage {
+        padding: 15px 10px 30px;
+    }
+
+    #premiumPage .premiumPlan {
+        max-width: 100%;
+    }
+
+    #premiumPage .priceOption {
+        flex-direction: column;
+
+        text-align: center;
+    }
+
+    #premiumPage .priceOption button {
+        width: 100%;
+    }
+}
+
 </style>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
@@ -4467,7 +4588,7 @@ Back Home
 
     <div class="premiumHeader">
         <h1>👑 Shrimant Shetkari Premium</h1>
-        <p>सिर्फ ₹9 में सभी Premium Farming Features</p>
+        <p>सिर्फ ₹5 में सभी Premium Farming Features</p>
     </div>
 
     <div id="premiumStatus" class="premiumStatus">
@@ -4484,59 +4605,42 @@ Back Home
                 <h2>Premium</h2>
 
                 <p>
-                    ₹9 में सभी Premium Features
+                    ₹5 में सभी Premium Features
                 </p>
             </div>
 
             <div class="planFeatureList">
 
                 <div>🌦️ Live Weather & Farming Advice</div>
-
                 <div>💰 Live Mandi Prices</div>
-
                 <div>🌱 Crop Guide & Farming Guidance</div>
-
                 <div>📷 AI Disease Scan</div>
-
                 <div>📋 Disease History</div>
-
                 <div>🤖 AI Farming Assistant</div>
-
                 <div>🧑‍🌾 AI Farming Advice</div>
-
                 <div>📊 Advanced Farming Insights</div>
-
                 <div>🔔 Premium Farming Alerts</div>
-
                 <div>🏛 Government Schemes</div>
-
                 <div>📰 Agriculture News</div>
-
-                <div>👥 Kisan Connect</div>
-
                 <div>🔍 Smart Search</div>
-
-                <div>👤 Profile & Farmer Tools</div>
 
             </div>
 
             <div class="priceOption">
 
                 <div>
-
                     <h3>Premium</h3>
 
-                    <strong>₹9</strong>
+                    <strong>₹5</strong>
 
-                    <span>/ month</span>
-
+                    <span>/ first month</span>
                 </div>
 
                 <button
                     id="basic_monthly_btn"
                     onclick="buyPlan('basic_monthly')">
 
-                    Subscribe for ₹9
+                    Subscribe for ₹5
 
                 </button>
 
@@ -4553,6 +4657,7 @@ Back Home
     </button>
 
 </section>
+
 
 <section id="searchPage" class="featurePage">
 
@@ -10516,7 +10621,7 @@ function checkPremiumAccess(
 
     // ==========================
     // PREMIUM USER
-    // ₹9 BASIC MONTHLY UNLOCKS
+    // ₹5BASIC MONTHLY UNLOCKS
     // ALL PREMIUM FEATURES
     // ==========================
 
@@ -10581,7 +10686,7 @@ function updatePremiumButtons(){
                 false;
 
             button.innerHTML =
-                "Subscribe for ₹9";
+                "Subscribe for ₹5";
 
         }
     );
