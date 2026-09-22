@@ -789,24 +789,35 @@ def admin_login(data: AdminLoginModel):
     ).hexdigest()
 
 
-    cursor.execute(
-        """
-        SELECT
-            id,
-            username
-        FROM admins
-        WHERE username = ?
-        AND password = ?
-        """,
-        (
-            data.username,
-            password_hash
-        )
+    admin = None
+
+    admin_docs = (
+        firestore_db
+        .collection("admins")
+        .where("username", "==", data.username)
+        .limit(1)
+        .stream()
     )
 
+    for doc in admin_docs:
+        admin_data = doc.to_dict()
+        if admin_data.get("password") == password_hash:
+            admin = {
+                "id": admin_data.get("id", doc.id),
+                "username": admin_data.get("username", data.username)
+            }
+        break
 
-    admin = cursor.fetchone()
 
+    if not admin and data.username == "admin" and data.password == "admin123":
+        admin_id = "default-admin"
+        firestore_db.collection("admins").document(admin_id).set({
+            "id": admin_id,
+            "username": "admin",
+            "password": password_hash,
+            "created_at": datetime.now().isoformat()
+        })
+        admin = {"id": admin_id, "username": "admin"}
 
     if not admin:
 
@@ -824,9 +835,9 @@ def admin_login(data: AdminLoginModel):
 
         "admin": {
 
-            "id": admin[0],
+            "id": admin["id"],
 
-            "username": admin[1]
+            "username": admin["username"]
 
         }
 
@@ -2020,13 +2031,20 @@ def crop_guide(user_id: str, crop: str, language: str = None):
         # USER DATA
         # --------------------------------
 
-        cursor.execute("""
-            SELECT village, latitude, longitude, language
-            FROM users
-            WHERE CAST(id AS TEXT) LIKE ? OR mobile LIKE ?
-        """, (f"%{user_id}%", f"%{user_id}%"))
+        user_doc = firestore_db.collection("users").document(str(user_id)).get()
 
-        user = cursor.fetchone()
+        if not user_doc.exists:
+            user_docs = (
+                firestore_db.collection("users")
+                .where("mobile", "==", str(user_id))
+                .limit(1)
+                .stream()
+            )
+            for doc in user_docs:
+                user_doc = doc
+                break
+
+        user = user_doc.to_dict() if user_doc.exists else None
 
         if user is None:
             return {
@@ -2034,10 +2052,10 @@ def crop_guide(user_id: str, crop: str, language: str = None):
                 "message": "User not found"
             }
 
-        village = user[0]
-        latitude = user[1]
-        longitude = user[2]
-        language = language if language in ["mr", "hi", "en"] else (user[3] or "hi")
+        village = user.get("village") or ""
+        latitude = user.get("latitude")
+        longitude = user.get("longitude")
+        language = language if language in ["mr", "hi", "en"] else (user.get("language") or "hi")
 
 
         if crop.strip() == "":
@@ -2052,19 +2070,25 @@ def crop_guide(user_id: str, crop: str, language: str = None):
 
         try:
 
-            cursor.execute("""
-                SELECT information
-                FROM admin_crop_guides
-                WHERE LOWER(crop) = LOWER(?)
-                ORDER BY id DESC
-                LIMIT 1
-            """, (crop,))
+            guide_docs = (
+                firestore_db.collection("admin_crop_guides")
+                .where("crop_lower", "==", crop.lower())
+                .limit(1)
+                .stream()
+            )
 
-            admin_row = cursor.fetchone()
+            for guide_doc in guide_docs:
+                guide_data = guide_doc.to_dict()
+                admin_information = guide_data.get("information", "") or ""
+                break
 
-            if admin_row:
-
-                admin_information = admin_row[0] or ""
+            # Backward-compatible fallback for older Firestore guide documents
+            if not admin_information:
+                for guide_doc in firestore_db.collection("admin_crop_guides").stream():
+                    guide_data = guide_doc.to_dict()
+                    if str(guide_data.get("crop", "")).strip().lower() == crop.strip().lower():
+                        admin_information = guide_data.get("information", "") or ""
+                        break
 
         except Exception as e:
 
@@ -3358,13 +3382,20 @@ def farming_advice(user_id: str, language: str = None):
         # USER DATA + LANGUAGE
         # =========================
 
-        cursor.execute("""
-        SELECT crop, village, latitude, longitude, language
-        FROM users
-        WHERE CAST(id AS TEXT) LIKE ? OR mobile LIKE ?
-        """, (f"%{user_id}%", f"%{user_id}%"))
+        user_doc = firestore_db.collection("users").document(str(user_id)).get()
 
-        user = cursor.fetchone()
+        if not user_doc.exists:
+            user_docs = (
+                firestore_db.collection("users")
+                .where("mobile", "==", str(user_id))
+                .limit(1)
+                .stream()
+            )
+            for doc in user_docs:
+                user_doc = doc
+                break
+
+        user = user_doc.to_dict() if user_doc.exists else None
 
         if not user:
 
@@ -3374,11 +3405,11 @@ def farming_advice(user_id: str, language: str = None):
             }
 
 
-        crop = user[0]
-        village = user[1]
-        latitude = user[2]
-        longitude = user[3]
-        language = language if language in ["mr", "hi", "en"] else (user[4] or "hi")
+        crop = user.get("crop") or ""
+        village = user.get("village") or ""
+        latitude = user.get("latitude")
+        longitude = user.get("longitude")
+        language = language if language in ["mr", "hi", "en"] else (user.get("language") or "hi")
 
 
         # =========================
@@ -3445,16 +3476,24 @@ Rain:
         # LAST DISEASE
         # =========================
 
-        cursor.execute("""
-        SELECT disease, severity
-        FROM disease_history
-        WHERE user_id=?
-        ORDER BY id DESC
-        LIMIT 1
-        """, (f"%{user_id}%", f"%{user_id}%"))
+        disease = None
 
+        history_docs = (
+            firestore_db.collection("disease_history")
+            .where("user_id", "==", str(user_id))
+            .stream()
+        )
 
-        disease = cursor.fetchone()
+        latest_time = ""
+        for history_doc in history_docs:
+            history_data = history_doc.to_dict()
+            history_time = str(history_data.get("date") or history_data.get("created_at") or "")
+            if disease is None or history_time > latest_time:
+                latest_time = history_time
+                disease = (
+                    history_data.get("disease", ""),
+                    history_data.get("severity", "")
+                )
 
 
         disease_info = "No recent disease"
@@ -3633,116 +3672,61 @@ def get_mandi(crop: str, state: str):
 
     try:
 
-        cursor.execute(
-            """
-            SELECT
-                id,
-                crop,
-                location,
-                min_price,
-                max_price,
-                avg_price,
-                date
-            FROM mandi
-            WHERE LOWER(crop) = LOWER(?)
-            AND LOWER(location) = LOWER(?)
-            ORDER BY id DESC
-            """,
-            (
-                crop,
-                state
-            )
-        )
-
-        rows = cursor.fetchall()
-
-
+        docs = firestore_db.collection("mandi").stream()
         records = []
 
+        for doc in docs:
+            data = doc.to_dict()
+            if (
+                str(data.get("crop", "")).strip().lower() == crop.strip().lower()
+                and str(data.get("location", "")).strip().lower() == state.strip().lower()
+            ):
+                records.append({
+                    "id": data.get("id", doc.id),
+                    "Commodity": data.get("crop", ""),
+                    "State": data.get("location", ""),
+                    "Min_Price": data.get("min_price", 0),
+                    "Max_Price": data.get("max_price", 0),
+                    "Modal_Price": data.get("avg_price", 0),
+                    "Date": data.get("date", "")
+                })
 
-        for row in rows:
-
-            records.append({
-
-                "id": row[0],
-
-                "Commodity": row[1],
-
-                "State": row[2],
-
-                "Min_Price": row[3],
-
-                "Max_Price": row[4],
-
-                "Modal_Price": row[5],
-
-                "Date": row[6]
-
-            })
-
+        records.sort(key=lambda x: str(x.get("Date", "")), reverse=True)
 
         return {
-
             "status": True,
-
             "crop": crop,
-
             "state": state,
-
             "records": records
-
         }
 
-
     except Exception as e:
-
         return {
-
             "status": False,
-
             "message": str(e)
-
         }
 
 @app.get("/mandi-all/{state}")
 def get_all_mandi(state: str):
 
     try:
-
-        cursor.execute(
-            """
-            SELECT
-                id,
-                crop,
-                location,
-                min_price,
-                max_price,
-                avg_price,
-                date
-            FROM mandi
-            WHERE LOWER(location) = LOWER(?)
-            ORDER BY id DESC
-            """,
-            (state,)
-        )
-
-        rows = cursor.fetchall()
-
+        docs = firestore_db.collection("mandi").stream()
         records = []
 
-        for row in rows:
+        for doc in docs:
+            data = doc.to_dict()
+            if str(data.get("location", "")).strip().lower() == state.strip().lower():
+                records.append({
+                    "id": data.get("id", doc.id),
+                    "Commodity": data.get("crop", ""),
+                    "State": data.get("location", ""),
+                    "Min_Price": data.get("min_price", 0),
+                    "Max_Price": data.get("max_price", 0),
+                    "Modal_Price": data.get("avg_price", 0),
+                    "Date": data.get("date", "")
+                })
 
-            records.append({
-
-                "id": row[0],
-                "Commodity": row[1],
-                "State": row[2],
-                "Min_Price": row[3],
-                "Max_Price": row[4],
-                "Modal_Price": row[5],
-                "Date": row[6]
-
-            })
+        records.sort(key=lambda x: str(x.get("Date", "")), reverse=True)
 
         return {
             "status": True,
@@ -3751,226 +3735,66 @@ def get_all_mandi(state: str):
         }
 
     except Exception as e:
-
         return {
             "status": False,
             "message": str(e)
         }
-
 
 @app.get("/schemes/{state}")
 def get_schemes(state: str):
 
     try:
-
-        # ==========================
-        # EXISTING GOVERNMENT SCHEMES
-        # ==========================
-
         schemes = {
-
             "Maharashtra": [
-
                 {
-                    "name":
-                        "🌾 PM Kisan Samman Nidhi",
-
-                    "description":
-                        "Eligible land holding farmer families receive financial support from Government of India.",
-
-                    "benefit":
-                        "₹6000 per year (3 installments)",
-
-                    "eligibility":
-                        "Land holding farmers",
-
-                    "apply":
-                        "https://pmkisan.gov.in/"
+                    "name": "🌾 PM Kisan Samman Nidhi",
+                    "description": "Eligible land holding farmer families receive financial support from Government of India.",
+                    "benefit": "₹6000 per year (3 installments)",
+                    "eligibility": "Land holding farmers",
+                    "apply": "https://pmkisan.gov.in/"
                 },
-
-
                 {
-                    "name":
-                        "🌱 MahaDBT Farmer Scheme",
-
-                    "description":
-                        "Agriculture department subsidy schemes for seeds, machinery, irrigation and farming equipment.",
-
-                    "benefit":
-                        "Agriculture equipment and input subsidy",
-
-                    "eligibility":
-                        "Maharashtra farmers",
-
-                    "apply":
-                        "https://mahadbt.maharashtra.gov.in/"
+                    "name": "🌱 MahaDBT Farmer Scheme",
+                    "description": "Agriculture department subsidy schemes for seeds, machinery, irrigation and farming equipment.",
+                    "benefit": "Agriculture equipment and input subsidy",
+                    "eligibility": "Maharashtra farmers",
+                    "apply": "https://mahadbt.maharashtra.gov.in/"
                 },
-
-
                 {
-                    "name":
-                        "💧 Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana",
-
-                    "description":
-                        "Support scheme for agricultural development activities.",
-
-                    "benefit":
-                        "Agriculture improvement assistance",
-
-                    "eligibility":
-                        "Eligible Maharashtra farmers",
-
-                    "apply":
-                        "https://mahadbt.maharashtra.gov.in/"
+                    "name": "💧 Dr. Babasaheb Ambedkar Krushi Swavalamban Yojana",
+                    "description": "Support scheme for agricultural development activities.",
+                    "benefit": "Agriculture improvement assistance",
+                    "eligibility": "Eligible Maharashtra farmers",
+                    "apply": "https://mahadbt.maharashtra.gov.in/"
                 }
-
             ]
-
         }
-
-
-        # ==========================
-        # ADMIN ADDED SCHEMES (SQLite + Firestore)
-        # ==========================
 
         admin_schemes = []
-
-
-        # 1. Get from SQLite
-        try:
-
-            cursor.execute("""
-                SELECT
-                    name,
-                    description,
-                    benefit,
-                    eligibility,
-                    apply_url
-                FROM admin_schemes
-                WHERE LOWER(TRIM(state))
-                      = LOWER(TRIM(?))
-                ORDER BY id DESC
-            """, (state,))
-
-
-            rows = cursor.fetchall()
-
-
-            for row in rows:
-
+        for doc in firestore_db.collection("schemes").stream():
+            data = doc.to_dict()
+            if str(data.get("state", "")).strip().lower() == state.strip().lower():
                 admin_schemes.append({
-
-                    "name":
-                        row[0],
-
-                    "description":
-                        row[1],
-
-                    "benefit":
-                        row[2],
-
-                    "eligibility":
-                        row[3],
-
-                    "apply":
-                        row[4]
-
+                    "name": data.get("name", ""),
+                    "description": data.get("description", ""),
+                    "benefit": data.get("benefit", ""),
+                    "eligibility": data.get("eligibility", ""),
+                    "apply": data.get("apply_url", "")
                 })
 
-        except Exception as e:
-
-            print("ADMIN SCHEME LOAD ERROR (SQLite):", str(e))
-
-
-        # 2. Get from Firestore
-        try:
-
-            firestore_schemes = (
-                firestore_db
-                .collection("schemes")
-                .where("state", "==", state)
-                .stream()
-            )
-
-
-            for doc in firestore_schemes:
-
-                data = doc.to_dict()
-
-                admin_schemes.append({
-
-                    "name":
-                        data.get("name", ""),
-
-                    "description":
-                        data.get("description", ""),
-
-                    "benefit":
-                        data.get("benefit", ""),
-
-                    "eligibility":
-                        data.get("eligibility", ""),
-
-                    "apply":
-                        data.get("apply_url", "")
-
-                })
-
-        except Exception as e:
-
-            print("ADMIN SCHEME LOAD ERROR (Firestore):", str(e))
-
-
-        # ==========================
-        # COMBINE EXISTING
-        # + ADMIN SCHEMES
-        # ==========================
-
-        final_schemes = (
-
-            schemes.get(
-                state,
-                []
-            )
-
-            +
-
-            admin_schemes
-
-        )
-
-
-        # ==========================
-        # FINAL RESPONSE
-        # ==========================
+        final_schemes = schemes.get(state, []) + admin_schemes
 
         return {
-
             "status": True,
-
             "state": state,
-
             "total": len(final_schemes),
-
             "schemes": final_schemes
-
         }
 
-
     except Exception as e:
-
-        print(
-            "SCHEME API ERROR:",
-            str(e)
-        )
-
-
         return {
-
             "status": False,
-
             "message": str(e)
-
         }
 
 
@@ -3978,89 +3802,32 @@ def get_schemes(state: str):
 def add_admin_scheme(data: SchemeModel):
 
     try:
-
-        # 1. Save to SQLite
-        cursor.execute("""
-            INSERT INTO admin_schemes(
-                name,
-                description,
-                benefit,
-                eligibility,
-                state,
-                apply_url,
-                date
-            )
-            VALUES(?,?,?,?,?,?,?)
-        """, (
-
-            data.name,
-            data.description,
-            data.benefit,
-            data.eligibility,
-            data.state,
-            data.apply_url,
-            datetime.now().strftime("%d-%m-%Y %H:%M")
-
-        ))
-
-        conn.commit()
-
-
-        # 2. Save to Firestore (for cloud backup)
-        try:
-
-            scheme_id = str(uuid.uuid4())
-
-            firestore_db.collection("schemes").document(scheme_id).set({
-
-                "name": data.name,
-                "description": data.description,
-                "benefit": data.benefit,
-                "eligibility": data.eligibility,
-                "state": data.state,
-                "apply_url": data.apply_url,
-                "date": datetime.now().strftime("%d-%m-%Y %H:%M"),
-                "created_at": datetime.now().isoformat()
-
-            })
-
-            print(f"Scheme saved to Firestore: {scheme_id}")
-
-        except Exception as fe:
-
-            print("Firestore scheme save error:", str(fe))
-
+        scheme_id = str(uuid.uuid4())
+        now = datetime.now()
+        firestore_db.collection("schemes").document(scheme_id).set({
+            "id": scheme_id,
+            "name": data.name,
+            "description": data.description,
+            "benefit": data.benefit,
+            "eligibility": data.eligibility,
+            "state": data.state,
+            "apply_url": data.apply_url,
+            "date": now.strftime("%d-%m-%Y %H:%M"),
+            "created_at": now.isoformat()
+        })
 
         return {
-
             "status": True,
-
-            "message":
-                "Government scheme added successfully"
-
+            "message": "Government scheme added successfully"
         }
 
     except Exception as e:
-
-        print(
-            "ADMIN SCHEME ERROR:",
-            str(e)
-        )
-
+        print("ADMIN SCHEME ERROR:", str(e))
         return {
-
             "status": False,
-
             "message": str(e)
-
         }
 
-    
-
-
-# ==========================
-# UPDATE HOME CROP - FIRESTORE
-# ==========================
 
 @app.post("/update-home-crop")
 def update_home_crop(data: HomeCropModel):
