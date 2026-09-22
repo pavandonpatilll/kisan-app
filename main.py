@@ -5840,27 +5840,38 @@ async def upload_chat_image(
 RAZORPAY_PLANS = {
 
     # ==========================
-    # CURRENT FIRST PAYMENT PLANS
+    # BASIC MONTHLY
+    # ₹5 FIRST PAYMENT
+    # ₹150 NEXT MONTH ONWARDS
     # ==========================
 
     "basic_monthly":
         "plan_TQTNYbVUVJZU8x",
 
+    # ==========================
+    # ADVANCED MONTHLY
+    # ₹17 FIRST PAYMENT
+    # ₹200 NEXT MONTH ONWARDS
+    # ==========================
+
     "advanced_monthly":
         "plan_TQTXJ6JYggjOB9",
 
-
     # ==========================
-    # NEW RECURRING PLANS
-    # NEXT MONTH ONWARDS
+    # BASIC RECURRING
+    # ₹150 / MONTH
     # ==========================
 
     "basic_recurring":
         "plan_TUgYTYlfaMuTau",
 
+    # ==========================
+    # ADVANCED RECURRING
+    # ₹200 / MONTH
+    # ==========================
+
     "advanced_recurring":
         "plan_TUgZSzgA538Fiw",
-
 
     # ==========================
     # 6 MONTH PLANS
@@ -5871,7 +5882,6 @@ RAZORPAY_PLANS = {
 
     "advanced_6months":
         "plan_TQTYoLVEnhRlVD",
-
 
     # ==========================
     # YEARLY PLANS
@@ -5897,38 +5907,40 @@ def create_subscription(data: dict):
         user_id = data.get("user_id")
         plan_key = data.get("plan")
 
-
         if not user_id:
-
             return {
                 "status": False,
                 "message": "User ID required"
             }
 
-
         # ==========================
         # MONTHLY SPECIAL FLOW
-        # FIRST PAYMENT:
-        # Basic = ₹9
-        # Advanced = ₹17
         #
-        # NEXT MONTH:
-        # Basic = ₹150/month
-        # Advanced = ₹200/month
+        # BASIC:
+        # TODAY = ₹5
+        # NEXT MONTH = ₹150/month
+        #
+        # ADVANCED:
+        # TODAY = ₹17
+        # NEXT MONTH = ₹200/month
         # ==========================
 
         if plan_key == "basic_monthly":
+
+            # IMPORTANT:
+            # This is the ₹150/month recurring plan.
+            # DO NOT replace this with the ₹5 Razorpay plan.
 
             plan_id = RAZORPAY_PLANS[
                 "basic_recurring"
             ]
 
-            first_payment = 900
+            # FIRST PAYMENT = ₹5
+            first_payment = 500
 
             first_payment_name = (
                 "Basic First Month"
             )
-
 
         elif plan_key == "advanced_monthly":
 
@@ -5936,15 +5948,15 @@ def create_subscription(data: dict):
                 "advanced_recurring"
             ]
 
+            # FIRST PAYMENT = ₹17
             first_payment = 1700
 
             first_payment_name = (
                 "Advanced First Month"
             )
 
-
         # ==========================
-        # EXISTING 6 MONTH / YEARLY
+        # 6 MONTH / YEARLY
         # ==========================
 
         elif plan_key in [
@@ -5966,15 +5978,17 @@ def create_subscription(data: dict):
                 .subscription
                 .create({
 
-                    "plan_id": plan_id,
+                    "plan_id":
+                        plan_id,
 
-                    "customer_notify": 1,
+                    "customer_notify":
+                        1,
 
-                    "total_count": 12
+                    "total_count":
+                        12
 
                 })
             )
-
 
             return {
 
@@ -5991,7 +6005,6 @@ def create_subscription(data: dict):
 
             }
 
-
         else:
 
             return {
@@ -6003,7 +6016,6 @@ def create_subscription(data: dict):
 
             }
 
-
         # ==========================
         # NEXT MONTH START DATE
         # ==========================
@@ -6012,27 +6024,36 @@ def create_subscription(data: dict):
             relativedelta
         )
 
-
         next_month = (
             datetime.now()
             + relativedelta(months=1)
         )
 
-
         start_at = int(
             next_month.timestamp()
         )
 
-
         # ==========================
         # CREATE RECURRING
         # SUBSCRIPTION
+        #
+        # BASIC:
+        # ₹5 TODAY
+        # ₹150 NEXT MONTH
+        #
+        # ADVANCED:
+        # ₹17 TODAY
+        # ₹200 NEXT MONTH
         # ==========================
 
         subscription = (
             razorpay_client
             .subscription
             .create({
+
+                # IMPORTANT:
+                # basic_recurring = ₹150/month
+                # advanced_recurring = ₹200/month
 
                 "plan_id":
                     plan_id,
@@ -6043,14 +6064,14 @@ def create_subscription(data: dict):
                 "total_count":
                     120,
 
-                # ₹150 / ₹200 billing
-                # starts next month
+                # Recurring billing starts
+                # from next month
+
                 "start_at":
                     start_at,
 
-                # TODAY:
-                # Basic ₹9
-                # Advanced ₹17
+                # FIRST PAYMENT TODAY
+
                 "addons": [
 
                     {
@@ -6085,7 +6106,6 @@ def create_subscription(data: dict):
             })
         )
 
-
         return {
 
             "status": True,
@@ -6101,14 +6121,12 @@ def create_subscription(data: dict):
 
         }
 
-
     except Exception as e:
 
         print(
             "RAZORPAY SUBSCRIPTION ERROR:",
             str(e)
         )
-
 
         return {
 
