@@ -4454,7 +4454,7 @@ Back Home
 
     <div class="premiumHeader">
         <h1>👑 Shrimant Shetkari Premium</h1>
-        <p>Unlock advanced farming features and AI assistance.</p>
+        <p>सिर्फ ₹9 में सभी Premium Farming Features</p>
     </div>
 
     <div id="premiumStatus" class="premiumStatus">
@@ -4463,45 +4463,55 @@ Back Home
 
     <div class="premiumPlans">
 
-        <!-- =========================
-             BASIC
-        ========================== -->
-
         <div class="premiumPlan basicPlan">
 
             <div class="planHeader">
-                <div class="planIcon">🌱</div>
+                <div class="planIcon">👑</div>
 
-                <h2>Basic</h2>
+                <h2>Premium</h2>
 
                 <p>
-                    Essential farming tools
+                    ₹9 में सभी Premium Features
                 </p>
             </div>
 
             <div class="planFeatureList">
 
-                <div>💰 Mandi Prices</div>
+                <div>🌦️ Live Weather & Farming Advice</div>
 
-                <div>🌾 Crop Guide</div>
+                <div>💰 Live Mandi Prices</div>
 
-                <div>🦠 Disease Scan</div>
+                <div>🌱 Crop Guide & Farming Guidance</div>
 
-                <div>🤖 AI Farming Advice</div>
+                <div>📷 AI Disease Scan</div>
 
-                <div>🌦️ Farming Weather Advice</div>
+                <div>📋 Disease History</div>
 
-                <div>📜 Disease History</div>
+                <div>🤖 AI Farming Assistant</div>
+
+                <div>🧑‍🌾 AI Farming Advice</div>
+
+                <div>📊 Advanced Farming Insights</div>
+
+                <div>🔔 Premium Farming Alerts</div>
+
+                <div>🏛 Government Schemes</div>
+
+                <div>📰 Agriculture News</div>
+
+                <div>👥 Kisan Connect</div>
+
+                <div>🔍 Smart Search</div>
+
+                <div>👤 Profile & Farmer Tools</div>
 
             </div>
-
-            <!-- MONTHLY -->
 
             <div class="priceOption">
 
                 <div>
 
-                    <h3>Monthly</h3>
+                    <h3>Premium</h3>
 
                     <strong>₹9</strong>
 
@@ -4513,163 +4523,7 @@ Back Home
                     id="basic_monthly_btn"
                     onclick="buyPlan('basic_monthly')">
 
-                    Subscribe
-
-                </button>
-
-            </div>
-
-            <!-- 6 MONTHS -->
-
-            <div class="priceOption">
-
-                <div>
-
-                    <h3>6 Months</h3>
-
-                    <strong>₹54</strong>
-
-                    <span>/ 6 months</span>
-
-                </div>
-
-                <button
-                    id="basic_6months_btn"
-                    onclick="buyPlan('basic_6months')">
-
-                    Subscribe
-
-                </button>
-
-            </div>
-
-            <!-- YEARLY -->
-
-            <div class="priceOption">
-
-                <div>
-
-                    <h3>Yearly</h3>
-
-                    <strong>₹108</strong>
-
-                    <span>/ year</span>
-
-                </div>
-
-                <button
-                    id="basic_yearly_btn"
-                    onclick="buyPlan('basic_yearly')">
-
-                    Subscribe
-
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- =========================
-             ADVANCED
-        ========================== -->
-
-        <div class="premiumPlan advancedPlan">
-
-            <div class="planHeader">
-
-                <div class="planIcon">🚀</div>
-
-                <h2>Advanced</h2>
-
-                <p>
-                    Advanced AI farming tools
-                </p>
-
-            </div>
-
-            <div class="planFeatureList">
-
-                <div>👑 All app access free</div>
-
-                <div>🤖 Advanced AI Farming</div>
-
-                <div>🦠 Advanced Disease Analysis</div>
-
-                <div>🌱 Detailed Treatment Guidance</div>
-
-                <div>📊 Advanced Farming Insights</div>
-
-                <div>🔔 Premium Farming Alerts</div>
-
-            </div>
-
-            <!-- MONTHLY -->
-
-            <div class="priceOption">
-
-                <div>
-
-                    <h3>Monthly</h3>
-
-                    <strong>₹17</strong>
-
-                    <span>/ month</span>
-
-                </div>
-
-                <button
-                    id="advanced_monthly_btn"
-                    onclick="buyPlan('advanced_monthly')">
-
-                    Subscribe
-
-                </button>
-
-            </div>
-
-            <!-- 6 MONTHS -->
-
-            <div class="priceOption">
-
-                <div>
-
-                    <h3>6 Months</h3>
-
-                    <strong>₹102</strong>
-
-                    <span>/ 6 months</span>
-
-                </div>
-
-                <button
-                    id="advanced_6months_btn"
-                    onclick="buyPlan('advanced_6months')">
-
-                    Subscribe
-
-                </button>
-
-            </div>
-
-            <!-- YEARLY -->
-
-            <div class="priceOption">
-
-                <div>
-
-                    <h3>Yearly</h3>
-
-                    <strong>₹204</strong>
-
-                    <span>/ year</span>
-
-                </div>
-
-                <button
-                    id="advanced_yearly_btn"
-                    onclick="buyPlan('advanced_yearly')">
-
-                    Subscribe
+                    Subscribe for ₹9
 
                 </button>
 
@@ -4678,11 +4532,12 @@ Back Home
         </div>
 
     </div>
-<br>
 
-<button onclick="goHome()">
-🏠 Back Home
-</button>
+    <br>
+
+    <button onclick="goHome()">
+        🏠 Back Home
+    </button>
 
 </section>
 
@@ -10610,15 +10465,10 @@ function checkPremiumAccess(
     // ==========================
 
     const freeFeatures = [
-
         "weather",
-
         "schemes",
-
         "news",
-
         "profile"
-
     ];
 
     if(
@@ -10634,12 +10484,17 @@ function checkPremiumAccess(
     }
 
     // ==========================
-    // ADVANCED USER
+    // PREMIUM USER
+    // ₹9 BASIC MONTHLY UNLOCKS
+    // ALL PREMIUM FEATURES
     // ==========================
 
     if(
         premiumInfo.premium &&
-        premiumInfo.plan.startsWith("advanced_")
+        (
+            premiumInfo.plan.startsWith("basic_") ||
+            premiumInfo.plan.startsWith("advanced_")
+        )
     ){
 
         callback();
@@ -10648,64 +10503,9 @@ function checkPremiumAccess(
 
     }
 
-    // ==========================
-    // BASIC FEATURES
-    // ==========================
+    // Premium feature locked
 
-    const basicFeatures = [
-
-        "mandi",
-
-        "search",
-
-        "cropGuide",
-
-        "disease",
-
-        "ai",
-
-        "advice",
-
-        "history"
-
-    ];
-
-    if(
-        basicFeatures.includes(
-            feature
-        )
-    ){
-
-        if(
-            premiumInfo.premium &&
-            premiumInfo.plan.startsWith(
-                "basic_"
-            )
-        ){
-
-            callback();
-
-            return;
-
-        }
-
-        // Basic feature locked
-
-        openPremiumPage(
-            "basic"
-        );
-
-        return;
-
-    }
-
-    // ==========================
-    // ADVANCED FEATURES
-    // ==========================
-
-    openPremiumPage(
-        "advanced"
-    );
+    openPremiumPage("basic");
 
 }
 
@@ -10730,32 +10530,6 @@ function openPremiumPage(
         100
     );
 
-    if(
-        requiredPlan ===
-        "advanced"
-    ){
-
-        setTimeout(
-            function(){
-
-                const status =
-                    document.getElementById(
-                        "premiumStatus"
-                    );
-
-                if(status){
-
-                    status.innerHTML =
-                        "🚀 Advanced Premium is required for this feature.";
-
-                }
-
-            },
-            150
-        );
-
-    }
-
 }
 
 // ==========================
@@ -10776,7 +10550,7 @@ function updatePremiumButtons(){
                 false;
 
             button.innerHTML =
-                "Subscribe";
+                "Subscribe for ₹9";
 
         }
     );
@@ -10792,17 +10566,22 @@ function updatePremiumButtons(){
 
     const activeButton =
         document.getElementById(
-            premiumInfo.plan +
-            "_btn"
+            "basic_monthly_btn"
         );
 
-    if(activeButton){
+    if(
+        activeButton &&
+        (
+            premiumInfo.plan.startsWith("basic_") ||
+            premiumInfo.plan.startsWith("advanced_")
+        )
+    ){
 
         activeButton.disabled =
             true;
 
         activeButton.innerHTML =
-            "✓ Current Plan";
+            "✓ Premium Active";
 
     }
 
@@ -10813,28 +10592,8 @@ function updatePremiumButtons(){
 
     if(statusBox){
 
-        let planName =
-            premiumInfo.plan
-            .replaceAll(
-                "_",
-                " "
-            );
-
-        planName =
-            planName.replace(
-                /\b\w/g,
-                function(letter){
-
-                    return letter.toUpperCase();
-
-                }
-            );
-
         statusBox.innerHTML =
-
-            "👑 " +
-            planName +
-            " -- ACTIVE";
+            "👑 Premium Active — All Features Unlocked";
 
     }
 
