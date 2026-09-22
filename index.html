@@ -4741,12 +4741,12 @@ Back Home
     <div class="satbaraHeader">
         <div class="satbaraIcon">📜</div>
         <h1 id="satbaraTitle">सातबारा सेवा</h1>
-        <p id="satbaraSubtitle">₹5 Premium मध्ये सातबारा सुविधा</p>
+        <p id="satbaraSubtitle">₹5 Premium मध्ये दोन्ही सातबारा सुविधा unlock करा</p>
     </div>
 
     <div class="satbaraCard freeSatbaraCard">
-        <h2 id="satbaraFreeTitle">🆓 Free 7/12 माहिती</h2>
-        <p id="satbaraFreeText">सामान्य माहितीसाठी महाराष्ट्र शासनाच्या Mahabhulekh पोर्टलवर 7/12 पहा.</p>
+        <h2 id="satbaraFreeTitle">🆓 7/12 पाहा</h2>
+        <p id="satbaraFreeText">Premium ₹5 नंतर महाराष्ट्र शासनाच्या Mahabhulekh पोर्टलवर सामान्य 7/12 माहिती पाहा.</p>
 
         <div class="satbaraFields">
             <input id="satbaraDistrict" type="text" placeholder="जिल्हा / District">
@@ -4756,13 +4756,13 @@ Back Home
         </div>
 
         <button class="satbaraBtn" onclick="openSatbaraPortal('free')" id="satbaraFreeBtn">
-            🆓 Free 7/12 उघडा
+            🆓 7/12 पाहा
         </button>
     </div>
 
     <div class="satbaraCard officialSatbaraCard">
         <h2 id="satbaraOfficialTitle">🏛️ सरकारी Digital 7/12</h2>
-        <p id="satbaraOfficialText">बँक, सरकारी किंवा कायदेशीर कामासाठी Digitally Signed 7/12 सरकारी पोर्टलवरून डाउनलोड करा.</p>
+        <p id="satbaraOfficialText">Premium ₹5 नंतर Digitally Signed 7/12 सरकारी पोर्टलवरून डाउनलोड करा. PDF डाउनलोड केल्यावर Android app मधून फोनच्या Downloads मध्ये save करता येईल.</p>
 
         <div class="officialNotice" id="satbaraOfficialNotice">
             सरकारी पोर्टलवरील लागू शुल्क/पेमेंट तिथेच दाखवले जाईल.
@@ -11115,13 +11115,27 @@ function openSatbaraPortal(type){
     const village = (document.getElementById("satbaraVillage")?.value || "").trim();
     const survey = (document.getElementById("satbaraSurvey")?.value || "").trim();
 
+    if(!district || !taluka || !village || !survey){
+        alert("कृपया जिल्हा, तालुका, गाव आणि सर्वे/गट नंबर भरा.");
+        return;
+    }
+
     localStorage.setItem("satbaraSearchDetails", JSON.stringify({
         district,
         taluka,
         village,
-        survey
+        survey,
+        type,
+        savedAt: new Date().toISOString()
     }));
 
+    /*
+       IMPORTANT:
+       Government portals do not provide a supported public URL/API for
+       pre-filling these fields from our app. We therefore keep the details
+       saved in the app and open the official portal INSIDE the Android WebView
+       using the same window. No login/CAPTCHA/payment is bypassed.
+    */
     const url = type === "official"
         ? "https://digitalsatbara.mahabhumi.gov.in/"
         : "https://bhulekh.mahabhumi.gov.in/";
