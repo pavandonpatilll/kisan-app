@@ -10473,11 +10473,8 @@ async function buyPlan(plan){
 
         const response =
             await fetch(
-
                 "https://kisan-app-1.onrender.com/create-subscription",
-
                 {
-
                     method:"POST",
 
                     headers:{
@@ -10492,9 +10489,7 @@ async function buyPlan(plan){
                         plan:plan
 
                     })
-
                 }
-
             );
 
         const data =
@@ -10510,10 +10505,9 @@ async function buyPlan(plan){
             return;
         }
 
-        // ==========================
+        // ==========================================
         // SAVE PENDING SUBSCRIPTION
-        // FOR PAYMENT RECOVERY
-        // ==========================
+        // ==========================================
 
         localStorage.setItem(
             "pendingPremiumPayment",
@@ -10530,6 +10524,36 @@ async function buyPlan(plan){
 
             })
         );
+
+        // ==========================================
+        // ANDROID NATIVE RAZORPAY
+        // ==========================================
+
+        if(
+            window.AndroidRazorpay &&
+            typeof
+            window.AndroidRazorpay.openSubscription
+            === "function"
+        ){
+
+            window.AndroidRazorpay.openSubscription(
+
+                data.key_id,
+
+                data.subscription_id,
+
+                user.id,
+
+                plan
+
+            );
+
+            return;
+        }
+
+        // ==========================================
+        // BROWSER / WEB FALLBACK
+        // ==========================================
 
         const options = {
 
@@ -10556,7 +10580,6 @@ async function buyPlan(plan){
                         plan
 
                     );
-
                 },
 
             modal:{
@@ -10566,20 +10589,15 @@ async function buyPlan(plan){
                     console.log(
                         "Razorpay checkout closed"
                     );
-
                 }
-
             },
 
             theme:{
 
                 color:"#2e7d32"
-
             }
-
         };
 
-        // Load Razorpay only when Premium payment is started.
         await loadRazorpayCheckout();
 
         const rzp =
@@ -10598,9 +10616,7 @@ async function buyPlan(plan){
         alert(
             "Payment connection failed."
         );
-
     }
-
 }
 
 async function verifyPremiumPayment(
