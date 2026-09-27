@@ -3434,42 +3434,75 @@ def farming_advice(user_id: str, language: str = None):
         # WEATHER
         # =========================
 
-        weather_info = "Weather unavailable"
+        # LIVE WEATHER — advice must use real location weather only.
+        weather_info = "Live weather data unavailable."
+        weather_data = {
+            "available": False,
+            "temperature": None,
+            "humidity": None,
+            "wind": None,
+            "rain_probability": None,
+            "rain_6h_max": None,
+            "weather_code": None,
+            "weather": "Live weather unavailable"
+        }
 
+        if latitude is not None and longitude is not None:
+            try:
+                url = (
+                    "https://api.open-meteo.com/v1/forecast"
+                    f"?latitude={latitude}&longitude={longitude}"
+                    "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code"
+                    "&hourly=precipitation_probability,relative_humidity_2m,wind_speed_10m"
+                    "&forecast_days=2&timezone=auto"
+                )
+                weather_response = requests.get(
+                    url,
+                    headers={"User-Agent": "ShrimantShetkari/1.0"},
+                    timeout=8
+                )
+                weather_response.raise_for_status()
+                weather = weather_response.json()
+                current = weather.get("current", {})
+                hourly = weather.get("hourly", {})
 
-        if latitude and longitude:
+                code = current.get("weather_code")
+                weather_map = {
+                    0:"Clear Sky",1:"Mainly Clear",2:"Partly Cloudy",3:"Cloudy",
+                    45:"Fog",48:"Fog",51:"Drizzle",53:"Drizzle",55:"Heavy Drizzle",
+                    61:"Light Rain",63:"Rain",65:"Heavy Rain",80:"Rain Showers",
+                    81:"Heavy Rain Showers",82:"Violent Rain",95:"Thunderstorm",
+                    96:"Thunderstorm with Hail",99:"Thunderstorm with Heavy Hail"
+                }
+                rain_series = hourly.get("precipitation_probability") or []
+                rain_6h = [x for x in rain_series[:6] if isinstance(x, (int,float))]
+                rain_now = None
+                try:
+                    times = hourly.get("time") or []
+                    rain_now = rain_series[times.index(current.get("time"))]
+                except Exception:
+                    pass
 
-            url = (
-                f"https://api.open-meteo.com/v1/forecast?"
-                f"latitude={latitude}"
-                f"&longitude={longitude}"
-                "&current=temperature_2m,"
-                "relative_humidity_2m,"
-                "rain"
-            )
-
-
-            weather_response = requests.get(
-                url,
-                timeout=10
-            )
-
-
-            weather = weather_response.json()
-
-            current = weather["current"]
-
-
-            weather_info = f"""
-Temperature:
-{current.get('temperature_2m', '--')} C
-
-Humidity:
-{current.get('relative_humidity_2m', '--')} %
-
-Rain:
-{current.get('rain', 0)} mm
+                weather_data = {
+                    "available": True,
+                    "temperature": current.get("temperature_2m"),
+                    "humidity": current.get("relative_humidity_2m"),
+                    "wind": current.get("wind_speed_10m"),
+                    "rain_probability": rain_now,
+                    "rain_6h_max": max(rain_6h) if rain_6h else None,
+                    "weather_code": code,
+                    "weather": weather_map.get(code, "Unknown Weather")
+                }
+                weather_info = f"""
+Temperature: {weather_data['temperature']} °C
+Humidity: {weather_data['humidity']} %
+Wind: {weather_data['wind']} km/h
+Current rain probability: {weather_data['rain_probability']} %
+Next 6-hour rain risk: {weather_data['rain_6h_max']} %
+Weather: {weather_data['weather']}
 """
+            except Exception as weather_error:
+                print("FARMING ADVICE WEATHER ERROR:", weather_error)
 
 
         # =========================
@@ -3541,8 +3574,10 @@ Disease History:
 
 {disease_info}
 
+LIVE WEATHER RULE:
+Use only the live weather values above. Never invent, estimate or assume missing weather values. If live weather is unavailable, say that clearly and do not give weather-specific irrigation/spraying claims.
 
-Give short and practical farming advice.
+Give short and practical farming advice based on the current crop AND live weather.
 
 Use exactly this format:
 
@@ -3583,6 +3618,8 @@ Keep every section short and practical.
             "language": language,
 
             "weather": weather_info,
+
+            "weather_data": weather_data,
 
             "advice": response.text
 
@@ -5558,6 +5595,107 @@ def get_farmers():
         "farmers": farmers
 
     }
+
+
+# ==========================
+# KISAN CONNECT - CROP GROUPS
+# ==========================
+
+KISAN_CONNECT_CROPS = [
+    "Rice (Paddy)", "Wheat", "Soybean", "Cotton", "Maize",
+    "Sugarcane", "Groundnut", "Onion", "Tomato", "Potato", "Chilli",
+    "Gram (Chana)", "Tur (Pigeon Pea)", "Moong", "Urad",
+    "Jowar", "Bajra", "Ragi", "Sunflower", "Mustard",
+    "Sesame (Til)", "Coriander", "Cumin (Jeera)", "Garlic",
+    "Ginger", "Banana", "Mango", "Grapes", "Orange",
+    "Pomegranate", "Papaya", "Other"
+]
+
+@app.get("/crop-groups")
+def get_crop_groups():
+    try:
+        counts = {crop: 0 for crop in KISAN_CONNECT_CROPS}
+        for doc in firestore_db.collection("users").stream():
+            crop = str((doc.to_dict() or {}).get("crop") or "").strip()
+            if crop in counts:
+                counts[crop] += 1
+        return {
+            "status": True,
+            "groups": [
+                {"crop": crop, "members": counts[crop]}
+                for crop in KISAN_CONNECT_CROPS
+            ]
+        }
+    except Exception as e:
+        return {"status": False, "message": str(e), "groups": []}
+
+@app.post("/send-group-chat")
+def send_group_chat(data: dict):
+    try:
+        sender_id = str(data.get("sender_id") or "").strip()
+        crop = str(data.get("crop") or "").strip()
+        if not sender_id or not crop or crop not in KISAN_CONNECT_CROPS:
+            return {"status": False, "message": "Valid crop group and user are required"}
+        sender = firestore_db.collection("users").document(sender_id).get()
+        if not sender.exists:
+            return {"status": False, "message": "User not found"}
+        sender_data = sender.to_dict() or {}
+        message_type = data.get("message_type", "text")
+        message = str(data.get("message") or "")
+        image = data.get("image")
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+        if not message and not image and message_type != "location":
+            return {"status": False, "message": "Message is empty"}
+        message_id = str(uuid.uuid4())
+        created_at = datetime.now().isoformat()
+        firestore_db.collection("messages").document(message_id).set({
+            "id": message_id,
+            "chat_type": "crop_group",
+            "group_crop": crop,
+            "sender_id": sender_id,
+            "sender_name": sender_data.get("name", "Farmer"),
+            "message": message,
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "message_type": message_type,
+            "image": image,
+            "latitude": latitude,
+            "longitude": longitude,
+            "created_at": created_at
+        })
+        return {"status": True, "message": "Sent", "id": message_id}
+    except Exception as e:
+        return {"status": False, "message": str(e)}
+
+@app.get("/group-chat/{crop}")
+def get_group_chat(crop: str, limit: int = 100):
+    try:
+        crop = str(crop).strip()
+        if crop not in KISAN_CONNECT_CROPS:
+            return {"status": False, "message": "Crop group not found", "chat": []}
+        data = []
+        for doc in firestore_db.collection("messages").stream():
+            item = doc.to_dict() or {}
+            if item.get("chat_type") != "crop_group" or str(item.get("group_crop", "")) != crop:
+                continue
+            data.append({
+                "sender": str(item.get("sender_id", "")),
+                "sender_name": item.get("sender_name", "Farmer"),
+                "message": item.get("message", ""),
+                "time": item.get("time", ""),
+                "message_type": item.get("message_type", "text"),
+                "image": item.get("image"),
+                "latitude": item.get("latitude"),
+                "longitude": item.get("longitude"),
+                "created_at": item.get("created_at", "")
+            })
+        data.sort(key=lambda x: x.get("created_at", ""))
+        data = data[-max(1, min(limit, 200)):]
+        for item in data:
+            item.pop("created_at", None)
+        return {"status": True, "crop": crop, "chat": data}
+    except Exception as e:
+        return {"status": False, "message": str(e), "chat": []}
 
 
 @app.post("/send-chat")
