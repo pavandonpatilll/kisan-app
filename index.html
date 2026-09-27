@@ -1566,8 +1566,15 @@ border-left-color:#f44336 !important;
 .rainRing{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid rgba(21,101,192,.62);border-radius:50%;pointer-events:none;z-index:4;}
 .rainRing span{position:absolute;right:4px;top:-19px;background:rgba(255,255,255,.9);color:#155e75;border-radius:999px;padding:2px 6px;font-size:10px;font-weight:800;white-space:nowrap;}
 .rainRing10{width:24%;height:24%;}.rainRing25{width:52%;height:52%;}.rainRing50{width:92%;height:92%;}
-.rainRadarAttribution{font-size:11px;color:#61727b;text-align:center;margin-top:6px;}
+.rainRadarAttribution{font-size:11px;color:#61727b;text-align:center;margin-top:6px;}.rainRadarCompass{position:absolute;inset:8px;z-index:6;pointer-events:none;font-size:11px;font-weight:900;color:#155e75;text-shadow:0 1px 2px rgba(255,255,255,.9)}
+.rainRadarCompass span{position:absolute;background:rgba(255,255,255,.88);padding:3px 6px;border-radius:999px;box-shadow:0 2px 7px rgba(0,0,0,.12)}
+.rainRadarCompass .north{left:50%;top:2px;transform:translateX(-50%)} .rainRadarCompass .east{right:2px;top:50%;transform:translateY(-50%)} .rainRadarCompass .south{left:50%;bottom:2px;transform:translateX(-50%)} .rainRadarCompass .west{left:2px;top:50%;transform:translateY(-50%)}
+.rainRadarLegend{text-align:center;margin:7px auto 2px;font-size:11px;color:#52656f;background:#f7fbff;border:1px solid #d8e8ef;border-radius:999px;padding:5px 8px;width:max-content;max-width:95%}
+
 #rainRadarSummary{font-weight:700;color:#14532d;line-height:1.55;}
+.rainDistanceBadge{display:inline-flex;align-items:center;gap:7px;margin:9px auto 0;padding:8px 12px;border-radius:999px;background:#e8f5e9;color:#1b5e20;font-size:13px;font-weight:800;border:1px solid #c8e6c9;}
+.rainDistanceBadge.rainNear{background:#ffebee;color:#b71c1c;border-color:#ffcdd2;}
+.rainDistanceBadge.rainMedium{background:#fff8e1;color:#8d6e00;border-color:#ffecb3;}
 .searchCard{
 
 background:#fff;
@@ -5181,7 +5188,7 @@ Pesticide, Fertilizer, Weather, Market
 
 <section id="alertPage" class="featurePage">
 
-<h1>🔔 Farmer Alerts</h1>
+<h1 id="alertPageTitle">🔔 Farmer Alerts</h1>
 
 <div class="alertLocation">
 
@@ -5191,7 +5198,7 @@ Pesticide, Fertilizer, Weather, Market
 
 <div class="alertCard weatherAlert">
 
-<h2>🌦 Weather Alert</h2>
+<h2 id="alertWeatherTitle">🌦 Weather Alert</h2>
 
 <p id="weatherAlert">
 Loading...
@@ -5201,7 +5208,7 @@ Loading...
 
 <div class="alertCard cropAlert">
 
-<h2>🌱 Crop Alert</h2>
+<h2 id="alertCropTitle">🌱 Crop Alert</h2>
 
 <p id="cropAlert">
 Loading...
@@ -5210,12 +5217,12 @@ Loading...
 </div>
 
 <div class="alertCard sprayAlert">
-<h2>☔ Spray Advisor</h2>
+<h2 id="alertSprayTitle">☔ Spray Advisor</h2>
 <p id="sprayAlert">Loading live spray advice...</p>
 </div>
 
 <div class="alertCard rainRadarAlert" id="rainRadarCard">
-<h2>🌧️ Live Rain Radar</h2>
+<h2 id="alertRadarTitle">🌧️ Live Rain Radar</h2>
 <div class="rainRadarWrap">
     <div class="rainRadarMap">
         <img id="rainRadarImage" alt="Live rain radar" style="display:none;">
@@ -5225,13 +5232,18 @@ Loading...
         <div class="rainRing rainRing50"><span>50 km</span></div>
     </div>
 </div>
+<div class="rainRadarCompass" aria-hidden="true">
+<span class="north">N</span><span class="east">E</span><span class="south">S</span><span class="west">W</span>
+</div>
 <p id="rainRadarSummary">📡 Checking live radar around your location...</p>
-<div class="rainRadarAttribution">Weather radar data by RainViewer • refreshes automatically</div>
+<div id="rainDistanceBadge" class="rainDistanceBadge">🌧️ Checking live rain distance...</div>
+<div id="rainRadarLegend" class="rainRadarLegend">🌧️ Rain area • 📍 Your location • ⭕ 10 / 25 / 50 km</div>
+<div id="rainRadarAttribution" class="rainRadarAttribution">Weather radar data by RainViewer • refreshes automatically</div>
 </div>
 
 <div id="diseaseCard" class="alertCard diseaseAlert">
 
-<h2>🐛 Disease Risk</h2>
+<h2 id="alertDiseaseTitle">🐛 Disease Risk</h2>
 
 <p id="diseaseRisk">
 Loading...
@@ -5241,7 +5253,7 @@ Loading...
 
 <div class="alertCard reminderAlert">
 
-<h2>📅 Farming Reminder</h2>
+<h2 id="alertReminderTitle">📅 Farming Reminder</h2>
 
 <p id="farmReminder">
 Loading...
@@ -5251,7 +5263,7 @@ Loading...
 
 <div class="alertCard">
 
-<h2>✅ Today's Tasks</h2>
+<h2 id="alertTasksTitle">✅ Today's Tasks</h2>
 
 <div id="farmTasks">
 
@@ -7765,6 +7777,9 @@ async function loadNotificationPage(){
 
         if(rainData.status){
 
+            const rainWeather = rainData.weather_data || {};
+            const rainWeatherAvailable = rainWeather.available === true && rainWeather.temperature != null;
+
             html += `
 
                 <h3 style="
@@ -7782,22 +7797,22 @@ async function loadNotificationPage(){
 
                     <div class="aiValue">
 
-                        ${rainData.weather || "Weather unavailable"}
+                        ${rainWeatherAvailable ? (rainData.weather || "Live weather") : (fastWeather?.weather || "Live weather from your location")}
 
                         <br><br>
 
                         🌡 Temperature:
-                        ${rainData.temperature ?? "--"} °C
+                        ${rainWeatherAvailable ? (rainData.temperature ?? "--") : (fastWeather?.temperature ?? "--")} °C
 
                         <br>
 
                         💧 Humidity:
-                        ${rainData.humidity ?? "--"} %
+                        ${rainWeatherAvailable ? (rainData.humidity ?? "--") : (fastWeather?.humidity ?? "--")} %
 
                         <br>
 
                         🌧 Rain Probability:
-                        ${rainData.rain_probability ?? 0} %
+                        ${rainWeatherAvailable ? (rainData.rain_probability ?? "--") : (fastWeather?.rain_probability ?? "--")} %
 
                         <br><br>
 
@@ -10210,61 +10225,170 @@ async function changeHomeCrop() {
 async function getBrowserLiveWeather(){
     return new Promise(function(resolve){
         if(!navigator.geolocation){ resolve(null); return; }
+
         navigator.geolocation.getCurrentPosition(async function(position){
             const lat=position.coords.latitude;
             const lon=position.coords.longitude;
-            try{ await saveUserLocation(lat,lon); }catch(e){}
+
+            async function fetchDirect(){
+                const controller=new AbortController();
+                const timer=setTimeout(()=>controller.abort(),9000);
+                try{
+                    const res=await fetch(
+                        `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&hourly=precipitation_probability&forecast_days=1&timezone=auto`,
+                        {cache:"no-store",signal:controller.signal}
+                    );
+                    if(!res.ok) throw new Error("Direct weather request failed");
+                    const raw=await res.json();
+                    const current=raw.current||{};
+                    const hourly=raw.hourly||{};
+                    const times=hourly.time||[];
+                    const probs=hourly.precipitation_probability||[];
+                    let idx=times.indexOf(current.time);
+                    if(idx<0) idx=0;
+                    const code=Number(current.weather_code);
+                    const map={0:"Clear Sky",1:"Mainly Clear",2:"Partly Cloudy",3:"Cloudy",45:"Fog",48:"Fog",51:"Light Drizzle",53:"Drizzle",55:"Heavy Drizzle",61:"Light Rain",63:"Rain",65:"Heavy Rain",71:"Light Snow",73:"Snow",75:"Heavy Snow",80:"Rain Showers",81:"Heavy Rain Showers",82:"Violent Rain",95:"Thunderstorm",96:"Thunderstorm with Hail",99:"Thunderstorm with Heavy Hail"};
+                    return {status:true,temperature:current.temperature_2m,humidity:current.relative_humidity_2m,wind:current.wind_speed_10m,weather_code:code,rain_probability:probs[idx] ?? null,weather:map[code]||"Unknown Weather",latitude:lat,longitude:lon};
+                }finally{ clearTimeout(timer); }
+            }
+
             try{
-                const res=await fetch(`${API}/weather/${lat}/${lon}`,{cache:"no-store"});
-                const data=await res.json();
-                if(!res.ok || !data.status) throw new Error(data.message||"Weather unavailable");
+                // Save the exact live browser location first. This prevents the backend
+                // alert endpoints from racing against /save-location.
+                try{ await saveUserLocation(lat,lon); }catch(e){ console.warn("SAVE ALERT LOCATION ERROR:",e); }
+
+                // Direct Open-Meteo is the reliable source for the visible weather.
+                // Backend is still used for AI/crop alerts, but never allowed to erase
+                // already-visible live weather when its own request is temporarily slow.
+                const data=await fetchDirect();
                 resolve(data);
             }catch(e){
                 console.error("BROWSER ALERT WEATHER ERROR:",e);
                 resolve(null);
             }
-        }, function(){ resolve(null); }, {enableHighAccuracy:false,timeout:7000,maximumAge:300000});
+        }, function(error){
+            console.warn("ALERT LOCATION ERROR:",error);
+            resolve(null);
+        }, {enableHighAccuracy:false,timeout:9000,maximumAge:300000});
     });
 }
 
 function renderFastAlertWeather(data){
     const box=document.getElementById("weatherAlert");
     if(!box || !data) return;
-    box.innerHTML=`🌡 Temperature: ${data.temperature ?? "--"} °C<br>💧 Humidity: ${data.humidity ?? "--"} %<br>💨 Wind: ${data.wind ?? "--"} km/h<br>🌧 Rain Probability: ${data.rain_probability ?? 0} %<br><br>🌦 ${data.weather || "Live weather"}`;
+    const lang=localStorage.getItem("appLanguage")||"mr";
+    const labels={en:["Temperature","Humidity","Wind","Rain Probability"],hi:["तापमान","नमी","हवा","बारिश की संभावना"],mr:["तापमान","आर्द्रता","वारा","पावसाची शक्यता"]}[lang]||["Temperature","Humidity","Wind","Rain Probability"];
+    box.innerHTML=`🌡 ${labels[0]}: ${data.temperature ?? "--"} °C<br>💧 ${labels[1]}: ${data.humidity ?? "--"} %<br>💨 ${labels[2]}: ${data.wind ?? "--"} km/h<br>🌧 ${labels[3]}: ${data.rain_probability ?? 0} %<br><br>🌦 ${data.weather || getAlertUI().liveWeather}`;
 }
 
 async function loadLiveRainRadar(){
-    const img = document.getElementById("rainRadarImage");
-    const summary = document.getElementById("rainRadarSummary");
+    const img=document.getElementById("rainRadarImage");
+    const summary=document.getElementById("rainRadarSummary");
+    const distanceBadge=document.getElementById("rainDistanceBadge");
     if(!img || !summary) return;
 
+    const t=getAlertUI();
+    summary.innerText=t.checkingRadar;
+    if(distanceBadge) distanceBadge.innerText="🌧️ Checking live rain distance...";
+
     try{
-        const position = await new Promise(function(resolve,reject){
-            if(!navigator.geolocation){ reject(new Error("Location unavailable")); return; }
+        const position=await new Promise(function(resolve,reject){
+            if(!navigator.geolocation){reject(new Error("Location unavailable"));return;}
             navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:7000,maximumAge:300000});
         });
 
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        const metaResponse = await fetch("https://api.rainviewer.com/public/weather-maps.json",{cache:"no-store"});
-        const meta = await metaResponse.json();
-        const frames = meta && meta.radar && meta.radar.past ? meta.radar.past : [];
-        const latest = frames[frames.length-1];
-        if(!latest || !latest.path) throw new Error("Radar frame unavailable");
+        const lat=position.coords.latitude, lon=position.coords.longitude;
 
-        const radarUrl = `${meta.host}${latest.path}/512/7/${lat.toFixed(4)}/${lon.toFixed(4)}/2/1_0.png`;
-        img.src = radarUrl;
-        img.style.display = "block";
+        // Keep the existing RainViewer radar image.
+        try{
+            const meta=await (await fetch("https://api.rainviewer.com/public/weather-maps.json",{cache:"no-store"})).json();
+            const frames=meta&&meta.radar&&meta.radar.past?meta.radar.past:[];
+            const latest=frames[frames.length-1];
+            if(latest&&latest.path){
+                const radarUrl=`${meta.host}${latest.path}/512/7/${lat.toFixed(4)}/${lon.toFixed(4)}/2/1_0.png`;
+                img.onload=function(){img.style.display="block";};
+                img.onerror=function(){img.style.display="none";};
+                img.src=radarUrl;
+                img.style.display="block";
+                const updated=latest.time?new Date(latest.time*1000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"--";
+                summary.innerHTML=`${t.radarCenter} <b>${t.radarRings}</b><br>${t.radarLatest} ${updated}.<br>${t.radarColors}`;
+            }else{
+                img.style.display="none";
+            }
+        }catch(radarError){
+            console.warn("RAINVIEWER ERROR:",radarError);
+            img.style.display="none";
+        }
 
-        const updated = latest.time ? new Date(latest.time*1000).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : "now";
-        summary.innerHTML = `📍 Your location is at the center. <b>10 km / 25 km / 50 km</b> rings show the nearby rain zone. <br>🛰️ Latest radar frame: ${updated}. <br>🔎 <b>Blue/green/yellow/red areas on the radar indicate precipitation around you.</b>`;
+        // Approximate live rain distance: sample 8 directions around the farmer
+        // at 5, 10, 20, 30 and 50 km and use current precipitation/weather code.
+        const distances=[5,10,20,30,50];
+        const bearings=[0,45,90,135,180,225,270,315];
+        const points=[[lat,lon,0]];
+        const earthRadiusKm=6371;
+
+        bearings.forEach(function(bearing){
+            const br=bearing*Math.PI/180;
+            distances.forEach(function(distance){
+                const d=distance/earthRadiusKm;
+                const lat1=lat*Math.PI/180;
+                const lon1=lon*Math.PI/180;
+                const lat2=Math.asin(Math.sin(lat1)*Math.cos(d)+Math.cos(lat1)*Math.sin(d)*Math.cos(br));
+                const lon2=lon1+Math.atan2(Math.sin(br)*Math.sin(d)*Math.cos(lat1),Math.cos(d)-Math.sin(lat1)*Math.sin(lat2));
+                points.push([lat2*180/Math.PI,lon2*180/Math.PI,distance]);
+            });
+        });
+
+        const latitudes=points.map(p=>p[0].toFixed(5)).join(",");
+        const longitudes=points.map(p=>p[1].toFixed(5)).join(",");
+        const weatherUrl=`https://api.open-meteo.com/v1/forecast?latitude=${latitudes}&longitude=${longitudes}&current=precipitation,weather_code&timezone=auto`;
+        const response=await fetch(weatherUrl,{cache:"no-store"});
+        if(!response.ok) throw new Error("Nearby rain request failed");
+        const raw=await response.json();
+        const results=Array.isArray(raw)?raw:[raw];
+        const rainCodes=new Set([51,53,55,61,63,65,80,81,82,95,96,99]);
+
+        let nearest=null;
+        results.forEach(function(item,index){
+            const current=item&&item.current?item.current:{};
+            const precipitation=Number(current.precipitation||0);
+            const code=Number(current.weather_code);
+            const raining=precipitation>0.05 || rainCodes.has(code);
+            if(raining){
+                const distance=Number(points[index][2]);
+                if(nearest===null || distance<nearest.distance){
+                    nearest={distance:distance,precipitation:precipitation,code:code};
+                }
+            }
+        });
+
+        const lang=localStorage.getItem("appLanguage")||"mr";
+        let label="Approx live rain distance";
+        let noRain="No live rain detected within 50 km";
+        if(lang==="hi"){label="लगभग लाइव बारिश की दूरी";noRain="50 km के अंदर अभी लाइव बारिश नहीं मिली";}
+        if(lang==="mr"){label="अंदाजे थेट पावसाचे अंतर";noRain="50 km च्या आत सध्या थेट पाऊस आढळला नाही";}
+
+        if(distanceBadge){
+            if(nearest===null){
+                distanceBadge.className="rainDistanceBadge";
+                distanceBadge.innerHTML=`🌤️ ${noRain}`;
+            }else{
+                const km=nearest.distance;
+                const cls=km<=10?"rainNear":(km<=25?"rainMedium":"");
+                distanceBadge.className="rainDistanceBadge "+cls;
+                distanceBadge.innerHTML=`🌧️ ${label}: <b>${km} km</b>`;
+            }
+        }
     }catch(error){
         console.warn("RAIN RADAR ERROR:",error);
-        summary.innerHTML = "⚠️ Live radar is temporarily unavailable. The normal rain forecast and crop-risk alert are still shown above.";
+        summary.innerHTML=t.radarOff;
+        if(distanceBadge) distanceBadge.innerHTML="⚠️ Live rain distance temporarily unavailable";
     }
 }
 
 async function loadAlerts(){
+
+    applyAlertLanguage();
 
     let user = JSON.parse(localStorage.getItem("user"));
 
@@ -10281,28 +10405,26 @@ async function loadAlerts(){
 
     }
 
-    document.getElementById("weatherAlert").innerHTML =
-    "🌦 Checking live weather...";
+    document.getElementById("weatherAlert").innerHTML=getAlertUI().checkingWeather;
 
-    document.getElementById("cropAlert").innerHTML =
-    "🌱 Checking crop...";
+    document.getElementById("cropAlert").innerHTML=getAlertUI().checkingCrop;
 
-    document.getElementById("sprayAlert").innerHTML =
-    "☔ Checking next 6 hours of live rain forecast...";
+    document.getElementById("sprayAlert").innerHTML=getAlertUI().checkingSpray;
 
-    document.getElementById("diseaseRisk").innerHTML =
-    "🐛 Checking disease risk...";
+    document.getElementById("diseaseRisk").innerHTML=getAlertUI().checkingDisease;
 
-    document.getElementById("farmReminder").innerHTML =
-    "📅 Checking farming reminder...";
+    document.getElementById("farmReminder").innerHTML=getAlertUI().checkingReminder;
 
-    document.getElementById("farmTasks").innerHTML =
-    "🔄 Loading today's tasks...";
+    document.getElementById("farmTasks").innerHTML=getAlertUI().loadingTasks;
 
     try{
 
-        // Show live weather independently so slow AI/Gemini never hides weather.
-        getBrowserLiveWeather().then(renderFastAlertWeather);
+        // Get real browser-location weather first and save the same coordinates to Firestore.
+        // This removes the race where /alerts runs before /save-location finishes.
+        const fastAlertWeather = await getBrowserLiveWeather();
+        if(fastAlertWeather){
+            renderFastAlertWeather(fastAlertWeather);
+        }
         loadLiveRainRadar();
 
         let response = await fetch(
@@ -10335,22 +10457,24 @@ async function loadAlerts(){
         document.getElementById("alertLocation").innerHTML =
         "📍 " + data.location;
 
-        // Weather
-
+        // Weather: backend AI response may be slower/stale. Only replace the visible
+        // weather card when backend has a real live weather payload.
         let weather = data.weather_data || {};
-
-        document.getElementById("weatherAlert").innerHTML =
-        `
-        🌡 Temperature: ${weather.temperature} °C
-        <br>
-        💧 Humidity: ${weather.humidity} %
-        <br>
-        💨 Wind: ${weather.wind} km/h
-        <br>
-        🌧 Rain Probability: ${weather.rain} %
-        <br><br>
-        ${data.weather_alert}
-        `;
+        const backendWeatherAvailable = weather.available === true && weather.temperature != null;
+        if(backendWeatherAvailable || !fastAlertWeather){
+            document.getElementById("weatherAlert").innerHTML =
+            `
+            🌡 Temperature: ${weather.temperature ?? "--"} °C
+            <br>
+            💧 Humidity: ${weather.humidity ?? "--"} %
+            <br>
+            💨 Wind: ${weather.wind ?? "--"} km/h
+            <br>
+            🌧 Rain Probability: ${weather.rain ?? "--"} %
+            <br><br>
+            ${data.weather_alert || "Live weather alert unavailable."}
+            `;
+        }
 
         // Crop
 
@@ -10999,7 +11123,11 @@ function changeAppLanguage(lang){
     syncLanguageWithServer(lang);
     applyLanguage();
     applyWeatherLanguage();
+    applyAlertLanguage();
     updateLanguageUI(lang);
+    if(document.getElementById("alertPage") && document.getElementById("alertPage").style.display !== "none"){
+        loadAlerts();
+    }
 
 }
 
@@ -11214,6 +11342,26 @@ function applyFeatureLanguage(){
     applyKisanConnectLanguage();
 }
 
+const ALERT_UI = {
+    en:{page:"🔔 Farmer Alerts",weather:"🌦 Weather Alert",crop:"🌱 Crop Alert",spray:"☔ Spray Advisor",radar:"🌧️ Live Rain Radar",disease:"🐛 Disease Risk",reminder:"📅 Farming Reminder",tasks:"✅ Today's Tasks",checkingRadar:"📡 Checking live radar around your location...",radarCenter:"📍 Your location is at the center.",radarRings:"10 km / 25 km / 50 km rings show the nearby rain zone.",radarLatest:"🛰️ Latest radar frame:",radarColors:"🔎 Colored areas on the radar show precipitation around you. N/E/S/W show direction.",radarOff:"⚠️ Live radar is temporarily unavailable. Normal rain forecast and crop-risk alerts are still shown above.",radarLegend:"🌧️ Rain area • 📍 Your location • ⭕ 10 / 25 / 50 km",attribution:"Weather radar data by RainViewer • refreshes automatically",checkingWeather:"🌦 Checking live weather...",checkingCrop:"🌱 Checking crop...",checkingSpray:"☔ Checking next 6 hours of live rain forecast...",checkingDisease:"🐛 Checking disease risk...",checkingReminder:"📅 Checking farming reminder...",loadingTasks:"🔄 Loading today's tasks...",liveWeather:"Live weather"},
+    hi:{page:"🔔 किसान सूचनाएं",weather:"🌦 मौसम सूचना",crop:"🌱 फसल सूचना",spray:"☔ स्प्रे सलाह",radar:"🌧️ लाइव बारिश रडार",disease:"🐛 रोग जोखिम",reminder:"📅 खेती की याद दिलाने वाली सूचना",tasks:"✅ आज के काम",checkingRadar:"📡 आपके स्थान के आसपास लाइव रडार देखा जा रहा है...",radarCenter:"📍 बीच में आपका स्थान है।",radarRings:"10 किमी / 25 किमी / 50 किमी के घेरे आसपास के बारिश क्षेत्र दिखाते हैं।",radarLatest:"🛰️ सबसे नया रडार समय:",radarColors:"🔎 रडार के रंगीन क्षेत्र आपके आसपास बारिश दिखाते हैं। N/E/S/W से दिशा समझें।",radarOff:"⚠️ लाइव रडार अभी उपलब्ध नहीं है। सामान्य बारिश पूर्वानुमान और फसल जोखिम सूचना ऊपर दिखाई जा रही है।",radarLegend:"🌧️ बारिश का क्षेत्र • 📍 आपका स्थान • ⭕ 10 / 25 / 50 किमी",attribution:"मौसम रडार डेटा RainViewer से • अपने आप रीफ्रेश होता है",checkingWeather:"🌦 लाइव मौसम देखा जा रहा है...",checkingCrop:"🌱 फसल की जानकारी देखी जा रही है...",checkingSpray:"☔ अगले 6 घंटे की लाइव बारिश का पूर्वानुमान देखा जा रहा है...",checkingDisease:"🐛 रोग जोखिम देखा जा रहा है...",checkingReminder:"📅 खेती की याद दिलाने वाली सूचना देखी जा रही है...",loadingTasks:"🔄 आज के काम लोड हो रहे हैं...",liveWeather:"लाइव मौसम"},
+    mr:{page:"🔔 शेतकरी सूचना",weather:"🌦 हवामान सूचना",crop:"🌱 पीक सूचना",spray:"☔ फवारणी सल्ला",radar:"🌧️ थेट पावसाचा रडार",disease:"🐛 रोगाचा धोका",reminder:"📅 शेतीची आठवण",tasks:"✅ आजची कामे",checkingRadar:"📡 तुमच्या स्थानाभोवती थेट रडार तपासत आहे...",radarCenter:"📍 मध्यभागी तुमचे स्थान आहे.",radarRings:"10 किमी / 25 किमी / 50 किमीची वर्तुळे आसपासचा पावसाचा भाग दाखवतात.",radarLatest:"🛰️ सर्वात नवीन रडार वेळ:",radarColors:"🔎 रडारवरील रंगीत भाग तुमच्या आसपासचा पाऊस दाखवतात. N/E/S/W वरून दिशा समजते.",radarOff:"⚠️ थेट रडार सध्या उपलब्ध नाही. सामान्य पावसाचा अंदाज आणि पीक-धोका सूचना वर दिसत आहेत.",radarLegend:"🌧️ पावसाचा भाग • 📍 तुमचे स्थान • ⭕ 10 / 25 / 50 किमी",attribution:"हवामान रडार डेटा RainViewer कडून • आपोआप रिफ्रेश होतो",checkingWeather:"🌦 थेट हवामान तपासत आहे...",checkingCrop:"🌱 पिकाची माहिती तपासत आहे...",checkingSpray:"☔ पुढील 6 तासांचा थेट पावसाचा अंदाज तपासत आहे...",checkingDisease:"🐛 रोगाचा धोका तपासत आहे...",checkingReminder:"📅 शेतीची आठवण तपासत आहे...",loadingTasks:"🔄 आजची कामे लोड होत आहेत...",liveWeather:"थेट हवामान"}
+};
+function getAlertUI(){ return ALERT_UI[localStorage.getItem("appLanguage") || "mr"] || ALERT_UI.mr; }
+function applyAlertLanguage(){
+    const t=getAlertUI(), set=(id,v)=>{const e=document.getElementById(id);if(e)e.innerText=v;};
+    set("alertPageTitle",t.page);set("alertWeatherTitle",t.weather);set("alertCropTitle",t.crop);set("alertSprayTitle",t.spray);
+    set("alertRadarTitle",t.radar);set("alertDiseaseTitle",t.disease);set("alertReminderTitle",t.reminder);set("alertTasksTitle",t.tasks);
+    set("rainRadarSummary",t.checkingRadar);set("rainRadarLegend",t.radarLegend);set("rainRadarAttribution",t.attribution);
+}
+(function(){
+    const nativeAlert=window.alert.bind(window);
+    const map={
+      hi:{"Please login first.":"कृपया पहले लॉगिन करें।","Please select crop":"कृपया फसल चुनें","✅ Crop Updated":"✅ फसल अपडेट हो गई","❌ Server error. Please try again.":"❌ सर्वर त्रुटि। कृपया फिर कोशिश करें।"},
+      mr:{"Please login first.":"कृपया आधी लॉगिन करा.","Please select crop":"कृपया पीक निवडा","✅ Crop Updated":"✅ पीक अपडेट झाले","❌ Server error. Please try again.":"❌ सर्व्हर त्रुटी. कृपया पुन्हा प्रयत्न करा."}
+    };
+    window.alert=function(message){const lang=localStorage.getItem("appLanguage")||"mr";nativeAlert((map[lang]&&map[lang][String(message)])||String(message));};
+})();
 function applyLanguage(){
 
     // Default language = Marathi
@@ -11312,6 +11460,7 @@ function applyLanguage(){
     document.getElementById("homeLanguageSelect").value = lang;
 
     applyFeatureLanguage();
+    applyAlertLanguage();
 
 }
 

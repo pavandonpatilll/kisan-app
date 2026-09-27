@@ -3968,27 +3968,17 @@ def smart_alerts(user_id: str):
                     "https://api.open-meteo.com/v1/forecast"
                     f"?latitude={lat}"
                     f"&longitude={lon}"
-                    "&current=temperature_2m,"
-                    "relative_humidity_2m,"
-                    "wind_speed_10m,"
-                    "weather_code"
-                    "&hourly=precipitation_probability,"
-                    "relative_humidity_2m,"
-                    "wind_speed_10m"
-                    "&daily=weather_code,"
-                    "temperature_2m_max,"
-                    "temperature_2m_min,"
-                    "sunrise,"
-                    "sunset,"
-                    "precipitation_probability_max"
+                    "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code"
+                    "&hourly=precipitation_probability,relative_humidity_2m,wind_speed_10m"
+                    "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max"
                     "&forecast_days=7"
                     "&timezone=auto"
                 )
 
-
                 weather_response = requests.get(
                     url,
-                    timeout=10
+                    headers={"User-Agent": "ShrimantShetkari/1.0"},
+                    timeout=12
                 )
 
                 weather_response.raise_for_status()
@@ -4025,10 +4015,10 @@ def smart_alerts(user_id: str):
                 try:
                     rain = hourly_rain[current_hour]
                 except Exception:
-                    rain = 0
+                    rain = None
 
                 next_6_rain = [x for x in hourly_rain[current_hour:current_hour + 6] if isinstance(x, (int, float))]
-                rain_6h_max = max(next_6_rain) if next_6_rain else 0
+                rain_6h_max = max(next_6_rain) if next_6_rain else None
                 rain_6h_times = hourly_times[current_hour:current_hour + 6]
                 weather_available = True
 
@@ -4600,7 +4590,8 @@ def rain_alert(user_id: str):
 
                 weather_response = requests.get(
                     url,
-                    timeout=10
+                    headers={"User-Agent": "ShrimantShetkari/1.0"},
+                    timeout=12
                 )
 
                 weather_response.raise_for_status()
@@ -4688,7 +4679,7 @@ def rain_alert(user_id: str):
 
                 except Exception:
 
-                    rain = 0
+                    rain = None
 
 
                 weather_available = True
