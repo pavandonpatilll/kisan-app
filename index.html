@@ -961,6 +961,7 @@ margin:15px;
 .weatherAnimation .fog2{top:58px;animation-delay:-2s}
 .weatherAnimation .fog3{top:82px;animation-delay:-3.5s}
 @keyframes fogMove{50%{transform:translateX(28px)}}
+.weatherAnimation .bird{position:absolute;font-size:20px;z-index:4;filter:drop-shadow(0 2px 2px rgba(0,0,0,.12));animation:birdFly 7s linear infinite}.weatherAnimation .bird.b1{top:18px;left:-35px;animation-delay:-1s}.weatherAnimation .bird.b2{top:38px;left:-55px;font-size:15px;animation-delay:-4s}.weatherAnimation .bird.b3{top:12px;left:-75px;font-size:17px;animation-delay:-6s}@keyframes birdFly{0%{transform:translateX(-20px) translateY(0) scale(.9);opacity:0}10%{opacity:1}45%{transform:translateX(230px) translateY(-14px) scale(1)}80%{opacity:1}100%{transform:translateX(500px) translateY(6px) scale(.82);opacity:0}}.weatherAnimation .ground{position:absolute;left:-5%;bottom:-18px;width:110%;height:45px;background:linear-gradient(180deg,rgba(76,175,80,.12),rgba(46,125,50,.32));border-radius:50% 50% 0 0}.weatherAnimation .leaf{position:absolute;bottom:16px;font-size:18px;animation:leafSway 2.2s ease-in-out infinite}.weatherAnimation .leaf.l1{left:15%}.weatherAnimation .leaf.l2{left:78%;animation-delay:-1s}@keyframes leafSway{50%{transform:rotate(18deg) translateY(-4px)}}
 
 .weatherStatusPill{
     display:inline-flex;
@@ -3954,7 +3955,7 @@ nav div:active{
 .kcSearch{margin-top:14px;width:100%;border:0;border-radius:14px;padding:12px 14px;font-size:15px;outline:0;}
 .kcGroups{padding:12px}.kcGroup{display:flex;align-items:center;gap:13px;background:#fff;border:1px solid #e3ebe6;border-radius:16px;padding:13px;margin-bottom:9px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.05);transition:.18s}.kcGroup:hover{transform:translateY(-1px)}
 .kcAvatar{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#d9f5e3,#a9e7c0);font-size:27px;flex:0 0 52px}.kcGroupMain{min-width:0;flex:1}.kcGroupTitle{font-weight:800;color:#17221b;font-size:16px}.kcGroupSub{color:#758178;font-size:13px;margin-top:4px}.kcArrow{font-size:22px;color:#97a39b}.kcEmpty{padding:30px;text-align:center;color:#718078}
-.kcChatPage{background:#dfe9e4 !important;padding:0 !important;display:flex;align-items:stretch !important;justify-content:flex-start !important;}.kcChatWrap{width:100%;max-width:900px;min-height:100vh;display:flex;flex-direction:column;background:#dfe9e4}.kcChatTop{position:sticky;top:0;z-index:20;background:#198754;color:#fff;display:flex;align-items:center;gap:10px;padding:11px 12px;box-shadow:0 2px 10px rgba(0,0,0,.15)}.kcBack{border:0;background:transparent;color:#fff;font-size:25px;padding:4px 8px;cursor:pointer}.kcGroupAvatarSmall{width:42px;height:42px;border-radius:50%;background:#d9f5e3;display:grid;place-items:center;font-size:22px}.kcChatTitle{font-weight:800;font-size:17px}.kcChatMeta{font-size:12px;opacity:.85;margin-top:2px}.kcGroupMessages{flex:1;overflow:auto;padding:14px 10px 90px;background:radial-gradient(circle at top,#eef6f2,#dfe9e4 55%)}.kcMsg{display:flex;margin:4px 0}.kcMsg.mine{justify-content:flex-end}.kcBubble{max-width:78%;background:#fff;border-radius:5px 16px 16px 16px;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,.12);color:#1c241f}.kcMsg.mine .kcBubble{background:#d9fdd3;border-radius:16px 5px 16px 16px}.kcSender{font-size:12px;color:#18864b;font-weight:800;margin-bottom:4px}.kcText{white-space:pre-wrap;word-break:break-word;font-size:15px;line-height:1.4}.kcTime{text-align:right;color:#87918b;font-size:10px;margin-top:4px}.kcImage{display:block;width:min(280px,70vw);max-height:320px;object-fit:cover;border-radius:12px;cursor:pointer}.kcComposer{position:fixed;bottom:0;width:min(900px,100%);display:flex;align-items:center;gap:7px;padding:9px;background:#fff;border-top:1px solid #d9e1dc;z-index:25}.kcComposer input{flex:1;border:0;background:#f2f5f3;border-radius:22px;padding:12px 15px;outline:0;font-size:15px}.kcAction{border:0;background:#edf4ef;border-radius:50%;width:42px;height:42px;font-size:20px;cursor:pointer}.kcSend{background:#198754;color:#fff}.kcPhotoPreview{display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:10000;align-items:center;justify-content:center;padding:20px}.kcPhotoPreview.active{display:flex}.kcPhotoPreview img{max-width:95vw;max-height:90vh;border-radius:12px}.kcPhotoPreview button{position:absolute;right:15px;top:15px;border:0;background:#fff;border-radius:50%;width:40px;height:40px;font-size:22px}
+.kcChatPage{background:#dfe9e4 !important;padding:0 !important;display:flex;align-items:stretch !important;justify-content:flex-start !important;}.kcChatWrap{width:100%;max-width:900px;min-height:100vh;display:flex;flex-direction:column;background:#dfe9e4}.kcChatTop{position:sticky;top:0;z-index:20;background:#198754;color:#fff;display:flex;align-items:center;gap:10px;padding:11px 12px;box-shadow:0 2px 10px rgba(0,0,0,.15)}.kcBack{border:0;background:transparent;color:#fff;font-size:25px;padding:4px 8px;cursor:pointer}.kcGroupAvatarSmall{width:42px;height:42px;border-radius:50%;background:#d9f5e3;display:grid;place-items:center;font-size:22px}.kcChatTitle{font-weight:800;font-size:17px}.kcChatMeta{font-size:12px;opacity:.85;margin-top:2px}.kcGroupMessages{flex:1;overflow:auto;padding:14px 10px 90px;background:radial-gradient(circle at top,#eef6f2,#dfe9e4 55%)}.kcMsg{display:flex;margin:4px 0}.kcMsg.mine{justify-content:flex-end}.kcBubble{max-width:78%;background:#fff;border-radius:5px 16px 16px 16px;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,.12);color:#1c241f}.kcMsg.mine .kcBubble{background:#d9fdd3;border-radius:16px 5px 16px 16px}.kcSender{font-size:12px;color:#18864b;font-weight:800;margin-bottom:4px}.kcText{white-space:pre-wrap;word-break:break-word;font-size:15px;line-height:1.4}.kcTime{text-align:right;color:#87918b;font-size:10px;margin-top:4px}.kcImage{display:block;width:min(280px,70vw);max-height:320px;object-fit:cover;border-radius:12px;cursor:pointer}.kcTime{text-align:right;color:#87918b;font-size:10px;margin-top:4px}.kcReplyPreview{margin:0 0 6px;padding:7px 10px;border-left:4px solid #198754;background:#eef8f1;border-radius:10px;font-size:12px;color:#3f5146;display:flex;align-items:center;gap:8px}.kcReplyPreview span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kcReplyPreview button{border:0;background:transparent;font-size:18px;cursor:pointer}.kcQuoted{padding:6px 8px;margin-bottom:6px;border-left:4px solid #198754;background:rgba(25,135,84,.09);border-radius:8px;font-size:12px;color:#496154;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kcMsgActions{display:flex;align-items:center;gap:6px;margin-top:4px}.kcReplyBtn{border:0;background:transparent;color:#198754;font-size:11px;font-weight:800;cursor:pointer;padding:2px 4px}.kcReactionStrip{display:flex;gap:4px;padding:4px 6px;border-radius:18px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.18);position:fixed;z-index:10001}.kcReactionStrip button{border:0;background:transparent;font-size:22px;cursor:pointer;padding:3px}.kcReactionBadge{display:inline-flex;align-items:center;gap:3px;margin-top:3px;padding:2px 6px;border-radius:12px;background:#fff;border:1px solid #dfe8e2;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}.kcComposerWrap{position:fixed;bottom:0;width:min(900px,100%);z-index:25;background:#fff;border-top:1px solid #d9e1dc}.kcComposer{position:relative;width:100%;display:flex;align-items:center;gap:7px;padding:9px;background:#fff}.kcComposer{position:fixed;bottom:0;width:min(900px,100%);display:flex;align-items:center;gap:7px;padding:9px;background:#fff;border-top:1px solid #d9e1dc;z-index:25}.kcComposer input{flex:1;border:0;background:#f2f5f3;border-radius:22px;padding:12px 15px;outline:0;font-size:15px}.kcAction{border:0;background:#edf4ef;border-radius:50%;width:42px;height:42px;font-size:20px;cursor:pointer}.kcSend{background:#198754;color:#fff}.kcPhotoPreview{display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:10000;align-items:center;justify-content:center;padding:20px}.kcPhotoPreview.active{display:flex}.kcPhotoPreview img{max-width:95vw;max-height:90vh;border-radius:12px}.kcPhotoPreview button{position:absolute;right:15px;top:15px;border:0;background:#fff;border-radius:50%;width:40px;height:40px;font-size:22px}
 
 /* =========================================================
    LANGUAGE PAGE
@@ -5871,15 +5872,19 @@ Back Home
       <div><div id="kcGroupChatTitle" class="kcChatTitle">Crop Group</div><div id="kcGroupChatMeta" class="kcChatMeta">Farmers group</div></div>
     </div>
     <div id="kcGroupMessages" class="kcGroupMessages"></div>
-    <div class="kcComposer">
+    <div class="kcComposerWrap">
+      <div id="kcReplyPreview" class="kcReplyPreview" style="display:none"><span id="kcReplyPreviewText"></span><button onclick="cancelKcReply()">×</button></div>
+      <div class="kcComposer">
       <input type="file" id="kcGroupImageInput" accept="image/*" style="display:none" onchange="sendCropGroupImage()">
       <button class="kcAction" onclick="document.getElementById('kcGroupImageInput').click()">📷</button>
       <button class="kcAction" onclick="sendCropGroupLocation()">📍</button>
       <input id="kcGroupMessageInput" placeholder="Message group..." autocomplete="off" onkeydown="if(event.key==='Enter'){sendCropGroupMessage()}">
       <button class="kcAction kcSend" onclick="sendCropGroupMessage()">➤</button>
+      </div>
     </div>
   </div>
 </section>
+<div id="kcReactionStrip" class="kcReactionStrip" style="display:none"><button onclick="reactKcMessage('❤️')">❤️</button><button onclick="reactKcMessage('👍')">👍</button><button onclick="reactKcMessage('😂')">😂</button><button onclick="reactKcMessage('😮')">😮</button><button onclick="reactKcMessage('😢')">😢</button><button onclick="reactKcMessage('🙏')">🙏</button><button onclick="reactKcMessage('🌾')">🌾</button></div>
 <div id="kcPhotoPreview" class="kcPhotoPreview" onclick="closeKcPhoto()"><button onclick="event.stopPropagation();closeKcPhoto()">×</button><img id="kcPreviewImage" src="" alt="Photo"></div>
 
 <section id="chatPage" class="featurePage">
@@ -6527,74 +6532,32 @@ function openCropGroup(crop,members){
     openPage("cropGroupChatPage");
 }
 
+let kcReplyTarget = null;
+let kcPressTimer = null;
+function startKcLongPress(event,id){clearTimeout(kcPressTimer);kcPressTimer=setTimeout(()=>showKcReactionMenu(event,id),550)}
+function cancelKcLongPress(){clearTimeout(kcPressTimer)}
+function showKcReactionMenu(event,id){event?.preventDefault?.();const m=document.getElementById("kcReactionStrip");if(!m)return;m.dataset.messageId=id;m.style.display="flex";const x=Math.min((event?.clientX||innerWidth/2)-110,innerWidth-245);const y=Math.max(70,(event?.clientY||120)-55);m.style.left=Math.max(8,x)+"px";m.style.top=y+"px"}
+function hideKcReactionMenu(){const m=document.getElementById("kcReactionStrip");if(m)m.style.display="none"}
+function startKcReply(id,text){kcReplyTarget={id:String(id),text:decodeURIComponent(String(text||""))};const b=document.getElementById("kcReplyPreview"),l=document.getElementById("kcReplyPreviewText");if(l)l.textContent="↩️ "+(kcReplyTarget.text||"Photo / message");if(b)b.style.display="flex";document.getElementById("kcGroupMessageInput")?.focus()}
+function cancelKcReply(){kcReplyTarget=null;const b=document.getElementById("kcReplyPreview");if(b)b.style.display="none"}
+async function reactKcMessage(emoji){const u=JSON.parse(localStorage.getItem("user")||"null"),m=document.getElementById("kcReactionStrip"),id=m?.dataset?.messageId;if(!u?.id||!id||!selectedCropGroup)return;hideKcReactionMenu();try{const r=await fetch(API+"/group-chat-reaction",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message_id:id,user_id:u.id,crop:selectedCropGroup,emoji})});const d=await r.json();if(!r.ok||!d.status)throw new Error(d.message||"Reaction failed");await loadCropGroupChat()}catch(e){console.error("REACTION ERROR",e)}}
+document.addEventListener("click",e=>{if(!e.target.closest(".kcReactionStrip"))hideKcReactionMenu()});
 async function loadCropGroupChat(){
-    if(!selectedCropGroup) return;
-    const box=document.getElementById("kcGroupMessages");
-    const user=JSON.parse(localStorage.getItem("user")||"null");
-    if(!box||!user?.id) return;
-    try{
-        const res=await fetch(API+"/group-chat/"+encodeURIComponent(selectedCropGroup),{cache:"no-store"});
-        const data=await res.json();
-        if(!res.ok||!data.status) throw new Error(data.message||"Chat unavailable");
-        if(!Array.isArray(data.chat)||!data.chat.length){box.innerHTML='<div class="kcEmpty">👋 Group is quiet. Be the first farmer to say hello.</div>';return;}
-        box.innerHTML=data.chat.map(c=>{
-            const mine=String(c.sender)===String(user.id);
-            let body='';
-            if(c.message_type==="image"&&c.image){
-                const src=c.image.startsWith("http")?c.image:API+c.image;
-                body=`<img class="kcImage" src="${src}" alt="Shared photo" onclick="openKcPhoto('${encodeURIComponent(src)}')">`;
-            }else if(c.message_type==="location"&&c.latitude!=null&&c.longitude!=null){
-                body=`<a href="https://www.google.com/maps?q=${encodeURIComponent(c.latitude)},${encodeURIComponent(c.longitude)}" target="_blank" rel="noopener">📍 Shared location</a>`;
-            }else{
-                const lang = localStorage.getItem("appLanguage") || "hi";
-                const translated = c.translations && c.translations[lang];
-                body=`<div class="kcText">${escapeHtml(translated || c.message || "")}</div>`;
-            }
-            return `<div class="kcMsg ${mine?'mine':''}"><div class="kcBubble">${mine?'':`<div class="kcSender">${escapeHtml(c.sender_name||'Farmer')}</div>`}${body}<div class="kcTime">${escapeHtml(c.time||"")}</div></div></div>`;
-        }).join("");
-        box.scrollTop=box.scrollHeight;
-    }catch(e){console.error("GROUP CHAT ERROR:",e);box.innerHTML='<div class="kcEmpty">⚠️ Group chat temporarily unavailable.</div>';}
+    if(!selectedCropGroup)return;const box=document.getElementById("kcGroupMessages"),user=JSON.parse(localStorage.getItem("user")||"null");if(!box||!user?.id)return;
+    try{const res=await fetch(API+"/group-chat/"+encodeURIComponent(selectedCropGroup),{cache:"no-store"}),data=await res.json();if(!res.ok||!data.status)throw new Error(data.message||"Chat unavailable");
+        if(!Array.isArray(data.chat)||!data.chat.length){box.innerHTML='<div class="kcEmpty">👋 Group is quiet. Be the first farmer to say hello.</div>';return}
+        box.innerHTML=data.chat.map(c=>{const mine=String(c.sender)===String(user.id);let body=c.reply_to_id?`<div class="kcQuoted">↩️ ${escapeHtml(c.reply_to_text||"Replied message")}</div>`:"";
+            if(c.message_type==="image"&&c.image){const src=c.image.startsWith("http")?c.image:API+c.image;body+=`<img class="kcImage" src="${src}" alt="Shared photo" onclick="openKcPhoto('${encodeURIComponent(src)}')">`}
+            else if(c.message_type==="location"&&c.latitude!=null&&c.longitude!=null){body+=`<a href="https://www.google.com/maps?q=${encodeURIComponent(c.latitude)},${encodeURIComponent(c.longitude)}" target="_blank" rel="noopener">📍 Shared location</a>`}
+            else{const lang=localStorage.getItem("appLanguage")||"hi",translated=c.translations&&c.translations[lang];body+=`<div class="kcText">${escapeHtml(translated||c.message||"")}</div>`}
+            const reactions=Object.entries(c.reactions||{}).map(([e,n])=>`<span class="kcReactionBadge">${escapeHtml(e)} ${n}</span>`).join("");const preview=encodeURIComponent(c.message_type==="text"?(c.message||""):(c.message_type==="image"?"📷 Photo":"📍 Location"));
+            return `<div class="kcMsg ${mine?'mine':''}"><div class="kcBubble" oncontextmenu="showKcReactionMenu(event,'${escapeHtml(c.id)}')" onpointerdown="startKcLongPress(event,'${escapeHtml(c.id)}')" onpointerup="cancelKcLongPress()" onpointerleave="cancelKcLongPress()">${mine?'':`<div class="kcSender">${escapeHtml(c.sender_name||'Farmer')}</div>`}${body}<div class="kcMsgActions"><button class="kcReplyBtn" onclick="event.stopPropagation();startKcReply('${escapeHtml(c.id)}','${preview}')">↩️ Reply</button><button class="kcReplyBtn" onclick="event.stopPropagation();showKcReactionMenu(event,'${escapeHtml(c.id)}')">😊 React</button></div>${reactions}<div class="kcTime">${escapeHtml(c.time||"")}</div></div></div>`}).join("");box.scrollTop=box.scrollHeight;
+    }catch(e){console.error("GROUP CHAT ERROR:",e);box.innerHTML='<div class="kcEmpty">⚠️ Group chat temporarily unavailable.</div>'}
 }
-
-async function sendCropGroupPayload(payload){
-    const user=JSON.parse(localStorage.getItem("user")||"null");
-    if(!user?.id||!selectedCropGroup) return;
-    payload.sender_id=user.id; payload.crop=selectedCropGroup;
-    try{
-        const res=await fetch(API+"/send-group-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-        const data=await res.json();
-        if(!res.ok||!data.status) throw new Error(data.message||"Message failed");
-        await loadCropGroupChat();
-    }catch(e){console.error(e);alert("❌ Message send nahi hua. Dobara try karo.");}
-}
-
-async function sendCropGroupMessage(){
-    const input=document.getElementById("kcGroupMessageInput");
-    const message=(input?.value||"").trim();
-    if(!message) return;
-    input.value="";
-    await sendCropGroupPayload({message_type:"text",message});
-}
-
-async function sendCropGroupImage(){
-    const input=document.getElementById("kcGroupImageInput");
-    const file=input?.files?.[0]; if(!file) return;
-    try{
-        const form=new FormData(); form.append("file",file);
-        const res=await fetch(API+"/upload-chat-image",{method:"POST",body:form});
-        const data=await res.json();
-        if(!res.ok||!data.status) throw new Error(data.message||"Upload failed");
-        await sendCropGroupPayload({message_type:"image",image:data.image_url});
-    }catch(e){console.error(e);alert("❌ Photo send nahi hui.");}
-    input.value="";
-}
-
-function sendCropGroupLocation(){
-    if(!navigator.geolocation){alert("Location supported nahi hai.");return;}
-    navigator.geolocation.getCurrentPosition(async p=>{
-        await sendCropGroupPayload({message_type:"location",message:"Shared location",latitude:p.coords.latitude,longitude:p.coords.longitude});
-    },()=>alert("Location permission allow karo."));
-}
+async function sendCropGroupPayload(payload){const user=JSON.parse(localStorage.getItem("user")||"null");if(!user?.id||!selectedCropGroup)return;payload.sender_id=user.id;payload.crop=selectedCropGroup;if(kcReplyTarget){payload.reply_to_id=kcReplyTarget.id;payload.reply_to_text=kcReplyTarget.text;cancelKcReply()}try{const res=await fetch(API+"/send-group-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),data=await res.json();if(!res.ok||!data.status)throw new Error(data.message||"Message failed");await loadCropGroupChat()}catch(e){console.error(e);alert("❌ Message send nahi hua. Dobara try karo.")}}
+async function sendCropGroupMessage(){const input=document.getElementById("kcGroupMessageInput"),message=(input?.value||"").trim();if(!message)return;input.value="";await sendCropGroupPayload({message_type:"text",message})}
+async function sendCropGroupImage(){const input=document.getElementById("kcGroupImageInput"),file=input?.files?.[0];if(!file)return;try{const form=new FormData();form.append("file",file);const res=await fetch(API+"/upload-chat-image",{method:"POST",body:form}),data=await res.json();if(!res.ok||!data.status)throw new Error(data.message||"Upload failed");await sendCropGroupPayload({message_type:"image",image:data.image_url})}catch(e){console.error(e);alert("❌ Photo send nahi hui.")}input.value=""}
+function sendCropGroupLocation(){if(!navigator.geolocation){alert("Location supported nahi hai.");return}navigator.geolocation.getCurrentPosition(async p=>{await sendCropGroupPayload({message_type:"location",message:"Shared location",latitude:p.coords.latitude,longitude:p.coords.longitude})},()=>alert("Location permission allow karo."))}
 
 function openKcPhoto(src){document.getElementById("kcPreviewImage").src=decodeURIComponent(src);document.getElementById("kcPhotoPreview").classList.add("active");}
 function closeKcPhoto(){document.getElementById("kcPhotoPreview").classList.remove("active");document.getElementById("kcPreviewImage").src="";}
@@ -8357,85 +8320,7 @@ async function loadWeather(lat, lon) {
     }
 }
 
-function renderAdvancedWeatherAnimation(type, code){
-
-    const box =
-        document.getElementById("weatherAnimation");
-
-    if(!box) return;
-
-    box.innerHTML = "";
-
-    if(type === "clear"){
-
-        box.innerHTML = `
-            <div class="sunRay"></div>
-            <div class="sunCore"></div>
-        `;
-
-        return;
-    }
-
-    if(type === "fog"){
-
-        box.innerHTML = `
-            <div class="fogBand fog1"></div>
-            <div class="fogBand fog2"></div>
-            <div class="fogBand fog3"></div>
-        `;
-
-        return;
-    }
-
-    if(type === "storm"){
-
-        box.innerHTML = `
-            <div class="cloud c1"></div>
-            <div class="cloud c2"></div>
-            <div class="lightning"></div>
-        `;
-
-        return;
-    }
-
-    if(type === "rain"){
-
-        let drops = "";
-
-        for(let i=0;i<28;i++){
-
-            const left =
-                5 + Math.random() * 90;
-
-            const delay =
-                Math.random() * 1.2;
-
-            const height =
-                11 + Math.random() * 9;
-
-            drops +=
-                '<span class="rainDrop" style="' +
-                'left:' + left + '%;' +
-                'top:-10px;' +
-                'height:' + height + 'px;' +
-                'animation-delay:-' + delay + 's;' +
-                '"></span>';
-        }
-
-        box.innerHTML = `
-            <div class="cloud c1"></div>
-            <div class="cloud c2"></div>
-            ${drops}
-        `;
-
-        return;
-    }
-
-    box.innerHTML = `
-        <div class="cloud c1"></div>
-        <div class="cloud c2"></div>
-    `;
-}
+function renderAdvancedWeatherAnimation(type, code){const box=document.getElementById("weatherAnimation");if(!box)return;const birds=`<div class="bird b1">🕊️</div><div class="bird b2">🕊️</div><div class="bird b3">🐦</div>`,ground=`<div class="ground"></div><div class="leaf l1">🌿</div><div class="leaf l2">🌱</div>`;box.innerHTML="";if(type==="clear"){box.innerHTML=`<div class="sunRay"></div><div class="sunCore"></div>${birds}${ground}`;return}if(type==="fog"){box.innerHTML=`<div class="fogBand fog1"></div><div class="fogBand fog2"></div><div class="fogBand fog3"></div>${ground}`;return}if(type==="storm"){box.innerHTML=`<div class="cloud c1"></div><div class="cloud c2"></div><div class="lightning"></div>${ground}`;return}if(type==="rain"){let drops="";for(let i=0;i<38;i++){const left=3+Math.random()*94,delay=Math.random()*1.2,height=11+Math.random()*10;drops+=`<span class="rainDrop" style="left:${left}%;top:-10px;height:${height}px;animation-delay:-${delay}s"></span>`}box.innerHTML=`<div class="cloud c1"></div><div class="cloud c2"></div>${drops}${ground}`;return}box.innerHTML=`<div class="cloud c1"></div><div class="cloud c2"></div>${birds}${ground}`}
 
 let weatherForecastData = null;
 

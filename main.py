@@ -5673,22 +5673,29 @@ def send_group_chat(data: dict):
         crop = str(data.get("crop") or "").strip()
         if not sender_id or not crop or crop not in KISAN_CONNECT_CROPS:
             return {"status": False, "message": "Valid crop group and user are required"}
+
         sender = firestore_db.collection("users").document(sender_id).get()
         if not sender.exists:
             return {"status": False, "message": "User not found"}
+
         sender_data = sender.to_dict() or {}
-        message_type = data.get("message_type", "text")
+        message_type = str(data.get("message_type") or "text")
         message = str(data.get("message") or "").strip()
         image = data.get("image")
         latitude = data.get("latitude")
         longitude = data.get("longitude")
+        reply_to_id = str(data.get("reply_to_id") or "").strip() or None
+        reply_to_text = str(data.get("reply_to_text") or "").strip() or None
+
         if not message and not image and message_type != "location":
             return {"status": False, "message": "Message is empty"}
+
         translations = {}
         if message_type == "text" and message:
             translations = translate_kisan_connect_message(
                 message, sender_data.get("language", "hi")
             )
+
         message_id = str(uuid.uuid4())
         created_at = datetime.now().isoformat()
         firestore_db.collection("messages").document(message_id).set({
@@ -5705,6 +5712,9 @@ def send_group_chat(data: dict):
             "image": image,
             "latitude": latitude,
             "longitude": longitude,
+            "reply_to_id": reply_to_id,
+            "reply_to_text": reply_to_text,
+            "reactions": {},
             "created_at": created_at
         })
         return {"status": True, "message": "Sent", "id": message_id}
@@ -5722,7 +5732,14 @@ def get_group_chat(crop: str, limit: int = 100):
             item = doc.to_dict() or {}
             if item.get("chat_type") != "crop_group" or str(item.get("group_crop", "")) != crop:
                 continue
+            reactions = item.get("reactions", {}) or {}
+            reaction_counts = {
+                str(emoji): len(list(users or []))
+                for emoji, users in reactions.items()
+                if users
+            }
             data.append({
+                "id": str(item.get("id", doc.id)),
                 "sender": str(item.get("sender_id", "")),
                 "sender_name": item.get("sender_name", "Farmer"),
                 "message": item.get("message", ""),
@@ -5733,6 +5750,9 @@ def get_group_chat(crop: str, limit: int = 100):
                 "image": item.get("image"),
                 "latitude": item.get("latitude"),
                 "longitude": item.get("longitude"),
+                "reply_to_id": item.get("reply_to_id"),
+                "reply_to_text": item.get("reply_to_text"),
+                "reactions": reaction_counts,
                 "created_at": item.get("created_at", "")
             })
         data.sort(key=lambda x: x.get("created_at", ""))
@@ -5742,6 +5762,41 @@ def get_group_chat(crop: str, limit: int = 100):
         return {"status": True, "crop": crop, "chat": data}
     except Exception as e:
         return {"status": False, "message": str(e), "chat": []}
+
+@app.post("/group-chat-reaction")
+def group_chat_reaction(data: dict):
+    try:
+        message_id = str(data.get("message_id") or "").strip()
+        user_id = str(data.get("user_id") or "").strip()
+        crop = str(data.get("crop") or "").strip()
+        emoji = str(data.get("emoji") or "").strip()
+        allowed = {"❤️", "👍", "😂", "😮", "😢", "🙏", "🌾"}
+        if not message_id or not user_id or crop not in KISAN_CONNECT_CROPS or emoji not in allowed:
+            return {"status": False, "message": "Invalid reaction"}
+        user_doc = firestore_db.collection("users").document(user_id).get()
+        msg_ref = firestore_db.collection("messages").document(message_id)
+        msg_doc = msg_ref.get()
+        if not user_doc.exists or not msg_doc.exists:
+            return {"status": False, "message": "User or message not found"}
+        msg = msg_doc.to_dict() or {}
+        if msg.get("chat_type") != "crop_group" or str(msg.get("group_crop", "")) != crop:
+            return {"status": False, "message": "Message does not belong to this group"}
+        reactions = msg.get("reactions", {}) or {}
+        # One reaction per farmer per message; tapping the same emoji toggles it off.
+        for key in list(reactions.keys()):
+            users = [str(x) for x in (reactions.get(key) or []) if str(x) != user_id]
+            if users:
+                reactions[key] = users
+            else:
+                reactions.pop(key, None)
+        old_users = [str(x) for x in (reactions.get(emoji) or [])]
+        if user_id not in old_users:
+            old_users.append(user_id)
+            reactions[emoji] = old_users
+        msg_ref.update({"reactions": reactions})
+        return {"status": True, "message": "Reaction updated"}
+    except Exception as e:
+        return {"status": False, "message": str(e)}
 
 
 @app.post("/send-chat")
