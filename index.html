@@ -6456,27 +6456,42 @@ async function loadCropGroups(){
 function renderCropGroups(groups){
     const box = document.getElementById("cropGroupList");
     if(!box) return;
-    if(!groups.length){ box.innerHTML='<div class="kcEmpty">🌱 No crop groups available.</div>'; return; }
-    box.innerHTML = groups.map(g => `
-      <div class="kcGroup" onclick="openCropGroup('${encodeURIComponent(g.crop)}',${Number(g.members||0)})">
-        <div class="kcAvatar">${cropGroupIcon(g.crop)}</div>
-        <div class="kcGroupMain"><div class="kcGroupTitle">${escapeHtml(g.crop)}</div><div class="kcGroupSub">👥 ${Number(g.members||0)} farmers • Tap to join chat</div></div>
+    const lang = localStorage.getItem("appLanguage") || "mr";
+    if(!groups.length){ box.innerHTML='<div class="kcEmpty">🌱 '+(lang==="mr"?"पीक ग्रुप उपलब्ध नाहीत.":lang==="hi"?"कोई फसल ग्रुप उपलब्ध नहीं है।":"No crop groups available.")+'</div>'; return; }
+    const groupWord = {mr:"शेतकरी ग्रुप",hi:"किसान ग्रुप",en:"Farmers group"}[lang] || "Farmers group";
+    const tapWord = {mr:"चॅटसाठी उघडा",hi:"चैट के लिए खोलें",en:"Tap to join chat"}[lang] || "Tap to join chat";
+    box.innerHTML = groups.map(g => {
+        const canonical = String(g.crop || "");
+        const displayCrop = cropLanguageName(canonical, lang);
+        return `
+      <div class="kcGroup" onclick="openCropGroup('${encodeURIComponent(canonical)}',${Number(g.members||0)})">
+        <div class="kcAvatar">${cropGroupIcon(canonical)}</div>
+        <div class="kcGroupMain"><div class="kcGroupTitle">${escapeHtml(displayCrop)}</div><div class="kcGroupSub">👥 ${Number(g.members||0)} ${groupWord} • ${tapWord}</div></div>
         <div class="kcArrow">›</div>
-      </div>`).join("");
+      </div>`;
+    }).join("");
 }
 
 function filterCropGroups(){
     const q=(document.getElementById("kcGroupSearch")?.value||"").trim().toLowerCase();
-    renderCropGroups(cropGroupsCache.filter(g => String(g.crop||"").toLowerCase().includes(q)));
+    if(!q){ renderCropGroups(cropGroupsCache); return; }
+    const lang = localStorage.getItem("appLanguage") || "mr";
+    renderCropGroups(cropGroupsCache.filter(g => {
+        const canonical=String(g.crop||"").toLowerCase();
+        const localized=cropLanguageName(String(g.crop||""),lang).toLowerCase();
+        return canonical.includes(q) || localized.includes(q);
+    }));
 }
 
 function openCropGroup(crop,members){
     selectedCropGroup = decodeURIComponent(crop);
     applyKisanConnectLanguage();
-    const lang = localStorage.getItem("appLanguage") || "hi";
+    const lang = localStorage.getItem("appLanguage") || "mr";
     const metaText = {hi:"किसान ग्रुप",mr:"शेतकरी ग्रुप",en:"Farmers group"}[lang] || "Farmers group";
-    document.getElementById("kcGroupChatTitle").textContent = selectedCropGroup;
-    document.getElementById("kcGroupChatMeta").textContent = `👥 ${members} • ${metaText}`;
+    const title = document.getElementById("kcGroupChatTitle");
+    const meta = document.getElementById("kcGroupChatMeta");
+    if(title) title.textContent = cropLanguageName(selectedCropGroup, lang);
+    if(meta) meta.textContent = `👥 ${members} • ${metaText}`;
     openPage("cropGroupChatPage");
 }
 
@@ -10903,6 +10918,95 @@ const translations = {
 
 };
 
+function cropLanguageName(crop, lang){
+    const names = {
+        "Rice (Paddy)": {mr:"भात", hi:"धान", en:"Rice (Paddy)"},
+        "Wheat": {mr:"गहू", hi:"गेहूं", en:"Wheat"},
+        "Soybean": {mr:"सोयाबीन", hi:"सोयाबीन", en:"Soybean"},
+        "Cotton": {mr:"कापूस", hi:"कपास", en:"Cotton"},
+        "Maize": {mr:"मका", hi:"मक्का", en:"Maize"},
+        "Sugarcane": {mr:"ऊस", hi:"गन्ना", en:"Sugarcane"},
+        "Groundnut": {mr:"भुईमूग", hi:"मूंगफली", en:"Groundnut"},
+        "Onion": {mr:"कांदा", hi:"प्याज", en:"Onion"},
+        "Potato": {mr:"बटाटा", hi:"आलू", en:"Potato"},
+        "Tomato": {mr:"टोमॅटो", hi:"टमाटर", en:"Tomato"},
+        "Chilli": {mr:"मिरची", hi:"मिर्च", en:"Chilli"},
+        "Tur (Pigeon Pea)": {mr:"तूर", hi:"अरहर (तूर)", en:"Tur (Pigeon Pea)"},
+        "Gram (Chana)": {mr:"हरभरा", hi:"चना", en:"Gram (Chana)"},
+        "Moong": {mr:"मूग", hi:"मूंग", en:"Moong"},
+        "Urad": {mr:"उडीद", hi:"उड़द", en:"Urad"},
+        "Jowar": {mr:"ज्वारी", hi:"ज्वार", en:"Jowar"},
+        "Bajra": {mr:"बाजरी", hi:"बाजरा", en:"Bajra"},
+        "Ragi": {mr:"नाचणी", hi:"रागी", en:"Ragi"},
+        "Sunflower": {mr:"सूर्यफूल", hi:"सूरजमुखी", en:"Sunflower"},
+        "Mustard": {mr:"मोहरी", hi:"सरसों", en:"Mustard"},
+        "Sesame (Til)": {mr:"तीळ", hi:"तिल", en:"Sesame (Til)"},
+        "Coriander": {mr:"कोथिंबीर", hi:"धनिया", en:"Coriander"},
+        "Cumin (Jeera)": {mr:"जिरे", hi:"जीरा", en:"Cumin (Jeera)"},
+        "Garlic": {mr:"लसूण", hi:"लहसुन", en:"Garlic"},
+        "Ginger": {mr:"आले", hi:"अदरक", en:"Ginger"},
+        "Banana": {mr:"केळी", hi:"केला", en:"Banana"},
+        "Mango": {mr:"आंबा", hi:"आम", en:"Mango"},
+        "Grapes": {mr:"द्राक्षे", hi:"अंगूर", en:"Grapes"},
+        "Orange": {mr:"संत्री", hi:"संतरा", en:"Orange"},
+        "Pomegranate": {mr:"डाळिंब", hi:"अनार", en:"Pomegranate"},
+        "Papaya": {mr:"पपई", hi:"पपीता", en:"Papaya"},
+        "Other": {mr:"इतर", hi:"अन्य", en:"Other"}
+    };
+    return (names[crop] && names[crop][lang]) || crop;
+}
+
+function applyCropLanguage(){
+    const lang = localStorage.getItem("appLanguage") || "mr";
+    ["crop","homeCropSelect","editProfileCrop","guideCropSelect"].forEach(id => {
+        const select = document.getElementById(id);
+        if(!select) return;
+        Array.from(select.options).forEach(option => {
+            const canonical = option.dataset.cropCanonical || option.value || option.textContent.trim();
+            if(!canonical) return;
+            option.dataset.cropCanonical = canonical;
+            if(canonical === "Select Crop"){
+                option.textContent = lang === "mr" ? "पीक निवडा" : lang === "hi" ? "फसल चुनें" : "Select Crop";
+                return;
+            }
+            option.textContent = cropLanguageName(canonical, lang);
+        });
+    });
+}
+
+function applyFeatureLanguage(){
+    const lang = localStorage.getItem("appLanguage") || "mr";
+    const T = {
+        mr:{
+            loginTitle:"शेतकरी स्वागत", loginSub:"पुढे जाण्यासाठी लॉगिन करा", login:"लॉगिन", register:"नोंदणी", create:"खाते तयार करा", join:"Shrimant Shetkari मध्ये सामील व्हा", fullName:"पूर्ण नाव", mobile:"मोबाईल नंबर", village:"गाव", password:"पासवर्ड", already:"आधीच खाते आहे?", noAccount:"खाते नाही?",
+            weather:"🌦 हवामान", location:"📍 तुमचे स्थान", getLocation:"📍 माझे स्थान मिळवा", humidity:"आर्द्रता", rain:"पाऊस", wind:"वारा", forecast:"📅 ७ दिवसांचा अंदाज", back:"मुख्यपृष्ठावर जा", loading:"लोड होत आहे...",
+            premiumSub:"फक्त ₹5 मध्ये सर्व Premium शेती सुविधा", subscribe:"₹5 मध्ये सदस्यता घ्या", searchTitle:"🔍 स्मार्ट शेतकरी शोध", alertTitle:"🔔 शेतकरी सूचना", notificationTitle:"🔔 शेतकरी सूचना", mandiTitle:"💰 थेट बाजार भाव", aiTitle:"🤖 AI शेतकरी सहाय्यक", ask:"🤖 AI ला विचारा", adviceTitle:"🤖 AI शेती सल्ला", guideTitle:"🌱 स्मार्ट पीक मार्गदर्शक", diseaseTitle:"📷 AI रोग तपासणी", camera:"📷 कॅमेरा उघडा", gallery:"🖼 गॅलरीतून निवडा", schemesTitle:"🏛 सरकारी योजना", findSchemes:"🔍 योजना शोधा", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग अहवाल", download:"📄 PDF अहवाल डाउनलोड करा", newsTitle:"📰 शेती बातम्या", all:"📰 सर्व", weatherNews:"🌧 हवामान", cropNews:"🌱 पीक", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 शेतकरी प्रोफाइल", save:"💾 बदल जतन करा", logout:"🚪 लॉगआउट", chatTitle:"💬 चॅट", farmersBack:"👥 शेतकऱ्यांकडे परत जा"
+        },
+        hi:{
+            loginTitle:"किसान स्वागत", loginSub:"जारी रखने के लिए लॉगिन करें", login:"लॉगिन", register:"रजिस्टर", create:"खाता बनाएं", join:"Shrimant Shetkari से जुड़ें", fullName:"पूरा नाम", mobile:"मोबाइल नंबर", village:"गांव", password:"पासवर्ड", already:"पहले से खाता है?", noAccount:"खाता नहीं है?",
+            weather:"🌦 मौसम", location:"📍 आपका स्थान", getLocation:"📍 मेरा स्थान प्राप्त करें", humidity:"नमी", rain:"बारिश", wind:"हवा", forecast:"📅 7 दिनों का पूर्वानुमान", back:"होम पर जाएं", loading:"लोड हो रहा है...",
+            premiumSub:"सिर्फ ₹5 में सभी Premium कृषि सुविधाएं", subscribe:"₹5 में सदस्यता लें", searchTitle:"🔍 स्मार्ट किसान खोज", alertTitle:"🔔 किसान सूचनाएं", notificationTitle:"🔔 किसान सूचनाएं", mandiTitle:"💰 लाइव मंडी भाव", aiTitle:"🤖 AI किसान सहायक", ask:"🤖 AI से पूछें", adviceTitle:"🤖 AI कृषि सलाह", guideTitle:"🌱 स्मार्ट फसल गाइड", diseaseTitle:"📷 AI रोग जांच", camera:"📷 कैमरा खोलें", gallery:"🖼 गैलरी से चुनें", schemesTitle:"🏛 सरकारी योजनाएं", findSchemes:"🔍 योजनाएं खोजें", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग रिपोर्ट", download:"📄 PDF रिपोर्ट डाउनलोड करें", newsTitle:"📰 कृषि समाचार", all:"📰 सभी", weatherNews:"🌧 मौसम", cropNews:"🌱 फसल", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 किसान प्रोफाइल", save:"💾 बदलाव सेव करें", logout:"🚪 लॉगआउट", chatTitle:"💬 चैट", farmersBack:"👥 किसानों के पास वापस जाएं"
+        },
+        en:{
+            loginTitle:"Welcome Farmer", loginSub:"Login to Continue", login:"Login", register:"Register", create:"Create Account", join:"Join Shrimant Shetkari", fullName:"Full Name", mobile:"Mobile Number", village:"Village", password:"Password", already:"Already have an account?", noAccount:"Don't have an account?",
+            weather:"🌦 Weather", location:"📍 Your Location", getLocation:"📍 Get My Location", humidity:"Humidity", rain:"Rain", wind:"Wind", forecast:"📅 7-Day Forecast", back:"Back Home", loading:"Loading...",
+            premiumSub:"All Premium Farming Features for just ₹5", subscribe:"Subscribe for ₹5", searchTitle:"🔍 Smart Farmer Search", alertTitle:"🔔 Farmer Alerts", notificationTitle:"🔔 Farmer Notifications", mandiTitle:"💰 Live Mandi Rates", aiTitle:"🤖 AI Kisan Assistant", ask:"🤖 Ask AI", adviceTitle:"🤖 AI Farming Advice", guideTitle:"🌱 Smart Crop Guide", diseaseTitle:"📷 AI Disease Scan", camera:"📷 Open Camera", gallery:"🖼 Choose From Gallery", schemesTitle:"🏛 Government Schemes", findSchemes:"🔍 Find Schemes", historyTitle:"📋 Disease History", reportTitle:"🤖 AI Disease Report", download:"📄 Download PDF Report", newsTitle:"📰 Agriculture News", all:"📰 All", weatherNews:"🌧 Weather", cropNews:"🌱 Crop", market:"💰 Market", diseaseNews:"🐛 Disease", gov:"🏛 Government", profileTitle:"👤 Farmer Profile", save:"💾 Save Changes", logout:"🚪 Logout", chatTitle:"💬 Chat", farmersBack:"👥 Back to Farmers"
+        }
+    }[lang] || null;
+    if(!T) return;
+    const set=(sel,val)=>{const e=document.querySelector(sel); if(e) e.textContent=val;};
+    const ph=(sel,val)=>{const e=document.querySelector(sel); if(e) e.placeholder=val;};
+    set('#loginSection h2',T.loginTitle); set('#loginSection .card>p',T.loginSub);
+    ph('#loginMobile',T.mobile); ph('#loginPassword',T.password); set('#loginSection .card>button',T.login);
+    set('#loginSection .bottomText',T.noAccount+' '); set('#registerSection h2',T.create); set('#registerSection .card>p',T.join);
+    ph('#regName',T.fullName); ph('#regMobile',T.mobile); ph('#regVillage',T.village); ph('#regPassword',T.password);
+    set('#registerSection label', '🌾 '+(lang==='mr'?'मुख्य पीक':lang==='hi'?'मुख्य फसल':'Main Crop')); set('#registerSection .card>button',T.register);
+    set('#weatherPage h1',T.weather); set('#weatherPage .weatherCard h2',T.location); set('#getLocationButton',T.getLocation); set('#humidityLabel',T.humidity); set('#rainLabel',T.rain); set('#windLabel',T.wind); set('#forecastLabel',T.forecast); set('#weatherPage .featurePage button',T.back);
+    set('#premiumPage .premiumHeader p',T.premiumSub); set('#basic_monthly_btn',T.subscribe); set('#searchPage h1',T.searchTitle); set('#alertPage h1',T.alertTitle); set('#notificationPage h1',T.notificationTitle); set('#mandiPage h1',T.mandiTitle); set('#aiPage h1',T.aiTitle); set('#aiPage button',T.ask); set('#advicePage h1',T.adviceTitle); set('#cropGuidePage h1',T.guideTitle); set('#diseasePage h1',T.diseaseTitle); set('#diseasePage button',T.camera); set('#diseasePage label',T.gallery); set('#schemePage h1',T.schemesTitle); set('#schemePage button',T.findSchemes); set('#historyPage h1',T.historyTitle); set('#reportPage h1',T.reportTitle); set('#reportPage button',T.download); set('#newsPage h1',T.newsTitle); set('#newsPage .newsFilter button:nth-child(1)',T.all); set('#newsPage .newsFilter button:nth-child(2)',T.weatherNews); set('#newsPage .newsFilter button:nth-child(3)',T.cropNews); set('#newsPage .newsFilter button:nth-child(4)',T.market); set('#newsPage .newsFilter button:nth-child(5)',T.diseaseNews); set('#newsPage .newsFilter button:nth-child(6)',T.gov); set('#profilePage h1',T.profileTitle); set('#saveProfileButton',T.save); set('#profilePage .logoutProfileBtn',T.logout); set('#chatPage h1',T.chatTitle); set('#chatPage button[onclick*="kisanPage"]',T.farmersBack);
+    applyCropLanguage();
+    applyKisanConnectLanguage();
+}
+
 function applyLanguage(){
 
     // Default language = Marathi
@@ -10999,6 +11103,8 @@ function applyLanguage(){
     updateSatbaraLanguage(lang);
 
     document.getElementById("homeLanguageSelect").value = lang;
+
+    applyFeatureLanguage();
 
 }
 
