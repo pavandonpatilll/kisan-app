@@ -357,6 +357,25 @@ margin-bottom:10px;
 
 }
 
+
+/* ==========================
+   HOME LIVE MANDI TICKER
+========================== */
+.homeMandiTicker{margin:0 20px 8px;background:linear-gradient(135deg,#0b6b2f,#159447);border-radius:18px;padding:12px 0;overflow:hidden;box-shadow:0 7px 20px rgba(0,0,0,.14);cursor:pointer;color:#fff;position:relative;}
+.homeMandiTicker::before{content:"LIVE";position:absolute;z-index:3;left:10px;top:9px;padding:4px 7px;border-radius:999px;background:#ff1744;color:#fff;font-size:10px;font-weight:900;letter-spacing:.5px;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.homeMandiTickerHeader{display:flex;align-items:center;justify-content:space-between;padding:0 14px 8px 58px;font-size:13px;font-weight:800;}
+.homeMandiTickerHeader span:last-child{font-size:11px;opacity:.82;}
+.homeMandiViewport{overflow:hidden;width:100%;}
+.homeMandiTrack{display:flex;width:max-content;animation:homeMandiSlide 18s linear infinite;}
+.homeMandiTrack:hover{animation-play-state:paused;}
+.homeMandiItem{min-width:185px;margin-left:10px;padding:10px 13px;border-radius:13px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(5px);}
+.homeMandiItem strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.homeMandiItem .homeMandiPrice{margin-top:4px;font-size:19px;font-weight:900;}
+.homeMandiItem small{display:block;margin-top:3px;font-size:10px;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.homeMandiEmpty{padding:4px 16px 2px 58px;font-size:12px;opacity:.88;}
+@keyframes homeMandiSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(max-width:600px){.homeMandiTicker{margin:0 14px 6px}.homeMandiItem{min-width:165px}.homeMandiTrack{animation-duration:16s}}
+
 .grid{
 
 display:grid;
@@ -4654,6 +4673,17 @@ Detecting...
 
 </div>
 
+
+<div id="homeMandiTicker" class="homeMandiTicker" onclick="openFeature('mandi','mandiPage')" style="display:none;">
+    <div class="homeMandiTickerHeader">
+        <span>💰 Live Mandi Bhav</span>
+        <span>Tap to see all rates →</span>
+    </div>
+    <div class="homeMandiViewport">
+        <div id="homeMandiTrack" class="homeMandiTrack"></div>
+    </div>
+</div>
+
 <div class="grid">
 
     <div class="item"
@@ -6060,6 +6090,7 @@ document.getElementById("homeSection").style.display = "block";
 
 updateUserUI(data.user);
 applyLanguage();
+loadHomeMandiTicker();
 loadPremiumStatus();
 loadDiseaseSummary();
 
@@ -6234,6 +6265,7 @@ function checkSavedLogin(){
 
         updateUserUI(user);
         applyLanguage();
+        loadHomeMandiTicker();
 
         // Keep user ID also available
 
@@ -7809,6 +7841,8 @@ function goHome(fromHistory = false){
 
     document.getElementById("homeSection").style.display = "block";
 
+    loadHomeMandiTicker();
+
     // User Data
     let user = JSON.parse(localStorage.getItem("user"));
 
@@ -8631,6 +8665,71 @@ async function loadLocationName(lat, lon){
 
     }
 
+}
+
+
+// ==========================
+// HOME LIVE MANDI TICKER
+// ==========================
+
+async function loadHomeMandiTicker(){
+
+    const box = document.getElementById("homeMandiTicker");
+    const track = document.getElementById("homeMandiTrack");
+
+    if(!box || !track) return;
+
+    try{
+
+        const response = await fetch(
+            "https://kisan-app-1.onrender.com/admin/mandi",
+            {
+                method:"GET",
+                cache:"no-store"
+            }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok || !data.status || !Array.isArray(data.mandi)){
+            box.style.display = "none";
+            return;
+        }
+
+        const rates = data.mandi
+            .filter(item => item && item.crop && Number.isFinite(Number(item.avg_price)))
+            .slice(0,3);
+
+        if(!rates.length){
+            box.style.display = "none";
+            return;
+        }
+
+        const items = rates.map(function(item){
+            const crop = escapeHtml(item.crop);
+            const location = escapeHtml(item.location || "Maharashtra");
+            const price = Number(item.avg_price).toLocaleString("en-IN");
+            const date = escapeHtml(item.date || "Today");
+
+            return `
+                <div class="homeMandiItem">
+                    <strong>🌾 ${crop}</strong>
+                    <div class="homeMandiPrice">₹ ${price} <small style="display:inline;">/ क्विंटल</small></div>
+                    <small>📍 ${location} • ${date}</small>
+                </div>
+            `;
+        }).join("");
+
+        // Duplicate the same set so the marquee loops smoothly.
+        track.innerHTML = items + items;
+        box.style.display = "block";
+
+    }catch(error){
+
+        console.error("HOME MANDI TICKER ERROR:", error);
+        box.style.display = "none";
+
+    }
 }
 
 async function loadMandi(){
