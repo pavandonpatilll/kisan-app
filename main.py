@@ -5629,6 +5629,43 @@ def get_crop_groups():
     except Exception as e:
         return {"status": False, "message": str(e), "groups": []}
 
+def translate_kisan_connect_message(message: str, source_language: str = "hi"):
+    """Create simple farmer-friendly translations for Kisan Connect.
+    If AI translation fails, return an empty dict so the original message is preserved.
+    """
+    message = str(message or "").strip()
+    if not message:
+        return {}
+    language_map = {"mr": "Marathi", "hi": "Hindi", "en": "English"}
+    source_name = language_map.get(str(source_language).lower(), "Hindi")
+    try:
+        prompt = f"""Translate this farmer chat message into Marathi, Hindi and English.
+Source language: {source_name}
+Message: {message}
+Return ONLY valid JSON with exactly these keys: mr, hi, en.
+Keep the meaning natural, short and farmer-friendly. Do not add explanations."""
+        response = client.models.generate_content(
+            model=GEMINI_MODELS[0],
+            contents=prompt
+        )
+        text = str(response.text or "").strip()
+        if text.startswith("```json"):
+            text = text[7:]
+        if text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        result = json.loads(text.strip())
+        return {
+            "mr": str(result.get("mr") or message).strip(),
+            "hi": str(result.get("hi") or message).strip(),
+            "en": str(result.get("en") or message).strip()
+        }
+    except Exception as e:
+        print("KISAN CONNECT TRANSLATION ERROR:", e)
+        return {}
+
+
 @app.post("/send-group-chat")
 def send_group_chat(data: dict):
     try:
@@ -5641,12 +5678,17 @@ def send_group_chat(data: dict):
             return {"status": False, "message": "User not found"}
         sender_data = sender.to_dict() or {}
         message_type = data.get("message_type", "text")
-        message = str(data.get("message") or "")
+        message = str(data.get("message") or "").strip()
         image = data.get("image")
         latitude = data.get("latitude")
         longitude = data.get("longitude")
         if not message and not image and message_type != "location":
             return {"status": False, "message": "Message is empty"}
+        translations = {}
+        if message_type == "text" and message:
+            translations = translate_kisan_connect_message(
+                message, sender_data.get("language", "hi")
+            )
         message_id = str(uuid.uuid4())
         created_at = datetime.now().isoformat()
         firestore_db.collection("messages").document(message_id).set({
@@ -5656,6 +5698,8 @@ def send_group_chat(data: dict):
             "sender_id": sender_id,
             "sender_name": sender_data.get("name", "Farmer"),
             "message": message,
+            "translations": translations,
+            "source_language": sender_data.get("language", "hi"),
             "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "message_type": message_type,
             "image": image,
@@ -5682,6 +5726,8 @@ def get_group_chat(crop: str, limit: int = 100):
                 "sender": str(item.get("sender_id", "")),
                 "sender_name": item.get("sender_name", "Farmer"),
                 "message": item.get("message", ""),
+                "translations": item.get("translations", {}) or {},
+                "source_language": item.get("source_language", "hi"),
                 "time": item.get("time", ""),
                 "message_type": item.get("message_type", "text"),
                 "image": item.get("image"),

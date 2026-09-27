@@ -6365,6 +6365,7 @@ function openPage(page, fromHistory = false){
 
     else if(page=="kisanPage"){
 
+        applyKisanConnectLanguage();
         loadCropGroups();
 
     }
@@ -6421,6 +6422,21 @@ function cropGroupIcon(crop){
     return map[crop] || "🌱";
 }
 
+function applyKisanConnectLanguage(){
+    const lang = localStorage.getItem("appLanguage") || "hi";
+    const t = {
+        hi:{title:"👥 किसान कनेक्ट",subtitle:"अपने फसल के किसानों के ग्रुप में जुड़ें और चैट करें",search:"🔎 फसल ग्रुप खोजें",group:"किसान ग्रुप",send:"मैसेज लिखें...",meta:"किसान ग्रुप"},
+        mr:{title:"👥 किसान कनेक्ट",subtitle:"तुमच्या पिकाच्या शेतकरी ग्रुपमध्ये सामील व्हा आणि चॅट करा",search:"🔎 पीक ग्रुप शोधा",group:"शेतकरी ग्रुप",send:"मेसेज लिहा...",meta:"शेतकरी ग्रुप"},
+        en:{title:"👥 Kisan Connect",subtitle:"Join your crop farmer group and chat with farmers",search:"🔎 Search crop group...",group:"Farmers group",send:"Type a message...",meta:"Farmers group"}
+    }[lang] || null;
+    if(!t) return;
+    const title=document.getElementById("kcPageTitle"); if(title) title.textContent=t.title;
+    const sub=document.getElementById("kcPageSubtitle"); if(sub) sub.textContent=t.subtitle;
+    const search=document.getElementById("kcGroupSearch"); if(search) search.placeholder=t.search;
+    const input=document.getElementById("kcGroupMessageInput"); if(input) input.placeholder=t.send;
+    const meta=document.getElementById("kcGroupChatMeta"); if(meta && !selectedCropGroup) meta.textContent=t.meta;
+}
+
 async function loadCropGroups(){
     const box = document.getElementById("cropGroupList");
     if(!box) return;
@@ -6456,8 +6472,11 @@ function filterCropGroups(){
 
 function openCropGroup(crop,members){
     selectedCropGroup = decodeURIComponent(crop);
+    applyKisanConnectLanguage();
+    const lang = localStorage.getItem("appLanguage") || "hi";
+    const metaText = {hi:"किसान ग्रुप",mr:"शेतकरी ग्रुप",en:"Farmers group"}[lang] || "Farmers group";
     document.getElementById("kcGroupChatTitle").textContent = selectedCropGroup;
-    document.getElementById("kcGroupChatMeta").textContent = `👥 ${members} farmers • Crop community`;
+    document.getElementById("kcGroupChatMeta").textContent = `👥 ${members} • ${metaText}`;
     openPage("cropGroupChatPage");
 }
 
@@ -6479,7 +6498,11 @@ async function loadCropGroupChat(){
                 body=`<img class="kcImage" src="${src}" alt="Shared photo" onclick="openKcPhoto('${encodeURIComponent(src)}')">`;
             }else if(c.message_type==="location"&&c.latitude!=null&&c.longitude!=null){
                 body=`<a href="https://www.google.com/maps?q=${encodeURIComponent(c.latitude)},${encodeURIComponent(c.longitude)}" target="_blank" rel="noopener">📍 Shared location</a>`;
-            }else{body=`<div class="kcText">${escapeHtml(c.message||"")}</div>`;}
+            }else{
+                const lang = localStorage.getItem("appLanguage") || "hi";
+                const translated = c.translations && c.translations[lang];
+                body=`<div class="kcText">${escapeHtml(translated || c.message || "")}</div>`;
+            }
             return `<div class="kcMsg ${mine?'mine':''}"><div class="kcBubble">${mine?'':`<div class="kcSender">${escapeHtml(c.sender_name||'Farmer')}</div>`}${body}<div class="kcTime">${escapeHtml(c.time||"")}</div></div></div>`;
         }).join("");
         box.scrollTop=box.scrollHeight;
@@ -7457,6 +7480,14 @@ async function loadNotificationPage(){
 
     try{
 
+        // Live weather is loaded independently of AI notification generation.
+        const fastWeather = await getBrowserLiveWeather();
+        if(fastWeather){
+            const liveLang = localStorage.getItem("appLanguage") || "hi";
+            const weatherTitle = {hi:"🌦 आज का लाइव मौसम",mr:"🌦 आजचे लाइव्ह हवामान",en:"🌦 Live Weather"}[liveLang] || "🌦 Live Weather";
+            box.innerHTML = `<div class="aiCard"><div class="aiTitle">${weatherTitle}</div><div class="aiValue">🌡 ${fastWeather.temperature ?? "--"} °C<br>💧 ${fastWeather.humidity ?? "--"} %<br>💨 ${fastWeather.wind ?? "--"} km/h<br>🌧 ${fastWeather.rain_probability ?? 0} %<br><br>${fastWeather.weather || "--"}</div></div>`;
+        }
+
         // ==========================
         // ADMIN NOTIFICATIONS
         // ==========================
@@ -7503,7 +7534,7 @@ async function loadNotificationPage(){
             rainData
         );
 
-        let html = "";
+        let html = box.innerHTML || "";
 
         // ==========================
         // ADMIN NOTIFICATIONS
@@ -9997,6 +10028,32 @@ async function changeHomeCrop() {
 
 }
 
+async function getBrowserLiveWeather(){
+    return new Promise(function(resolve){
+        if(!navigator.geolocation){ resolve(null); return; }
+        navigator.geolocation.getCurrentPosition(async function(position){
+            const lat=position.coords.latitude;
+            const lon=position.coords.longitude;
+            try{ await saveUserLocation(lat,lon); }catch(e){}
+            try{
+                const res=await fetch(`${API}/weather/${lat}/${lon}`,{cache:"no-store"});
+                const data=await res.json();
+                if(!res.ok || !data.status) throw new Error(data.message||"Weather unavailable");
+                resolve(data);
+            }catch(e){
+                console.error("BROWSER ALERT WEATHER ERROR:",e);
+                resolve(null);
+            }
+        }, function(){ resolve(null); }, {enableHighAccuracy:false,timeout:7000,maximumAge:300000});
+    });
+}
+
+function renderFastAlertWeather(data){
+    const box=document.getElementById("weatherAlert");
+    if(!box || !data) return;
+    box.innerHTML=`🌡 Temperature: ${data.temperature ?? "--"} °C<br>💧 Humidity: ${data.humidity ?? "--"} %<br>💨 Wind: ${data.wind ?? "--"} km/h<br>🌧 Rain Probability: ${data.rain_probability ?? 0} %<br><br>🌦 ${data.weather || "Live weather"}`;
+}
+
 async function loadAlerts(){
 
     let user = JSON.parse(localStorage.getItem("user"));
@@ -10033,6 +10090,9 @@ async function loadAlerts(){
     "🔄 Loading today's tasks...";
 
     try{
+
+        // Show live weather independently so slow AI/Gemini never hides weather.
+        getBrowserLiveWeather().then(renderFastAlertWeather);
 
         let response = await fetch(
 
