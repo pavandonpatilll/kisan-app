@@ -18,7 +18,6 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from PIL import Image
 import io
-import time
 
 load_dotenv()
 
@@ -5754,67 +5753,6 @@ def get_group_chat(crop: str, limit: int = 100):
         return {"status": True, "crop": crop, "chat": data}
     except Exception as e:
         return {"status": False, "message": str(e), "chat": []}
-
-
-# ==========================
-# KISAN CONNECT TYPING INDICATOR
-# ==========================
-
-@app.post("/group-chat-typing")
-def group_chat_typing(data: dict):
-    try:
-        user_id = str(data.get("user_id") or "").strip()
-        crop = str(data.get("crop") or "").strip()
-        typing = bool(data.get("typing"))
-
-        if not user_id or crop not in KISAN_CONNECT_CROPS:
-            return {"status": False, "message": "Invalid typing data"}
-
-        user_doc = firestore_db.collection("users").document(user_id).get()
-        if not user_doc.exists:
-            return {"status": False, "message": "User not found"}
-
-        ref = firestore_db.collection("typing_status").document(f"{crop}_{user_id}")
-        if typing:
-            user = user_doc.to_dict() or {}
-            ref.set({
-                "user_id": user_id,
-                "crop": crop,
-                "name": user.get("name") or "Farmer",
-                "updated_at": time.time()
-            })
-        else:
-            ref.delete()
-
-        return {"status": True}
-    except Exception as e:
-        return {"status": False, "message": str(e)}
-
-
-@app.get("/group-chat-typing/{crop}/{user_id}")
-def get_group_chat_typing(crop: str, user_id: str):
-    try:
-        crop = str(crop).strip()
-        user_id = str(user_id).strip()
-        if crop not in KISAN_CONNECT_CROPS or not user_id:
-            return {"status": False, "typing": []}
-
-        now = time.time()
-        names = []
-        for doc in firestore_db.collection("typing_status").stream():
-            item = doc.to_dict() or {}
-            if str(item.get("crop", "")) != crop:
-                continue
-            if str(item.get("user_id", "")) == user_id:
-                continue
-            updated_at = float(item.get("updated_at") or 0)
-            if now - updated_at <= 4.0:
-                names.append(str(item.get("name") or "Farmer"))
-
-        return {"status": True, "typing": names[:5]}
-    except Exception as e:
-        return {"status": False, "typing": [], "message": str(e)}
-
 
 @app.post("/group-chat-reaction")
 def group_chat_reaction(data: dict):
