@@ -6464,241 +6464,95 @@ function showRegister(){
 // Register
 // ----------------------------
 
-async function requestRegistrationLocation(){
-
-    if(!navigator.geolocation){
-        alert("Location is not supported on this device");
-        return null;
-    }
-
-    return new Promise(function(resolve){
-
-        navigator.geolocation.getCurrentPosition(
-
-            async function(position){
-
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-
-                let weather = null;
-
-                try{
-                    const response = await fetch(
-                        `${API}/weather/${lat}/${lon}`,
-                        {
-                            method:"GET",
-                            cache:"no-store"
-                        }
-                    );
-
-                    const data = await response.json();
-
-                    if(response.ok && data.status){
-                        weather = data;
-                    }
-                }
-                catch(error){
-                    console.log("Registration weather load skipped:", error);
-                }
-
-                resolve({lat:lat, lon:lon, weather:weather});
-
-            },
-
-            function(error){
-
-                const language = localStorage.getItem("appLanguage") || "hi";
-
-                const messages = {
-                    en:"Location permission is required to complete registration. Please allow location and try again.",
-                    hi:"रजिस्ट्रेशन पूरा करने के लिए लोकेशन की अनुमति जरूरी है। लोकेशन Allow करके दोबारा कोशिश करें।",
-                    mr:"नोंदणी पूर्ण करण्यासाठी लोकेशनची परवानगी आवश्यक आहे. लोकेशन Allow करून पुन्हा प्रयत्न करा."
-                };
-
-                alert(messages[language] || messages.hi);
-                resolve(null);
-
-            },
-
-            {
-                enableHighAccuracy:true,
-                timeout:15000,
-                maximumAge:0
-            }
-
-        );
-
-    });
-}
-
-// ----------------------------
-// Register
-// ----------------------------
-
 async function registerUser(){
 
-    let name=document.getElementById("regName").value.trim();
-    let mobile=document.getElementById("regMobile").value.trim();
-    let village=document.getElementById("regVillage").value.trim();
-    let crop=document.getElementById("crop").value;
-    let password=document.getElementById("regPassword").value.trim();
+let name=document.getElementById("regName").value.trim();
 
-    if(name==""){
-        alert("Enter Full Name");
-        return;
-    }
+let mobile=document.getElementById("regMobile").value.trim();
 
-    if(mobile.length!=10){
-        alert("Enter Valid Mobile Number");
-        return;
-    }
+let village=document.getElementById("regVillage").value.trim();
 
-    if(village==""){
-        alert("Enter Village");
-        return;
-    }
+let crop = document.getElementById("crop").value;
 
-    if(crop==""){
-        alert("Select Main Crop");
-        return;
-    }
+let password=document.getElementById("regPassword").value.trim();
 
-    if(password.length<6){
-        alert("Password minimum 6 characters");
-        return;
-    }
+if(name==""){
+alert("Enter Full Name");
+return;
+}
 
-    const registerButton =
-        document.querySelector('#registerSection button[onclick*="registerUser"]');
+if(mobile.length!=10){
+alert("Enter Valid Mobile Number");
+return;
+}
 
-    if(registerButton){
-        registerButton.disabled = true;
-        registerButton.dataset.originalText = registerButton.innerHTML;
-        registerButton.innerHTML = "📍 Location Allow करें...";
-    }
+if(village==""){
+alert("Enter Village");
+return;
+}
 
-    // First registration step: request live location.
-    // This opens the native/browser location permission popup.
-    const locationData = await requestRegistrationLocation();
+if(crop==""){
+alert("Select Main Crop");
+return;
+}
 
-    if(!locationData){
-        if(registerButton){
-            registerButton.disabled = false;
-            registerButton.innerHTML = registerButton.dataset.originalText || "Register";
-        }
-        return;
-    }
+if(password.length<6){
+alert("Password minimum 6 characters");
+return;
+}
 
-    if(registerButton){
-        registerButton.innerHTML = "🌦️ Live Weather + Registration...";
-    }
+let response = await fetch(
+"https://kisan-app-1.onrender.com/register",
+{
+method:"POST",
 
-    try{
+headers:{
+"Content-Type":"application/json"
+},
 
-        let response = await fetch(
-            "https://kisan-app-1.onrender.com/register",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify({
-                    name:name,
-                    mobile:mobile,
-                    village:village,
-                    crop:crop,
-                    password:password,
-                    language:localStorage.getItem("appLanguage") || "hi"
-                })
-            }
-        );
+body: JSON.stringify({
+    name: name,
+    mobile: mobile,
+    village: village,
+    crop: crop,
+    password: password,
 
-        let data = await response.json();
+    language: localStorage.getItem("appLanguage") || "hi"
+})
 
-        if(data.status){
+});
 
-            document.body.classList.remove("registration-active");
+let data = await response.json();
 
-            localStorage.setItem(
-                "user",
-                JSON.stringify(data.user)
-            );
+if(data.status){
 
-            localStorage.setItem("userId", data.user.id);
+document.body.classList.remove("registration-active");
 
-            // Save the just-detected live location immediately after
-            // the Firestore user is created.
-            await saveUserLocation(
-                locationData.lat,
-                locationData.lon
-            );
+localStorage.setItem(
+    "user",
+    JSON.stringify(data.user)
+);
 
-            // Start live weather immediately after registration.
-            // The existing weather UI/API is reused; nothing else is changed.
-            sessionStorage.setItem(
-                "ss_registration_weather_location",
-                JSON.stringify({
-                    lat:locationData.lat,
-                    lon:locationData.lon,
-                    savedAt:Date.now()
-                })
-            );
+localStorage.setItem("userId", data.user.id);
 
-            if(locationData.weather){
-                sessionStorage.setItem(
-                    "ss_registration_weather",
-                    JSON.stringify({
-                        data:locationData.weather,
-                        savedAt:Date.now()
-                    })
-                );
-            }
+alert(data.message + " - App opening");
 
-            document.getElementById("registerSection").style.display="none";
-            document.getElementById("homeSection").style.display="block";
+document.getElementById("registerSection").style.display = "none";
+document.getElementById("homeSection").style.display = "block";
 
-            updateUserUI(data.user);
-            applyLanguage();
-            loadHomeMandiTicker();
-            loadPremiumStatus();
-            loadDiseaseSummary();
+updateUserUI(data.user);
+applyLanguage();
+loadHomeMandiTicker();
+loadPremiumStatus();
+loadDiseaseSummary();
 
-            // Weather starts immediately without requiring the farmer
-            // to open the Weather tile manually.
-            getLocationName(locationData.lat, locationData.lon);
-            loadLocationName(locationData.lat, locationData.lon);
-            loadWeather(locationData.lat, locationData.lon);
+}
 
-            const weatherReady = !!locationData.weather;
-            const language = localStorage.getItem("appLanguage") || "hi";
-            const weatherMessage = {
-                en: weatherReady ? "Registration successful. Live weather is ready." : "Registration successful. Live weather is updating.",
-                hi: weatherReady ? "रजिस्ट्रेशन सफल। लाइव मौसम तैयार है।" : "रजिस्ट्रेशन सफल। लाइव मौसम अपडेट हो रहा है।",
-                mr: weatherReady ? "नोंदणी यशस्वी. लाईव्ह हवामान तयार आहे." : "नोंदणी यशस्वी. लाईव्ह हवामान अपडेट होत आहे."
-            };
+else{
 
-            alert(weatherMessage[language] || weatherMessage.hi);
+alert(data.message);
 
-        }
-        else{
-            alert(data.message);
-        }
-
-    }
-    catch(error){
-
-        console.error("Registration Error:", error);
-        alert("Registration failed. Please try again.");
-
-    }
-    finally{
-
-        if(registerButton){
-            registerButton.disabled = false;
-            registerButton.innerHTML = registerButton.dataset.originalText || "Register";
-        }
-
-    }
+}
 
 }
 
