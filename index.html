@@ -6114,10 +6114,11 @@ document.getElementById("registerSection").style.display="none";
 // ----------------------------
 
 function showRegister(){
-
-document.getElementById("loginSection").style.display="none";
-document.getElementById("registerSection").style.display="flex";
-
+    document.getElementById("loginSection").style.display="none";
+    document.getElementById("homeSection").style.display="none";
+    document.querySelectorAll(".featurePage").forEach(function(el){ el.style.display="none"; });
+    document.getElementById("registerSection").style.display="flex";
+    window.scrollTo({top:0,behavior:"instant"});
 }
 
 // ----------------------------
@@ -6148,6 +6149,11 @@ return;
 
 if(village==""){
 alert("Enter Village");
+return;
+}
+
+if(crop==""){
+alert("Select Main Crop");
 return;
 }
 
@@ -8113,7 +8119,7 @@ async function loadWeather(lat, lon) {
             "&longitude=" + encodeURIComponent(lon) +
             "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code" +
             "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max" +
-            "&forecast_days=7" +
+            "&forecast_days=16" +
             "&timezone=auto";
 
         const controller = new AbortController();
@@ -10139,7 +10145,9 @@ async function getBrowserLiveWeather(){
                     if(idx<0) idx=0;
                     const code=Number(current.weather_code);
                     const map={0:"Clear Sky",1:"Mainly Clear",2:"Partly Cloudy",3:"Cloudy",45:"Fog",48:"Fog",51:"Light Drizzle",53:"Drizzle",55:"Heavy Drizzle",61:"Light Rain",63:"Rain",65:"Heavy Rain",71:"Light Snow",73:"Snow",75:"Heavy Snow",80:"Rain Showers",81:"Heavy Rain Showers",82:"Violent Rain",95:"Thunderstorm",96:"Thunderstorm with Hail",99:"Thunderstorm with Heavy Hail"};
-                    return {status:true,temperature:current.temperature_2m,humidity:current.relative_humidity_2m,wind:current.wind_speed_10m,weather_code:code,rain_probability:probs[idx] ?? null,weather:map[code]||"Unknown Weather",latitude:lat,longitude:lon};
+                    const next6=probs.slice(idx, idx+6).filter(v=>typeof v === "number");
+                    const next6Times=times.slice(idx, idx+6);
+                    return {status:true,temperature:current.temperature_2m,humidity:current.relative_humidity_2m,wind:current.wind_speed_10m,weather_code:code,rain_probability:probs[idx] ?? null,rain_6h_max:next6.length ? Math.max(...next6) : null,rain_6h_times:next6Times,weather:map[code]||"Unknown Weather",latitude:lat,longitude:lon};
                 }finally{ clearTimeout(timer); }
             }
 
@@ -10165,6 +10173,7 @@ async function getBrowserLiveWeather(){
 }
 
 function renderFastAlertWeather(data){
+    window.latestFastAlertWeather = data;
     const box=document.getElementById("weatherAlert");
     if(!box || !data) return;
     const lang=localStorage.getItem("appLanguage")||"mr";
@@ -10279,6 +10288,7 @@ async function loadLiveRainRadar(){
 
 async function loadAlerts(){
 
+    window.latestFastAlertWeather = null;
     applyAlertLanguage();
 
     let user = JSON.parse(localStorage.getItem("user"));
@@ -10351,6 +10361,20 @@ async function loadAlerts(){
         // Weather: backend AI response may be slower/stale. Only replace the visible
         // weather card when backend has a real live weather payload.
         let weather = data.weather_data || {};
+        const fastWeather = window.latestFastAlertWeather || null;
+        if(fastWeather){
+            weather = Object.assign({}, weather, {
+                available:true,
+                temperature:fastWeather.temperature,
+                humidity:fastWeather.humidity,
+                wind:fastWeather.wind,
+                rain:fastWeather.rain_probability,
+                rain_6h_max:fastWeather.rain_6h_max,
+                rain_6h_times:fastWeather.rain_6h_times || [],
+                weather_code:fastWeather.weather_code,
+                weather:fastWeather.weather
+            });
+        }
         const backendWeatherAvailable = weather.available === true && weather.temperature != null;
         if(backendWeatherAvailable || !fastAlertWeather){
             document.getElementById("weatherAlert").innerHTML =
@@ -10388,8 +10412,17 @@ async function loadAlerts(){
         `;
 
         // Spray Advisor — live next 6-hour rain forecast
-        let sprayText = data.spray_alert || "Live spray advice unavailable.";
+        let sprayText = data.spray_alert || "";
         let rain6 = weather.rain_6h_max;
+        if(fastWeather && rain6 != null){
+            if(Number(rain6) >= 70){
+                sprayText = `🚨 पुढील ६ तासांत पावसाची शक्यता ${rain6}% आहे. फवारणी शक्य असल्यास पुढे ढकला.`;
+            }else if(Number(rain6) >= 40){
+                sprayText = `⚠️ पुढील ६ तासांत पावसाची शक्यता ${rain6}% आहे. फवारणीपूर्वी हवामान पुन्हा तपासा.`;
+            }else{
+                sprayText = `✅ पुढील ६ तासांत पावसाचा धोका कमी आहे (${rain6}%). फवारणी करताना उत्पादनाच्या लेबलवरील सूचना व स्थानिक कृषी सल्ला पाळा.`;
+            }
+        }
 
         document.getElementById("sprayAlert").innerHTML =
         `
