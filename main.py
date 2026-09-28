@@ -3593,36 +3593,99 @@ Keep every section short and practical.
 
 
         # =========================
-        # GEMINI
+        # GEMINI + SAFE QUOTA FALLBACK
         # =========================
 
-        response = client.models.generate_content(
+        response = None
+        last_ai_error = ""
 
-            model=GEMINI_MODELS[0],
+        try:
+            response = client.models.generate_content(
+                model=GEMINI_MODELS[0],
+                contents=prompt
+            )
+        except Exception as ai_error:
+            last_ai_error = str(ai_error)
+            print("FARMING ADVICE AI ERROR:", ai_error)
 
-            contents=prompt
+        # Gemini free-tier quota can be exhausted. In that case, keep the
+        # feature working with practical advice based ONLY on the live data
+        # already collected above. No weather value is invented.
+        if response is not None and getattr(response, "text", None):
+            advice_text = response.text.strip()
+            ai_generated = True
+        else:
+            temp = weather_data.get("temperature")
+            humidity = weather_data.get("humidity")
+            rain_prob = weather_data.get("rain_probability")
+            rain_6h = weather_data.get("rain_6h_max")
+            wind = weather_data.get("wind")
 
-        )
+            crop_name = crop or "आपकी फसल"
+            advice_parts = []
 
+            if weather_data.get("available"):
+                if isinstance(rain_6h, (int, float)) and rain_6h >= 60:
+                    irrigation = "अगले 6 घंटे में बारिश की संभावना अधिक है, इसलिए अभी अतिरिक्त सिंचाई करने से पहले खेत की नमी जांचें।"
+                    spray = "बारिश की संभावना अधिक होने पर फवारणी/स्प्रे बारिश से पहले न करें; मौसम स्थिर होने की प्रतीक्षा करें।"
+                elif isinstance(rain_6h, (int, float)) and rain_6h >= 30:
+                    irrigation = "खेत की नमी देखकर ही सिंचाई करें; बारिश की संभावना को ध्यान में रखें।"
+                    spray = "स्प्रे करने से पहले अगले कुछ घंटों की बारिश की संभावना जरूर देखें।"
+                else:
+                    irrigation = "मिट्टी की नमी जांचकर आवश्यकता के अनुसार सिंचाई करें।"
+                    spray = "स्प्रे का समय स्थानीय मौसम और फसल की स्थिति देखकर तय करें।"
+
+                disease_risk = (
+                    "आर्द्रता अधिक होने पर फसल में फफूंदजनित रोग के लक्षणों पर नजर रखें।"
+                    if isinstance(humidity, (int, float)) and humidity >= 80
+                    else "पत्तियों और तनों पर रोग या कीट के नए लक्षण रोज जांचें।"
+                )
+
+                heat = (
+                    "तापमान अधिक होने पर दोपहर में अनावश्यक खेत का काम और स्प्रे से बचें।"
+                    if isinstance(temp, (int, float)) and temp >= 35
+                    else "फसल की सामान्य बढ़वार और पत्तियों की स्थिति पर नजर रखें।"
+                )
+
+                wind_note = (
+                    "हवा तेज होने पर स्प्रे टालें ताकि दवा का बहाव न हो।"
+                    if isinstance(wind, (int, float)) and wind >= 20
+                    else "स्प्रे करते समय हवा की गति सामान्य हो यह सुनिश्चित करें।"
+                )
+
+                advice_text = (
+                    f"🌱 Crop Status:\n{crop_name} की वर्तमान स्थिति खेत में देखकर पुष्टि करें।\n\n"
+                    f"💧 Irrigation Advice:\n{irrigation}\n\n"
+                    f"💊 Disease Protection:\n{disease_risk}\n\n"
+                    f"🌿 Fertilizer Advice:\nमिट्टी की नमी और फसल की अवस्था देखकर ही खाद दें; बहुत अधिक बारिश की संभावना में तुरंत खाद न डालें।\n\n"
+                    f"⚠ Alert:\n{spray} {wind_note} {heat}\n\n"
+                    f"🤖 AI Recommendation:\nआज {crop_name} के खेत की नमी, पत्तियों और कीट/रोग के लक्षण देखकर अगला काम तय करें।"
+                )
+            else:
+                advice_text = (
+                    f"🌱 Crop Status:\n{crop_name} की स्थिति खेत में देखकर जांचें।\n\n"
+                    "💧 Irrigation Advice:\nलाइव मौसम उपलब्ध नहीं है, इसलिए मौसम-आधारित सिंचाई सलाह नहीं दी जा रही है।\n\n"
+                    "💊 Disease Protection:\nपत्तियों और तनों पर नए रोग/कीट के लक्षण जांचें।\n\n"
+                    "🌿 Fertilizer Advice:\nमिट्टी की नमी और फसल की अवस्था देखकर ही खाद दें।\n\n"
+                    "⚠ Alert:\nलाइव मौसम डेटा उपलब्ध होने तक मौसम-आधारित स्प्रे या सिंचाई निर्णय न लें।\n\n"
+                    f"🤖 AI Recommendation:\nआज {crop_name} की खेत-जांच करें और जरूरत के अनुसार कार्रवाई करें।"
+                )
+
+            ai_generated = False
 
         # =========================
         # RESPONSE
         # =========================
 
         return {
-
             "status": True,
-
             "crop": crop,
-
             "language": language,
-
             "weather": weather_info,
-
             "weather_data": weather_data,
-
-            "advice": response.text
-
+            "advice": advice_text,
+            "ai_generated": ai_generated,
+            "ai_error": last_ai_error if not ai_generated else ""
         }
 
 

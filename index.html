@@ -4335,6 +4335,20 @@ button:active,
     }
 }
 
+
+/* AI FARMING ADVICE animated farmer */
+.aiFarmerStage{position:relative;width:100%;min-height:245px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:24px;margin-bottom:16px;background:radial-gradient(circle at 50% 28%,#fff 0%,#effaf2 48%,#dff2e4 100%);border:1px solid rgba(46,125,50,.12);box-shadow:inset 0 -18px 35px rgba(46,125,50,.08)}
+.aiFarmerGround{position:absolute;bottom:13px;width:72%;height:18px;border-radius:50%;background:rgba(46,125,50,.16);filter:blur(2px);animation:aiGroundPulse 1.1s ease-in-out infinite}
+.aiFarmer{position:relative;z-index:2;font-size:132px;line-height:1;transform-origin:50% 100%;filter:drop-shadow(0 10px 8px rgba(0,0,0,.16));animation:aiFarmerDance 1.15s ease-in-out infinite;user-select:none}
+.aiFarmerBadge{position:absolute;z-index:3;top:14px;right:14px;padding:7px 11px;border-radius:999px;background:#2e7d32;color:#fff;font-size:11px;font-weight:900;box-shadow:0 5px 14px rgba(46,125,50,.25);animation:aiBadgePulse 1.5s ease-in-out infinite}
+.aiFarmerSpark{position:absolute;z-index:1;font-size:28px;animation:aiSparkFloat 2.1s ease-in-out infinite}.aiFarmerSpark.s1{left:18%;top:25%;animation-delay:-.5s}.aiFarmerSpark.s2{right:19%;top:42%;animation-delay:-1.1s}.aiFarmerSpark.s3{left:25%;top:62%;font-size:22px;animation-delay:-1.6s}
+@keyframes aiFarmerDance{0%,100%{transform:translateY(0) rotate(-4deg) scale(1)}20%{transform:translateY(-24px) rotate(7deg) scale(1.05)}40%{transform:translateY(-5px) rotate(-8deg) scale(1.02)}60%{transform:translateY(-30px) rotate(8deg) scale(1.07)}80%{transform:translateY(-8px) rotate(-6deg) scale(1.03)}}
+@keyframes aiGroundPulse{0%,100%{transform:scaleX(1);opacity:.55}50%{transform:scaleX(.72);opacity:.25}}
+@keyframes aiBadgePulse{50%{transform:scale(1.08)}}
+@keyframes aiSparkFloat{0%,100%{transform:translateY(0) rotate(0);opacity:.65}50%{transform:translateY(-16px) rotate(18deg);opacity:1}}
+.aiAdviceMeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.aiAdviceStatus{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:800}.aiAdviceStatus.fallback{background:#fff8e1;color:#8a5a00}
+@media(max-width:600px){.aiFarmerStage{min-height:220px}.aiFarmer{font-size:112px}}
+
 </style>
 
 </head>
@@ -5400,7 +5414,20 @@ Aapke sawal ka AI farming answer yaha aayega.
 
 <div id="adviceBox">
 
-Loading AI Advice...
+<div class="aiFarmerStage" aria-label="AI Farming Assistant">
+    <div class="aiFarmerBadge">🤖 AI FARMER</div>
+    <div class="aiFarmerSpark s1">✨</div>
+    <div class="aiFarmerSpark s2">🌱</div>
+    <div class="aiFarmerSpark s3">⭐</div>
+    <div class="aiFarmer">🧑‍🌾</div>
+    <div class="aiFarmerGround"></div>
+</div>
+
+<div class="aiAdviceMeta">
+    <span id="aiAdviceStatus" class="aiAdviceStatus">🤖 AI Advice</span>
+</div>
+
+<div id="aiAdviceContent">Loading AI Advice...</div>
 
 </div>
 
@@ -9983,9 +10010,14 @@ if(data.status){
     const weatherLine=w.available
         ? `🌡 ${w.temperature ?? "--"}°C  •  💧 ${w.humidity ?? "--"}%  •  💨 ${w.wind ?? "--"} km/h  •  🌧 ${w.rain_probability ?? "--"}% rain probability  •  Next 6h: ${w.rain_6h_max ?? "--"}%`
         : "⚠️ Live weather unavailable — weather-specific advice is not being invented.";
-    document.getElementById("adviceBox").innerHTML=`<h3>🌾 ${escapeHtml(data.crop)}</h3><div style="background:#eef8f1;border-radius:14px;padding:12px;margin:12px 0;font-weight:700">${weatherLine}<br><small>${escapeHtml(w.weather||"")}</small></div><pre style="white-space:pre-wrap;font-size:16px;line-height:1.55">${escapeHtml(data.advice||"")}</pre>`;
+    const status=document.getElementById("aiAdviceStatus");
+    if(status){
+        status.className="aiAdviceStatus"+(data.ai_generated===false ? " fallback" : "");
+        status.innerText=data.ai_generated===false ? "🛡️ Live-data farming advice" : "🤖 AI Farming Advice";
+    }
+    document.getElementById("aiAdviceContent").innerHTML=`<h3>🌾 ${escapeHtml(data.crop)}</h3><div style="background:#eef8f1;border-radius:14px;padding:12px;margin:12px 0;font-weight:700">${weatherLine}<br><small>${escapeHtml(w.weather||"")}</small></div><pre style="white-space:pre-wrap;font-size:16px;line-height:1.55">${escapeHtml(data.advice||"")}</pre>`;
 }else{
-    document.getElementById("adviceBox").innerHTML="⚠️ Live farming advice temporarily unavailable. Please refresh.";
+    document.getElementById("aiAdviceContent").innerHTML="⚠️ Live farming advice temporarily unavailable. Please refresh.";
 }
 
 }
