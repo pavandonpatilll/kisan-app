@@ -166,9 +166,23 @@ padding:20px;
 }
 
 #registerSection{
-
 display:none;
+position:relative;
+z-index:10000;
+}
 
+body.registration-active{
+overflow:hidden !important;
+}
+
+body.registration-active #homeSection,
+body.registration-active .featurePage,
+body.registration-active nav{
+display:none !important;
+}
+
+body.registration-active #registerSection{
+display:flex !important;
 }
 
 #loginSection{
@@ -6117,7 +6131,12 @@ function showRegister(){
     document.getElementById("loginSection").style.display="none";
     document.getElementById("homeSection").style.display="none";
     document.querySelectorAll(".featurePage").forEach(function(el){ el.style.display="none"; });
+    const nav=document.querySelector("nav");
+    if(nav) nav.style.setProperty("display","none","important");
     document.getElementById("registerSection").style.display="flex";
+    document.body.classList.add("registration-active");
+    applyFeatureLanguage();
+    applyCropLanguage();
     window.scrollTo({top:0,behavior:"instant"});
 }
 
@@ -6187,6 +6206,8 @@ let data = await response.json();
 
 if(data.status){
 
+document.body.classList.remove("registration-active");
+
 localStorage.setItem(
     "user",
     JSON.stringify(data.user)
@@ -6241,6 +6262,8 @@ async function loginUser(){
     let data = await response.json();
 
     if(data.status){
+
+        document.body.classList.remove("registration-active");
 
         localStorage.setItem(
             "user",
@@ -7843,6 +7866,8 @@ async function loadNotificationPage(){
 }
 
 function goHome(fromHistory = false){
+
+    document.body.classList.remove("registration-active");
 
     if(!fromHistory){
         history.pushState(
@@ -11023,6 +11048,12 @@ function selectLanguage(lang){
 
     syncLanguageWithServer(lang);
 
+    applyLanguage();
+    applyFeatureLanguage();
+    applyCropLanguage();
+    applyWeatherLanguage();
+    applyAlertLanguage();
+    applyKisanConnectLanguage();
     updateLanguageUI(lang);
 
     // Language page hide
@@ -11034,6 +11065,10 @@ function selectLanguage(lang){
     document.getElementById(
         "registerSection"
     ).style.display = "flex";
+
+    document.body.classList.add("registration-active");
+    applyFeatureLanguage();
+    applyCropLanguage();
 
 }
 
