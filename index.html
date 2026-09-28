@@ -4383,6 +4383,326 @@ button:active,
 .aiAdviceMeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.aiAdviceStatus{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:800}.aiAdviceStatus.fallback{background:#fff8e1;color:#8a5a00}
 @media(max-width:600px){.aiFarmerStage{min-height:220px}.aiFarmer{font-size:112px}}
 
+
+
+/* =========================================================
+   SHRI MANT SHETKARI HOME 3D COMMUNITY REDESIGN
+   SAFE CSS-ONLY OVERRIDE
+   Existing HTML IDs / onclick / API / JS remain untouched.
+========================================================= */
+
+#homeSection{
+    background:
+      radial-gradient(circle at 8% 8%,rgba(255,193,7,.18),transparent 25%),
+      radial-gradient(circle at 92% 18%,rgba(33,150,243,.15),transparent 28%),
+      linear-gradient(180deg,#eef9f1 0%,#f7fbff 42%,#fff8ec 100%) !important;
+    display:none;
+    align-items:stretch;
+    justify-content:flex-start;
+    flex-direction:column;
+    padding:88px 0 96px !important;
+    min-height:100vh;
+}
+
+#homeSection > header{
+    height:74px !important;
+    padding:0 16px !important;
+    background:linear-gradient(135deg,#075e2c 0%,#10a94b 52%,#19b8a6 100%) !important;
+    box-shadow:0 8px 28px rgba(7,94,44,.25) !important;
+    border-bottom:1px solid rgba(255,255,255,.22);
+    z-index:900;
+}
+
+#homeSection > header::after{
+    content:"";
+    position:absolute;
+    inset:auto 0 0 0;
+    height:2px;
+    background:linear-gradient(90deg,#ffd54f,#fff,#64ffda,#ffd54f);
+    opacity:.85;
+}
+
+#homeSection .menuBtn,
+#homeSection .notificationBtn{
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:15px;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.20);
+    box-shadow:0 6px 16px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.2);
+    color:#fff;
+}
+
+#homeSection .notificationBtn:hover,
+#homeSection .menuBtn:hover{
+    background:rgba(255,255,255,.24) !important;
+    transform:translateY(-1px) scale(1.03);
+}
+
+#homeSection .homeTitle{
+    color:#fff !important;
+    font-size:18px !important;
+    gap:7px;
+    text-shadow:0 2px 5px rgba(0,0,0,.16);
+}
+
+#homeSection .currentLanguageBadge{
+    background:rgba(255,255,255,.17) !important;
+    color:#fff !important;
+    border:1px solid rgba(255,255,255,.24);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.15);
+}
+
+#homeSection .welcomeCard{
+    position:relative;
+    overflow:hidden;
+    margin:18px 16px 12px !important;
+    padding:22px 20px !important;
+    border-radius:28px !important;
+    background:
+      radial-gradient(circle at 90% 0%,rgba(255,193,7,.22),transparent 32%),
+      linear-gradient(135deg,#ffffff 0%,#f1fff5 58%,#fff9e9 100%) !important;
+    border:1px solid rgba(22,163,74,.14);
+    box-shadow:0 16px 36px rgba(20,70,35,.13),0 3px 0 rgba(22,163,74,.05) !important;
+    transform:translateZ(0);
+}
+
+#homeSection .welcomeCard::before{
+    content:"🌱";
+    position:absolute;
+    right:-5px;
+    top:-25px;
+    font-size:105px;
+    opacity:.10;
+    transform:rotate(-12deg);
+    pointer-events:none;
+}
+
+#homeSection .welcomeCard::after{
+    content:"";
+    position:absolute;
+    left:-30px;
+    bottom:-45px;
+    width:145px;
+    height:100px;
+    border-radius:50%;
+    background:rgba(33,150,243,.08);
+    filter:blur(2px);
+}
+
+#homeSection .welcomeCard h2{
+    position:relative;
+    z-index:2;
+    margin-bottom:12px;
+    color:#123d27 !important;
+    font-size:24px !important;
+}
+
+#homeSection .welcomeCard p{
+    position:relative;
+    z-index:2;
+    color:#5c6e63;
+    margin-top:8px;
+}
+
+#homeSection #homeCropSelect{
+    position:relative;
+    z-index:3;
+    width:100%;
+    padding:13px 15px;
+    margin:4px 0 8px;
+    border:1px solid #cce7d3;
+    border-radius:15px;
+    outline:none;
+    background:rgba(255,255,255,.88);
+    color:#123d27;
+    font-size:15px;
+    font-weight:700;
+    box-shadow:0 6px 15px rgba(20,70,35,.07);
+}
+
+#homeSection #homeCropSelect:focus{
+    border-color:#16a34a;
+    box-shadow:0 0 0 4px rgba(22,163,74,.10),0 8px 18px rgba(20,70,35,.08);
+}
+
+#homeSection .homeMandiTicker{
+    margin:0 16px 12px !important;
+    border-radius:22px !important;
+    background:linear-gradient(135deg,#075e2c 0%,#0e9f4a 55%,#087f8c 100%) !important;
+    box-shadow:0 13px 28px rgba(7,94,44,.20),inset 0 1px 0 rgba(255,255,255,.16) !important;
+    border:1px solid rgba(255,255,255,.16);
+}
+
+#homeSection .homeMandiItem{
+    border-radius:16px !important;
+    background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.08)) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 6px 14px rgba(0,0,0,.08);
+}
+
+#homeSection .homeMandiPrice{
+    color:#ffe082;
+    text-shadow:0 2px 7px rgba(0,0,0,.18);
+}
+
+/* colorful 3D feature grid */
+#homeSection .grid{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:14px !important;
+    padding:8px 16px 18px !important;
+    width:100%;
+}
+
+#homeSection .grid .item{
+    position:relative;
+    overflow:hidden;
+    min-height:126px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    padding:17px 10px !important;
+    border-radius:23px !important;
+    color:#173226 !important;
+    border:1px solid rgba(255,255,255,.78);
+    box-shadow:
+      0 13px 0 rgba(0,0,0,.035),
+      0 18px 30px rgba(25,55,35,.11),
+      inset 0 1px 0 rgba(255,255,255,.95),
+      inset 0 -5px 12px rgba(0,0,0,.035) !important;
+    transform:translateY(0);
+    transition:transform .20s ease,box-shadow .20s ease,filter .20s ease;
+}
+
+#homeSection .grid .item::before{
+    content:"";
+    position:absolute;
+    width:85px;
+    height:85px;
+    border-radius:50%;
+    right:-32px;
+    top:-32px;
+    background:rgba(255,255,255,.45);
+}
+
+#homeSection .grid .item::after{
+    content:"";
+    position:absolute;
+    left:12px;
+    right:12px;
+    top:8px;
+    height:1px;
+    background:rgba(255,255,255,.75);
+}
+
+#homeSection .grid .item:nth-child(6n+1){background:linear-gradient(145deg,#e8fff0,#c9f7d8) !important;}
+#homeSection .grid .item:nth-child(6n+2){background:linear-gradient(145deg,#e9f4ff,#cde5ff) !important;}
+#homeSection .grid .item:nth-child(6n+3){background:linear-gradient(145deg,#fff7df,#ffe5a3) !important;}
+#homeSection .grid .item:nth-child(6n+4){background:linear-gradient(145deg,#f3eaff,#e2d1ff) !important;}
+#homeSection .grid .item:nth-child(6n+5){background:linear-gradient(145deg,#fff0eb,#ffd1c4) !important;}
+#homeSection .grid .item:nth-child(6n){background:linear-gradient(145deg,#e6fbf8,#bdeee5) !important;}
+
+#homeSection .grid .item:hover{
+    transform:translateY(-5px) !important;
+    filter:saturate(1.06);
+    box-shadow:
+      0 17px 0 rgba(0,0,0,.035),
+      0 24px 36px rgba(25,55,35,.15),
+      inset 0 1px 0 rgba(255,255,255,1) !important;
+}
+
+#homeSection .grid .item:active{
+    transform:translateY(3px) scale(.985) !important;
+    box-shadow:0 5px 0 rgba(0,0,0,.035),0 9px 18px rgba(25,55,35,.10) !important;
+}
+
+#homeSection .grid .item > *{
+    position:relative;
+    z-index:2;
+}
+
+#homeSection .grid .item:first-letter{
+    filter:drop-shadow(0 4px 4px rgba(0,0,0,.16));
+}
+
+#homeSection .grid .item p{
+    margin-top:2px !important;
+    font-size:14px !important;
+    line-height:1.25;
+    color:#18392a !important;
+    text-shadow:0 1px 0 rgba(255,255,255,.75);
+}
+
+/* bottom community navigation */
+#homeSection + nav,
+body > nav{
+    height:76px !important;
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px)) !important;
+    background:rgba(255,255,255,.94) !important;
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border-top:1px solid rgba(22,163,74,.10);
+    box-shadow:0 -10px 30px rgba(15,50,30,.10) !important;
+    z-index:950;
+}
+
+body > nav div{
+    min-width:54px;
+    padding:6px 9px;
+    border-radius:16px;
+    color:#607066;
+    transition:.2s ease;
+}
+
+body > nav div:hover{
+    color:#087f3e;
+    background:#eaf8ef;
+    transform:translateY(-2px);
+}
+
+body > nav p{
+    font-size:11px !important;
+    font-weight:800;
+}
+
+/* Side menu gets the same colorful community feel */
+#sideMenu{
+    background:linear-gradient(180deg,#ffffff 0%,#f4fff7 62%,#fffaf0 100%) !important;
+    border-right:1px solid rgba(22,163,74,.10);
+    box-shadow:10px 0 35px rgba(12,60,30,.15) !important;
+}
+
+#sideMenu p{
+    border-bottom:1px solid #e6eee8 !important;
+    border-radius:12px;
+    margin:4px 0;
+}
+
+#sideMenu p:hover{
+    background:#eaf8ef;
+    transform:translateX(3px);
+}
+
+@media(max-width:600px){
+    #homeSection{padding-top:84px !important;padding-bottom:92px !important;}
+    #homeSection > header{height:70px !important;}
+    #homeSection .welcomeCard{margin:14px 13px 10px !important;padding:19px 16px !important;}
+    #homeSection .grid{gap:11px !important;padding:6px 13px 14px !important;}
+    #homeSection .grid .item{min-height:116px;padding:14px 8px !important;border-radius:20px !important;font-size:31px !important;}
+    #homeSection .grid .item p{font-size:13px !important;}
+    #homeSection .homeMandiTicker{margin-left:13px !important;margin-right:13px !important;}
+}
+
+@media(min-width:800px){
+    #homeSection .grid{grid-template-columns:repeat(4,minmax(0,1fr)) !important;max-width:1050px;margin:0 auto;}
+    #homeSection .welcomeCard,#homeSection .homeMandiTicker{max-width:1050px;width:calc(100% - 32px);margin-left:auto !important;margin-right:auto !important;}
+}
+
 </style>
 
 </head>
