@@ -8282,61 +8282,116 @@ document.addEventListener("click", function(event){
 
 function getLiveLocation(){
 
-if(!navigator.geolocation){
-    alert("Location is not supported on this device");
-    return;
-}
+    const locationText = document.getElementById("locationText");
+    const weatherStatus = document.getElementById("weatherStatus");
+    const locationButton = document.getElementById("getLocationButton");
 
-navigator.geolocation.getCurrentPosition(
+    if(!navigator.geolocation){
+        if(locationText){
+            locationText.innerHTML = "❌ This device/browser does not support live location.";
+        }
+        alert("📍 Live Location is not supported on this device.");
+        return;
+    }
 
-async function(position){
+    if(locationText){
+        locationText.innerHTML = "📍 Requesting live location permission...";
+    }
 
-let lat =
-position.coords.latitude;
+    if(weatherStatus){
+        weatherStatus.innerHTML =
+            '<span class="weatherStatusPill"><span class="liveDot"></span> 📍 Detecting your live location...</span>';
+    }
 
-let lon =
-position.coords.longitude;
+    if(locationButton){
+        locationButton.disabled = true;
+        locationButton.innerHTML = "📍 Detecting Location...";
+    }
 
-console.log(
-"Location:",
-lat,
-lon
-);
+    function onSuccess(position){
 
-try{sessionStorage.setItem("ss_live_lat",String(lat));sessionStorage.setItem("ss_live_lon",String(lon));}catch(e){}
+        const lat = Number(position.coords.latitude);
+        const lon = Number(position.coords.longitude);
 
-saveUserLocation(lat, lon);
+        if(!Number.isFinite(lat) || !Number.isFinite(lon)){
+            onError({code:2});
+            return;
+        }
 
-loadHomeRainTicker(lat,lon);
+        console.log("LIVE LOCATION:", lat, lon);
 
-getLocationName(
-lat,
-lon
-);
+        try{
+            sessionStorage.setItem("ss_live_lat", String(lat));
+            sessionStorage.setItem("ss_live_lon", String(lon));
+            sessionStorage.setItem("ss_live_location_time", String(Date.now()));
+        }catch(e){}
 
-loadLocationName(lat, lon);
+        if(locationText){
+            locationText.innerHTML =
+                "📍 Live location detected. Loading weather...";
+        }
 
-loadWeather(
-lat,
-lon
-);
+        if(locationButton){
+            locationButton.innerHTML = "✅ Live Location Detected";
+        }
 
-},
+        // Save coordinates without blocking live weather.
+        Promise.resolve(saveUserLocation(lat, lon)).catch(function(e){
+            console.warn("SAVE LOCATION:", e);
+        });
 
-function(error){
+        // Immediately use the exact detected coordinates everywhere.
+        try{ loadHomeRainTicker(lat, lon); }catch(e){ console.warn(e); }
+        try{ getLocationName(lat, lon); }catch(e){ console.warn(e); }
+        try{ loadLocationName(lat, lon); }catch(e){ console.warn(e); }
 
-    const messageByCode = {
-        1: "Location permission allow karo.",
-        2: "Location detect nahi ho pa rahi.",
-        3: "Location request timeout ho gaya. Dobara try karo."
-    };
+        // This is the visible weather source. Do not wait for backend location saving.
+        loadWeather(lat, lon);
+    }
 
-    alert(messageByCode[error.code] || "Location detect nahi ho pa rahi.");
+    function onError(error){
 
-}
+        console.warn("LIVE LOCATION ERROR:", error);
 
-);
+        if(locationButton){
+            locationButton.disabled = false;
+            locationButton.innerHTML = "📍 Allow Location & Get Weather";
+        }
 
+        const messages = {
+            1: "📍 Location permission blocked hai. Please Allow Location permission for Shrimant Shetkari, then tap again.",
+            2: "📍 Live location detect nahi ho pa rahi. Location/GPS ON karke dobara try karo.",
+            3: "📍 Location request timeout hua. GPS/Location ON karke dobara try karo."
+        };
+
+        if(locationText){
+            locationText.innerHTML = messages[error && error.code] || messages[2];
+        }
+
+        if(weatherStatus){
+            weatherStatus.innerHTML =
+                '<span class="weatherStatusPill">⚠️ Live location required for local weather</span>';
+        }
+
+        alert(messages[error && error.code] || messages[2]);
+    }
+
+    // Fresh GPS/location request. Because getLiveLocation() is called from
+    // the Weather button/page action, Android/browser can show its permission prompt.
+    try{
+        navigator.geolocation.getCurrentPosition(
+            onSuccess,
+            onError,
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+        );
+    }catch(e){
+        console.error("GEOLOCATION START ERROR:", e);
+        onError({code:2});
+    }
 }
 
 async function getLocationName(lat,lon){
