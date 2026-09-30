@@ -4529,6 +4529,28 @@ button:active,
     box-shadow:0 0 0 4px rgba(22,163,74,.10),0 8px 18px rgba(20,70,35,.08);
 }
 
+/* ==========================
+   AI FARMER DANCE HEADER
+========================== */
+.aiFarmerDance{position:relative;width:58px;height:52px;display:flex;align-items:center;justify-content:center;overflow:visible;}
+.aiFarmerBody{display:block;font-size:31px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.25));transform-origin:50% 85%;animation:aiFarmerDance 1.15s ease-in-out infinite;}
+.aiFarmerLabel{position:absolute;right:-2px;bottom:0;background:#00c853;color:#fff;font-size:8px;font-weight:900;padding:2px 4px;border-radius:8px;box-shadow:0 2px 7px rgba(0,0,0,.2)}
+.aiSpark{position:absolute;color:#ffe082;font-size:13px;font-weight:900;animation:aiSpark 1.4s ease-in-out infinite}
+.aiSpark.s1{top:2px;left:3px}.aiSpark.s2{top:8px;right:5px;animation-delay:.55s}
+@keyframes aiFarmerDance{0%,100%{transform:rotate(-7deg) translateY(1px) scale(1)}25%{transform:rotate(9deg) translateY(-3px) scale(1.04)}50%{transform:rotate(-10deg) translateY(0) scale(.98)}75%{transform:rotate(10deg) translateY(-3px) scale(1.04)}}
+@keyframes aiSpark{0%,100%{opacity:.25;transform:scale(.7) rotate(0)}50%{opacity:1;transform:scale(1.25) rotate(20deg)}}
+
+/* ==========================
+   HOME LIVE RAIN SLIDER
+========================== */
+.homeRainTicker{margin:0 16px 10px;border-radius:22px;padding:13px 0 10px;color:#083b2b;background:linear-gradient(135deg,#e9fbff,#eef9ff 48%,#f1fff5);border:1px solid rgba(3,169,244,.18);box-shadow:0 10px 26px rgba(3,111,160,.12);overflow:hidden;position:relative}
+.homeRainHeader{display:flex;justify-content:space-between;align-items:center;padding:0 14px 9px;font-size:13px;font-weight:900}.homeRainHeader span:last-child{font-size:10px;color:#52706b;font-weight:800}
+.homeRainViewport{overflow-x:auto;overflow-y:hidden;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x;scroll-snap-type:x mandatory}.homeRainViewport::-webkit-scrollbar{display:none}
+.homeRainTrack{display:flex;width:max-content;gap:10px;padding:0 10px}
+.homeRainItem{min-width:235px;padding:12px 14px;border-radius:17px;background:linear-gradient(145deg,#fff,rgba(255,255,255,.76));border:1px solid #d9eef3;box-shadow:0 5px 13px rgba(0,0,0,.07);scroll-snap-align:start}.homeRainItem .rainPlace{font-size:16px;font-weight:900;color:#14532d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.homeRainItem .rainChance{font-size:24px;font-weight:1000;color:#0284c7;margin-top:5px}.homeRainItem .rainTime{font-size:12px;font-weight:800;color:#50645e;margin-top:3px}.homeRainItem .rainMeta{font-size:11px;color:#70807b;margin-top:6px;line-height:1.45}.homeRainItem.is-rain{background:linear-gradient(145deg,#effaff,#e8f7ff)}.homeRainItem.is-now{border:1px solid #9bdcf5;box-shadow:0 7px 17px rgba(2,132,199,.13)}
+.homeRainDots{display:flex;justify-content:center;gap:5px;margin-top:8px}.homeRainDot{width:6px;height:6px;border-radius:50%;background:#b8c9c7;transition:.2s}.homeRainDot.active{width:18px;border-radius:999px;background:#0284c7}
+@media(max-width:600px){.homeRainTicker{margin-left:13px;margin-right:13px}.homeRainItem{min-width:218px}.aiFarmerDance{width:54px}}
+
 #homeSection .homeMandiTicker{
     margin:0 16px 12px !important;
     border-radius:22px !important;
@@ -4941,20 +4963,12 @@ Login
         <span class="currentLanguageBadge" id="currentLanguageLabel">मराठी</span>
     </h2>
 
-    <div
-    class="notificationWrapper"
-    onclick="openPage('notificationPage')"
->
-    <div class="notificationBtn">
-
-        🔔
-
-        <span id="notificationBadge">
-            1
-        </span>
-
+    <div class="aiFarmerDance" aria-label="AI Kisan">
+        <span class="aiSpark s1">✦</span>
+        <span class="aiSpark s2">✦</span>
+        <span class="aiFarmerBody">🧑‍🌾</span>
+        <span class="aiFarmerLabel">AI</span>
     </div>
-</div>
 
 </header>
 
@@ -5069,6 +5083,18 @@ Detecting...
 
 </div>
 
+
+<!-- HOME LIVE RAIN + LOCATION SLIDER -->
+<div id="homeRainTicker" class="homeRainTicker" style="display:none;">
+    <div class="homeRainHeader">
+        <span id="homeRainTitle">🌧️ Live Rain Around You</span>
+        <span id="homeRainSwipeHint">← Swipe →</span>
+    </div>
+    <div id="homeRainViewport" class="homeRainViewport">
+        <div id="homeRainTrack" class="homeRainTrack"></div>
+    </div>
+    <div class="homeRainDots" id="homeRainDots"></div>
+</div>
 
 <div id="homeMandiTicker" class="homeMandiTicker" onclick="openFeature('mandi','mandiPage')" style="display:none;">
     <div class="homeMandiTickerHeader">
@@ -5657,25 +5683,7 @@ Loading...
 
 </section>
 
-<section id="notificationPage" class="featurePage">
 
-    <h1>🔔 Farmer Notifications</h1>
-
-    <div class="weatherCard">
-
-        <h2>🌦 Today's Alerts</h2>
-
-        <div id="notificationContent">
-            🔄 Loading notifications...
-        </div>
-
-    </div>
-
-    <button onclick="goHome()">
-        🏠 Back Home
-    </button>
-
-</section>
 
 <section id="mandiPage" class="featurePage">
 
@@ -8215,6 +8223,7 @@ function goHome(fromHistory = false){
     document.getElementById("homeSection").style.display = "block";
 
     loadHomeMandiTicker();
+    try{const slat=sessionStorage.getItem("ss_live_lat"),slon=sessionStorage.getItem("ss_live_lon");if(slat&&slon)loadHomeRainTicker(Number(slat),Number(slon));}catch(e){}
 
     // User Data
     let user = JSON.parse(localStorage.getItem("user"));
@@ -8294,7 +8303,11 @@ lat,
 lon
 );
 
+try{sessionStorage.setItem("ss_live_lat",String(lat));sessionStorage.setItem("ss_live_lon",String(lon));}catch(e){}
+
 saveUserLocation(lat, lon);
+
+loadHomeRainTicker(lat,lon);
 
 getLocationName(
 lat,
@@ -8962,6 +8975,18 @@ async function loadLocationName(lat, lon){
 
 }
 
+
+// ==========================
+// HOME LIVE RAIN SLIDER
+// ==========================
+let homeRainAutoTimer=null;let homeRainUserInteracting=false;
+function rainLang(){const l=localStorage.getItem("appLanguage")||"hi";return {hi:{title:"🌧️ आपके आसपास लाइव बारिश",hint:"← हाथ से स्लाइड करें →",now:"अभी",soon:"बारिश की संभावना",arrive:"संभावित समय",place:"आपका लाइव स्थान",clear:"अभी बारिश की संभावना कम",loading:"🌦️ आसपास का लाइव बारिश डेटा लोड हो रहा है..."},mr:{title:"🌧️ तुमच्या आसपासचा थेट पाऊस",hint:"← हाताने स्लाइड करा →",now:"आत्ता",soon:"पावसाची शक्यता",arrive:"संभाव्य वेळ",place:"तुमचे लाइव्ह ठिकाण",clear:"आत्ता पावसाची शक्यता कमी",loading:"🌦️ आसपासचा लाइव्ह पाऊस डेटा लोड होत आहे..."},en:{title:"🌧️ Live Rain Around You",hint:"← Swipe by hand →",now:"Now",soon:"Rain chance",arrive:"Expected time",place:"Your live location",clear:"Low rain chance right now",loading:"🌦️ Loading live rain data around you..."}}[l]||null}
+function setupHomeRainTouch(){const v=document.getElementById("homeRainViewport");if(!v||v.dataset.ready==="1")return;v.dataset.ready="1";["touchstart","pointerdown","wheel"].forEach(e=>v.addEventListener(e,function(){homeRainUserInteracting=true;if(homeRainAutoTimer)clearInterval(homeRainAutoTimer);setTimeout(function(){homeRainUserInteracting=false;startHomeRainAutoScroll()},4200)},{passive:true}));v.addEventListener("scroll",updateHomeRainDots,{passive:true})}
+function updateHomeRainDots(){const v=document.getElementById("homeRainViewport"),ds=document.querySelectorAll("#homeRainDots .homeRainDot");if(!v||!ds.length)return;const i=Math.round(v.scrollLeft/Math.max(1,v.clientWidth*.82));ds.forEach((d,n)=>d.classList.toggle("active",n===Math.min(i,ds.length-1)))}
+function startHomeRainAutoScroll(){const v=document.getElementById("homeRainViewport"),t=document.getElementById("homeRainTrack");if(!v||!t||!t.children.length)return;if(homeRainAutoTimer)clearInterval(homeRainAutoTimer);homeRainAutoTimer=setInterval(function(){if(homeRainUserInteracting)return;const step=Math.max(190,v.clientWidth*.82),max=v.scrollWidth-v.clientWidth;if(v.scrollLeft>=max-8)v.scrollTo({left:0,behavior:"smooth"});else v.scrollBy({left:step,behavior:"smooth"})},3000)}
+function rainTimeText(iso,tz){if(!iso)return "";try{return new Intl.DateTimeFormat(localStorage.getItem("appLanguage")==="mr"?"mr-IN":localStorage.getItem("appLanguage")==="hi"?"hi-IN":"en-IN",{hour:"numeric",minute:"2-digit",hour12:true,timeZone:tz||undefined}).format(new Date(iso))}catch(e){return iso}}
+async function reverseRainPlace(lat,lon,fallback){try{const r=await fetch(`${API}/location-name/${lat}/${lon}`,{cache:"no-store"});const d=await r.json();if(d.status&&d.location)return d.location}catch(e){}return fallback}
+async function loadHomeRainTicker(lat,lon){const box=document.getElementById("homeRainTicker"),track=document.getElementById("homeRainTrack"),dots=document.getElementById("homeRainDots");if(!box||!track)return;const t=rainLang();document.getElementById("homeRainTitle").innerText=t.title;document.getElementById("homeRainSwipeHint").innerText=t.hint;track.innerHTML=`<div class="homeRainItem"><div class="rainPlace">${t.loading}</div></div>`;box.style.display="block";try{const points=[{lat,lon,label:t.place},{lat:lat+.10,lon,label:"Nearby"},{lat:lat-.10,lon,label:"Nearby"},{lat,lon:lon+.10,label:"Nearby"}];const results=await Promise.all(points.map(async function(pt){const u=`https://api.open-meteo.com/v1/forecast?latitude=${pt.lat}&longitude=${pt.lon}&hourly=precipitation_probability&forecast_days=2&timezone=auto`;const r=await fetch(u,{cache:"no-store"}),d=await r.json(),times=d.hourly?.time||[],probs=d.hourly?.precipitation_probability||[];let max=0,maxIdx=-1;for(let i=0;i<Math.min(times.length,24);i++){const v=Number(probs[i]||0);if(v>max){max=v;maxIdx=i}}let firstIdx=probs.findIndex(v=>Number(v||0)>=45);if(firstIdx<0)firstIdx=maxIdx;const place=await reverseRainPlace(pt.lat,pt.lon,pt.label);return{place,prob:Number(probs[0]||0),max,maxIdx,firstIdx,times,timezone:d.timezone||undefined}}));const sorted=results.sort((a,b)=>b.max-a.max);track.innerHTML=sorted.map(function(x,i){const idx=x.firstIdx>=0?x.firstIdx:0,chance=x.max||0,time=x.times[idx],isNow=idx===0;return `<div class="homeRainItem ${chance>=45?'is-rain':''} ${i===0?'is-now':''}"><div class="rainPlace">📍 ${escapeHtml(x.place)}</div><div class="rainChance">${chance}%</div><div class="rainTime">${chance>=45?(isNow?t.now+' • '+t.soon:t.arrive+': '+rainTimeText(time,x.timezone)):t.clear}</div><div class="rainMeta">${t.soon}: ${x.prob}% • ${t.arrive}: ${time?rainTimeText(time,x.timezone):'--'}</div></div>`}).join("");dots.innerHTML=sorted.map((_,i)=>`<span class="homeRainDot ${i===0?'active':''}"></span>`).join("");setupHomeRainTouch();startHomeRainAutoScroll()}catch(e){console.error("HOME RAIN TICKER ERROR:",e);box.style.display="none"}}
 
 // ==========================
 // HOME LIVE MANDI TICKER
