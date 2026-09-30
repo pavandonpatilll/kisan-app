@@ -4735,6 +4735,39 @@ body > nav p{
     #homeSection .welcomeCard,#homeSection .homeMandiTicker{max-width:1050px;width:calc(100% - 32px);margin-left:auto !important;margin-right:auto !important;}
 }
 
+
+/* HOME LAYOUT TWEAK - KISAN CONNECT UNDER LIVE MANDI + STRONGER AI HEADER */
+#homeSection .homeKisanConnectWrap{
+    margin:2px 20px 6px;
+}
+#homeSection .homeKisanConnectWrap .kisanConnectHomeItem{
+    width:100%;
+    margin:0;
+}
+#homeSection .welcomeCard{
+    margin-top:7px !important;
+    margin-bottom:9px !important;
+}
+#homeSection .homeTitle{
+    font-size:23px !important;
+    font-weight:900 !important;
+    letter-spacing:.15px;
+}
+#homeSection #homeHeaderTitle{
+    font-size:23px !important;
+    font-weight:900 !important;
+    text-shadow:0 2px 7px rgba(0,0,0,.18);
+}
+#homeSection .currentLanguageBadge{
+    font-size:10px;
+    padding:5px 8px;
+}
+@media(max-width:600px){
+    #homeSection .homeKisanConnectWrap{margin:0 13px 6px;}
+    #homeSection .welcomeCard{margin-top:5px !important;}
+    #homeSection .homeTitle,#homeSection #homeHeaderTitle{font-size:20px !important;}
+}
+
 </style>
 
 </head>
@@ -5116,6 +5149,23 @@ Detecting...
     </div>
 </div>
 
+<div class="homeKisanConnectWrap">
+
+<div class="item kisanConnectHomeItem" onclick="openPage('kisanPage')">
+
+    <div class="kcHomeIcon">👥</div>
+
+    <div class="kcHomeContent">
+        <p id="txtKisanConnect">Kisan Connect</p>
+        <span>🌾 Farmers Community • Crop Groups • Chat</span>
+    </div>
+
+    <div class="kcHomeArrow">›</div>
+
+</div>
+
+</div>
+
 <div class="grid">
 
     <div class="item"
@@ -5252,18 +5302,7 @@ Detecting...
 
 </div>
 
-<div class="item kisanConnectHomeItem" onclick="openPage('kisanPage')">
 
-    <div class="kcHomeIcon">👥</div>
-
-    <div class="kcHomeContent">
-        <p id="txtKisanConnect">Kisan Connect</p>
-        <span>🌾 Farmers Community • Crop Groups • Chat</span>
-    </div>
-
-    <div class="kcHomeArrow">›</div>
-
-</div>
 
 </div>
 
