@@ -3374,14 +3374,13 @@ def check_history():
 
 
 @app.get("/farming-advice/{user_id}")
-def farming_advice(user_id: str, language: str = None):
+def farming_advice(user_id: str, language: str = None, lat: float = None, lon: float = None):
 
     try:
 
         # =========================
         # USER DATA + LANGUAGE
         # =========================
-
         user_doc = firestore_db.collection("users").document(str(user_id)).get()
 
         if not user_doc.exists:
@@ -3398,43 +3397,28 @@ def farming_advice(user_id: str, language: str = None):
         user = user_doc.to_dict() if user_doc.exists else None
 
         if not user:
-
-            return {
-                "status": False,
-                "message": "User not found"
-            }
-
+            return {"status": False, "message": "User not found"}
 
         crop = user.get("crop") or ""
         village = user.get("village") or ""
-        latitude = user.get("latitude")
-        longitude = user.get("longitude")
-        language = language if language in ["mr", "hi", "en"] else (user.get("language") or "hi")
 
+        # Browser live coordinates have priority. If they are not supplied,
+        # use the coordinates saved in the farmer profile.
+        latitude = lat if lat is not None else user.get("latitude")
+        longitude = lon if lon is not None else user.get("longitude")
 
-        # =========================
-        # LANGUAGE
-        # =========================
-
-        language_names = {
-
-            "mr": "Marathi",
-            "hi": "Hindi",
-            "en": "English"
-
-        }
-
-        selected_language = language_names.get(
-            language,
-            "Hindi"
+        language = (
+            language
+            if language in ["mr", "hi", "en"]
+            else (user.get("language") or "hi")
         )
 
+        language_names = {"mr": "Marathi", "hi": "Hindi", "en": "English"}
+        selected_language = language_names.get(language, "Hindi")
 
         # =========================
-        # WEATHER
+        # LIVE WEATHER
         # =========================
-
-        # LIVE WEATHER — advice must use real location weather only.
         weather_info = "Live weather data unavailable."
         weather_data = {
             "available": False,
@@ -3444,8 +3428,37 @@ def farming_advice(user_id: str, language: str = None):
             "rain_probability": None,
             "rain_6h_max": None,
             "weather_code": None,
-            "weather": "Live weather unavailable"
+            "weather": "Live weather unavailable",
+            "source": None,
+            "latitude": latitude,
+            "longitude": longitude
         }
+
+        # If the profile has no coordinates yet, resolve the farmer's village
+        # instead of immediately declaring weather unavailable.
+        if latitude is None or longitude is None:
+            try:
+                geocode_query = f"{village}, Maharashtra, India"
+                geo_response = requests.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={
+                        "q": geocode_query,
+                        "format": "jsonv2",
+                        "limit": 1,
+                        "countrycodes": "in"
+                    },
+                    headers={"User-Agent": "ShrimantShetkari/1.0"},
+                    timeout=6
+                )
+                geo_response.raise_for_status()
+                geo_items = geo_response.json()
+                if geo_items:
+                    latitude = float(geo_items[0]["lat"])
+                    longitude = float(geo_items[0]["lon"])
+                    weather_data["latitude"] = latitude
+                    weather_data["longitude"] = longitude
+            except Exception as geocode_error:
+                print("FARMING ADVICE GEOCODE ERROR:", geocode_error)
 
         if latitude is not None and longitude is not None:
             try:
@@ -3453,33 +3466,42 @@ def farming_advice(user_id: str, language: str = None):
                     "https://api.open-meteo.com/v1/forecast"
                     f"?latitude={latitude}&longitude={longitude}"
                     "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code"
-                    "&hourly=precipitation_probability,relative_humidity_2m,wind_speed_10m"
+                    "&hourly=precipitation_probability"
                     "&forecast_days=2&timezone=auto"
                 )
+
                 weather_response = requests.get(
                     url,
                     headers={"User-Agent": "ShrimantShetkari/1.0"},
                     timeout=8
                 )
                 weather_response.raise_for_status()
+
                 weather = weather_response.json()
                 current = weather.get("current", {})
                 hourly = weather.get("hourly", {})
 
                 code = current.get("weather_code")
                 weather_map = {
-                    0:"Clear Sky",1:"Mainly Clear",2:"Partly Cloudy",3:"Cloudy",
-                    45:"Fog",48:"Fog",51:"Drizzle",53:"Drizzle",55:"Heavy Drizzle",
-                    61:"Light Rain",63:"Rain",65:"Heavy Rain",80:"Rain Showers",
-                    81:"Heavy Rain Showers",82:"Violent Rain",95:"Thunderstorm",
-                    96:"Thunderstorm with Hail",99:"Thunderstorm with Heavy Hail"
+                    0:"Clear Sky", 1:"Mainly Clear", 2:"Partly Cloudy", 3:"Cloudy",
+                    45:"Fog", 48:"Fog", 51:"Drizzle", 53:"Drizzle", 55:"Heavy Drizzle",
+                    61:"Light Rain", 63:"Rain", 65:"Heavy Rain", 71:"Light Snow",
+                    73:"Snow", 75:"Heavy Snow", 80:"Rain Showers", 81:"Heavy Rain Showers",
+                    82:"Violent Rain", 95:"Thunderstorm", 96:"Thunderstorm with Hail",
+                    99:"Thunderstorm with Heavy Hail"
                 }
+
                 rain_series = hourly.get("precipitation_probability") or []
-                rain_6h = [x for x in rain_series[:6] if isinstance(x, (int,float))]
+                rain_6h = [x for x in rain_series[:6] if isinstance(x, (int, float))]
                 rain_now = None
+
                 try:
                     times = hourly.get("time") or []
-                    rain_now = rain_series[times.index(current.get("time"))]
+                    current_time = current.get("time")
+                    if current_time in times:
+                        rain_now = rain_series[times.index(current_time)]
+                    elif rain_6h:
+                        rain_now = rain_6h[0]
                 except Exception:
                     pass
 
@@ -3491,8 +3513,12 @@ def farming_advice(user_id: str, language: str = None):
                     "rain_probability": rain_now,
                     "rain_6h_max": max(rain_6h) if rain_6h else None,
                     "weather_code": code,
-                    "weather": weather_map.get(code, "Unknown Weather")
+                    "weather": weather_map.get(code, "Unknown Weather"),
+                    "source": "Open-Meteo",
+                    "latitude": latitude,
+                    "longitude": longitude
                 }
+
                 weather_info = f"""
 Temperature: {weather_data['temperature']} °C
 Humidity: {weather_data['humidity']} %
@@ -3501,16 +3527,16 @@ Current rain probability: {weather_data['rain_probability']} %
 Next 6-hour rain risk: {weather_data['rain_6h_max']} %
 Weather: {weather_data['weather']}
 """
+
+                print("FARMING ADVICE LIVE WEATHER:", weather_info.strip())
+
             except Exception as weather_error:
                 print("FARMING ADVICE WEATHER ERROR:", weather_error)
-
 
         # =========================
         # LAST DISEASE
         # =========================
-
         disease = None
-
         history_docs = (
             firestore_db.collection("disease_history")
             .where("user_id", "==", str(user_id))
@@ -3520,7 +3546,9 @@ Weather: {weather_data['weather']}
         latest_time = ""
         for history_doc in history_docs:
             history_data = history_doc.to_dict()
-            history_time = str(history_data.get("date") or history_data.get("created_at") or "")
+            history_time = str(
+                history_data.get("date") or history_data.get("created_at") or ""
+            )
             if disease is None or history_time > latest_time:
                 latest_time = history_time
                 disease = (
@@ -3528,12 +3556,8 @@ Weather: {weather_data['weather']}
                     history_data.get("severity", "")
                 )
 
-
         disease_info = "No recent disease"
-
-
         if disease:
-
             disease_info = f"""
 Disease:
 {disease[0]}
@@ -3542,13 +3566,10 @@ Severity:
 {disease[1]}
 """
 
-
         # =========================
         # AI PROMPT
         # =========================
-
         prompt = f"""
-
 You are India's best agriculture expert.
 
 The farmer selected language: {selected_language}
@@ -3559,25 +3580,23 @@ Do NOT use Hindi, Marathi or English mixed language.
 Use simple language that an Indian farmer can easily understand.
 
 Farmer Details:
+Crop: {crop}
+Village: {village}
 
-Crop:
-{crop}
-
-Village:
-{village}
-
-Weather:
-
+LIVE WEATHER DATA:
 {weather_info}
 
 Disease History:
-
 {disease_info}
 
-LIVE WEATHER RULE:
-Use only the live weather values above. Never invent, estimate or assume missing weather values. If live weather is unavailable, say that clearly and do not give weather-specific irrigation/spraying claims.
+Use the LIVE WEATHER DATA above for today's advice.
+Never invent, estimate or assume weather values.
+If live weather is available, mention the actual temperature, humidity,
+rain probability, wind and weather condition when useful.
+Base irrigation, spraying, fertilizer timing and crop-risk advice on these
+actual live values and the selected crop.
 
-Give short and practical farming advice based on the current crop AND live weather.
+Give short and practical farming advice.
 
 Use exactly this format:
 
@@ -3591,11 +3610,9 @@ Use exactly this format:
 Keep every section short and practical.
 """
 
-
         # =========================
-        # GEMINI + SAFE QUOTA FALLBACK
+        # GEMINI + LIVE-DATA FALLBACK
         # =========================
-
         response = None
         last_ai_error = ""
 
@@ -3608,74 +3625,70 @@ Keep every section short and practical.
             last_ai_error = str(ai_error)
             print("FARMING ADVICE AI ERROR:", ai_error)
 
-        # Gemini free-tier quota can be exhausted. In that case, keep the
-        # feature working with practical advice based ONLY on the live data
-        # already collected above. No weather value is invented.
         if response is not None and getattr(response, "text", None):
             advice_text = response.text.strip()
             ai_generated = True
         else:
-            temp = weather_data.get("temperature")
-            humidity = weather_data.get("humidity")
-            rain_prob = weather_data.get("rain_probability")
-            rain_6h = weather_data.get("rain_6h_max")
-            wind = weather_data.get("wind")
-
-            crop_name = crop or "आपकी फसल"
-            advice_parts = []
-
+            # Never stop the feature because Gemini is temporarily unavailable.
+            # The fallback uses ONLY the live weather values collected above.
             if weather_data.get("available"):
+                temp = weather_data.get("temperature")
+                humidity = weather_data.get("humidity")
+                rain_prob = weather_data.get("rain_probability")
+                rain_6h = weather_data.get("rain_6h_max")
+                wind = weather_data.get("wind")
+                crop_name = crop or "आपकी फसल"
+
                 if isinstance(rain_6h, (int, float)) and rain_6h >= 60:
-                    irrigation = "अगले 6 घंटे में बारिश की संभावना अधिक है, इसलिए अभी अतिरिक्त सिंचाई करने से पहले खेत की नमी जांचें।"
-                    spray = "बारिश की संभावना अधिक होने पर फवारणी/स्प्रे बारिश से पहले न करें; मौसम स्थिर होने की प्रतीक्षा करें।"
+                    irrigation = "अगले 6 घंटे में बारिश की संभावना अधिक है, इसलिए खेत की नमी जांचकर अतिरिक्त सिंचाई टालें।"
+                    spray = "अगले 6 घंटे में बारिश की संभावना अधिक है, इसलिए अभी फवारणी/स्प्रे न करें।"
                 elif isinstance(rain_6h, (int, float)) and rain_6h >= 30:
-                    irrigation = "खेत की नमी देखकर ही सिंचाई करें; बारिश की संभावना को ध्यान में रखें।"
-                    spray = "स्प्रे करने से पहले अगले कुछ घंटों की बारिश की संभावना जरूर देखें।"
+                    irrigation = "खेत की नमी देखकर ही सिंचाई करें और अगले कुछ घंटों की बारिश को ध्यान में रखें।"
+                    spray = "स्प्रे से पहले अगले कुछ घंटों की बारिश की संभावना जरूर देखें।"
                 else:
-                    irrigation = "मिट्टी की नमी जांचकर आवश्यकता के अनुसार सिंचाई करें।"
-                    spray = "स्प्रे का समय स्थानीय मौसम और फसल की स्थिति देखकर तय करें।"
+                    irrigation = "मिट्टी की नमी जांचकर ही जरूरत के अनुसार सिंचाई करें।"
+                    spray = "स्प्रे का समय वर्तमान मौसम और फसल की स्थिति देखकर तय करें।"
 
                 disease_risk = (
-                    "आर्द्रता अधिक होने पर फसल में फफूंदजनित रोग के लक्षणों पर नजर रखें।"
+                    "आर्द्रता अधिक है, इसलिए फफूंदजनित रोग के लक्षणों पर खास नजर रखें।"
                     if isinstance(humidity, (int, float)) and humidity >= 80
                     else "पत्तियों और तनों पर रोग या कीट के नए लक्षण रोज जांचें।"
                 )
-
                 heat = (
-                    "तापमान अधिक होने पर दोपहर में अनावश्यक खेत का काम और स्प्रे से बचें।"
+                    "तापमान अधिक है, इसलिए दोपहर की तेज गर्मी में अनावश्यक स्प्रे से बचें।"
                     if isinstance(temp, (int, float)) and temp >= 35
-                    else "फसल की सामान्य बढ़वार और पत्तियों की स्थिति पर नजर रखें।"
+                    else "फसल की बढ़वार और पत्तियों की स्थिति पर नजर रखें।"
                 )
-
                 wind_note = (
-                    "हवा तेज होने पर स्प्रे टालें ताकि दवा का बहाव न हो।"
+                    "हवा तेज है, इसलिए स्प्रे टालें ताकि दवा का बहाव कम हो।"
                     if isinstance(wind, (int, float)) and wind >= 20
                     else "स्प्रे करते समय हवा की गति सामान्य हो यह सुनिश्चित करें।"
                 )
 
+                weather_summary = (
+                    f"लाइव मौसम: {temp}°C, आर्द्रता {humidity}%, "
+                    f"बारिश की संभावना {rain_prob if rain_prob is not None else rain_6h}% और हवा {wind} km/h।"
+                )
+
                 advice_text = (
-                    f"🌱 Crop Status:\n{crop_name} की वर्तमान स्थिति खेत में देखकर पुष्टि करें।\n\n"
+                    f"🌱 Crop Status:\n{crop_name} — {weather_summary}\n\n"
                     f"💧 Irrigation Advice:\n{irrigation}\n\n"
                     f"💊 Disease Protection:\n{disease_risk}\n\n"
                     f"🌿 Fertilizer Advice:\nमिट्टी की नमी और फसल की अवस्था देखकर ही खाद दें; बहुत अधिक बारिश की संभावना में तुरंत खाद न डालें।\n\n"
                     f"⚠ Alert:\n{spray} {wind_note} {heat}\n\n"
-                    f"🤖 AI Recommendation:\nआज {crop_name} के खेत की नमी, पत्तियों और कीट/रोग के लक्षण देखकर अगला काम तय करें।"
+                    f"🤖 AI Recommendation:\nआज {crop_name} के खेत में लाइव मौसम के अनुसार नमी, पत्तियों और कीट/रोग के लक्षण देखकर अगला काम तय करें।"
                 )
             else:
                 advice_text = (
-                    f"🌱 Crop Status:\n{crop_name} की स्थिति खेत में देखकर जांचें।\n\n"
-                    "💧 Irrigation Advice:\nलाइव मौसम उपलब्ध नहीं है, इसलिए मौसम-आधारित सिंचाई सलाह नहीं दी जा रही है।\n\n"
+                    f"🌱 Crop Status:\n{crop or 'आपकी फसल'} की स्थिति खेत में जांचें।\n\n"
+                    "💧 Irrigation Advice:\nइस समय लाइव मौसम स्रोत से डेटा नहीं मिला, इसलिए मौसम-आधारित सिंचाई अनुमान नहीं दिया जा रहा है।\n\n"
                     "💊 Disease Protection:\nपत्तियों और तनों पर नए रोग/कीट के लक्षण जांचें।\n\n"
                     "🌿 Fertilizer Advice:\nमिट्टी की नमी और फसल की अवस्था देखकर ही खाद दें।\n\n"
-                    "⚠ Alert:\nलाइव मौसम डेटा उपलब्ध होने तक मौसम-आधारित स्प्रे या सिंचाई निर्णय न लें।\n\n"
-                    f"🤖 AI Recommendation:\nआज {crop_name} की खेत-जांच करें और जरूरत के अनुसार कार्रवाई करें।"
+                    "⚠ Alert:\nलाइव मौसम डेटा मिलते ही मौसम-आधारित स्प्रे या सिंचाई निर्णय अपडेट होगा।\n\n"
+                    f"🤖 AI Recommendation:\nआज {crop or 'फसल'} की खेत-जांच करें।"
                 )
 
             ai_generated = False
-
-        # =========================
-        # RESPONSE
-        # =========================
 
         return {
             "status": True,
@@ -3688,16 +3701,12 @@ Keep every section short and practical.
             "ai_error": last_ai_error if not ai_generated else ""
         }
 
-
     except Exception as e:
-
         return {
-
             "status": False,
-
             "message": str(e)
-
         }
+
 
 @app.post("/ai-chat")
 async def ai_chat(data: dict):

@@ -10233,9 +10233,23 @@ JSON.parse(
 localStorage.getItem("user")
 );
 
-let res = await fetch(
-    `${API}/farming-advice/${user.id}?language=${encodeURIComponent(getSelectedLanguage())}`
-);
+let adviceUrl =
+    `${API}/farming-advice/${user.id}?language=${encodeURIComponent(getSelectedLanguage())}`;
+
+// Use the same live GPS coordinates already obtained by the Weather page.
+// This makes Farming Advice use the exact current location without changing
+// the existing login/profile flow.
+try {
+    const liveLat = sessionStorage.getItem("ss_live_lat");
+    const liveLon = sessionStorage.getItem("ss_live_lon");
+    if (liveLat && liveLon) {
+        adviceUrl += `&lat=${encodeURIComponent(liveLat)}&lon=${encodeURIComponent(liveLon)}`;
+    }
+} catch (e) {
+    console.log("Live advice location read skipped:", e);
+}
+
+let res = await fetch(adviceUrl, { cache:"no-store" });
 
 let data =
 await res.json();
@@ -10244,7 +10258,7 @@ if(data.status){
     const w=data.weather_data||{};
     const weatherLine=w.available
         ? `🌡 ${w.temperature ?? "--"}°C  •  💧 ${w.humidity ?? "--"}%  •  💨 ${w.wind ?? "--"} km/h  •  🌧 ${w.rain_probability ?? "--"}% rain probability  •  Next 6h: ${w.rain_6h_max ?? "--"}%`
-        : "⚠️ Live weather unavailable — weather-specific advice is not being invented.";
+        : "📍 Live location weather is being refreshed. Please open Weather once to update your current location.";
     const status=document.getElementById("aiAdviceStatus");
     if(status){
         status.className="aiAdviceStatus"+(data.ai_generated===false ? " fallback" : "");
