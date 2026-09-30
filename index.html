@@ -3986,6 +3986,16 @@ nav div:active{
     color:var(--ss-green-dark);
 }
 
+/* HOME KISAN CONNECT - POLISHED COMMUNITY CARD */
+.kisanConnectHomeItem{grid-column:1 / -1;display:flex;align-items:center;gap:14px;padding:16px 17px;text-align:left;background:linear-gradient(135deg,#ffffff 0%,#f3fff7 52%,#e8f8ef 100%);border:1px solid #d8eee0;box-shadow:0 7px 20px rgba(25,135,84,.12);min-height:82px;}
+.kisanConnectHomeItem:hover{transform:translateY(-3px);box-shadow:0 11px 26px rgba(25,135,84,.18);}
+.kcHomeIcon{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;border-radius:17px;background:linear-gradient(135deg,#198754,#2e7d32);color:#fff;font-size:29px;box-shadow:0 6px 15px rgba(25,135,84,.22);}
+.kcHomeContent{min-width:0;flex:1;}
+.kcHomeContent p{margin:0 !important;color:#173b28 !important;font-size:18px !important;font-weight:800 !important;}
+.kcHomeContent span{display:block;margin-top:5px;color:#6a7c71;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kcHomeArrow{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:50%;background:#e1f3e8;color:#198754;font-size:27px;font-weight:800;}
+@media(max-width:600px){.kisanConnectHomeItem{grid-column:1 / -1;min-height:76px;padding:13px 14px;}.kcHomeIcon{width:48px;height:48px;flex-basis:48px;font-size:25px;border-radius:15px;}.kcHomeContent p{font-size:16px !important;}.kcHomeContent span{font-size:10.5px;}.kcHomeArrow{width:31px;height:31px;flex-basis:31px;font-size:24px;}}
+
 /* =========================================================
    KISAN CONNECT - TELEGRAM STYLE CROP GROUPS
 ========================================================= */
@@ -5119,13 +5129,16 @@ Detecting...
 
 </div>
 
-<div class="item" onclick="openPage('kisanPage')">
+<div class="item kisanConnectHomeItem" onclick="openPage('kisanPage')">
 
-    👥
+    <div class="kcHomeIcon">👥</div>
 
-    <p id="txtKisanConnect">
-        Kisan Connect
-    </p>
+    <div class="kcHomeContent">
+        <p id="txtKisanConnect">Kisan Connect</p>
+        <span>🌾 Farmers Community • Crop Groups • Chat</span>
+    </div>
+
+    <div class="kcHomeArrow">›</div>
 
 </div>
 
