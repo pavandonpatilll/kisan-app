@@ -10228,47 +10228,122 @@ data.history[0];
 
 async function loadFarmingAdvice(){
 
-let user =
-JSON.parse(
-localStorage.getItem("user")
-);
+    const user = JSON.parse(localStorage.getItem("user") || "null");
 
-let adviceUrl =
-    `${API}/farming-advice/${user.id}?language=${encodeURIComponent(getSelectedLanguage())}`;
-
-// Use the same live GPS coordinates already obtained by the Weather page.
-// This makes Farming Advice use the exact current location without changing
-// the existing login/profile flow.
-try {
-    const liveLat = sessionStorage.getItem("ss_live_lat");
-    const liveLon = sessionStorage.getItem("ss_live_lon");
-    if (liveLat && liveLon) {
-        adviceUrl += `&lat=${encodeURIComponent(liveLat)}&lon=${encodeURIComponent(liveLon)}`;
+    if(!user || !user.id){
+        const box = document.getElementById("aiAdviceContent");
+        if(box){
+            box.innerHTML = "⚠️ Please login first.";
+        }
+        return;
     }
-} catch (e) {
-    console.log("Live advice location read skipped:", e);
-}
 
-let res = await fetch(adviceUrl, { cache:"no-store" });
+    const language = getSelectedLanguage();
+    const baseAdviceUrl = `${API}/farming-advice/${encodeURIComponent(user.id)}?language=${encodeURIComponent(language)}`;
 
-let data =
-await res.json();
+    // Farming Advice gets GPS itself so it does NOT depend on the farmer
+    // opening the Weather page first. Existing saved/session coordinates are
+    // still used first when available.
+    let liveLat = null;
+    let liveLon = null;
 
-if(data.status){
-    const w=data.weather_data||{};
-    const weatherLine=w.available
-        ? `🌡 ${w.temperature ?? "--"}°C  •  💧 ${w.humidity ?? "--"}%  •  💨 ${w.wind ?? "--"} km/h  •  🌧 ${w.rain_probability ?? "--"}% rain probability  •  Next 6h: ${w.rain_6h_max ?? "--"}%`
-        : "📍 Live location weather is being refreshed. Please open Weather once to update your current location.";
-    const status=document.getElementById("aiAdviceStatus");
-    if(status){
-        status.className="aiAdviceStatus"+(data.ai_generated===false ? " fallback" : "");
-        status.innerText=data.ai_generated===false ? "🛡️ Live-data farming advice" : "🤖 AI Farming Advice";
+    try{
+        liveLat = sessionStorage.getItem("ss_live_lat");
+        liveLon = sessionStorage.getItem("ss_live_lon");
+    }catch(e){}
+
+    const requestAdvice = async (lat, lon) => {
+        let adviceUrl = baseAdviceUrl;
+
+        if(lat !== null && lon !== null){
+            adviceUrl += `&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
+        }
+
+        const res = await fetch(adviceUrl, {
+            cache:"no-store",
+            headers:{"Cache-Control":"no-cache"}
+        });
+
+        return await res.json();
+    };
+
+    let data = null;
+
+    // If Weather already saved GPS, use it immediately.
+    if(liveLat && liveLon){
+        try{
+            data = await requestAdvice(liveLat, liveLon);
+        }catch(e){
+            console.log("Farming Advice live-coordinate request failed:", e);
+        }
     }
-    document.getElementById("aiAdviceContent").innerHTML=`<h3>🌾 ${escapeHtml(data.crop)}</h3><div style="background:#eef8f1;border-radius:14px;padding:12px;margin:12px 0;font-weight:700">${weatherLine}<br><small>${escapeHtml(w.weather||"")}</small></div><pre style="white-space:pre-wrap;font-size:16px;line-height:1.55">${escapeHtml(data.advice||"")}</pre>`;
-}else{
-    document.getElementById("aiAdviceContent").innerHTML="⚠️ Live farming advice temporarily unavailable. Please refresh.";
-}
 
+    // Otherwise request the browser's current location directly.
+    // This is independent of the Weather page.
+    if(!data && navigator.geolocation){
+        try{
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    resolve,
+                    reject,
+                    {enableHighAccuracy:true, timeout:7000, maximumAge:120000}
+                );
+            });
+
+            liveLat = position.coords.latitude;
+            liveLon = position.coords.longitude;
+
+            try{
+                sessionStorage.setItem("ss_live_lat", String(liveLat));
+                sessionStorage.setItem("ss_live_lon", String(liveLon));
+            }catch(e){}
+
+            data = await requestAdvice(liveLat, liveLon);
+        }catch(e){
+            console.log("Farming Advice GPS unavailable; backend fallback will be used:", e);
+        }
+    }
+
+    // Final fallback: backend uses saved profile coordinates or village
+    // geocoding, so the feature still works if GPS permission is denied.
+    if(!data){
+        try{
+            data = await requestAdvice(null, null);
+        }catch(e){
+            console.error("Farming Advice request failed:", e);
+            const box = document.getElementById("aiAdviceContent");
+            if(box){
+                box.innerHTML = "⚠️ Live farming advice temporarily unavailable. Please try again.";
+            }
+            return;
+        }
+    }
+
+    if(data.status){
+        const w = data.weather_data || {};
+
+        const weatherLine = w.available
+            ? `🌡 ${w.temperature ?? "--"}°C  •  💧 ${w.humidity ?? "--"}%  •  💨 ${w.wind ?? "--"} km/h  •  🌧 ${w.rain_probability ?? "--"}% rain probability  •  Next 6h: ${w.rain_6h_max ?? "--"}%`
+            : "⚠️ Live weather could not be fetched right now. No weather values are being invented.";
+
+        const status = document.getElementById("aiAdviceStatus");
+        if(status){
+            status.className = "aiAdviceStatus" + (data.ai_generated===false ? " fallback" : "");
+            status.innerText = data.ai_generated===false
+                ? "🛡️ Live-data farming advice"
+                : "🤖 AI Farming Advice";
+        }
+
+        const box = document.getElementById("aiAdviceContent");
+        if(box){
+            box.innerHTML = `<h3>🌾 ${escapeHtml(data.crop || "")}</h3><div style="background:#eef8f1;border-radius:14px;padding:12px;margin:12px 0;font-weight:700">${weatherLine}<br><small>${escapeHtml(w.weather || "")}</small></div><pre style="white-space:pre-wrap;font-size:16px;line-height:1.55">${escapeHtml(data.advice || "")}</pre>`;
+        }
+    }else{
+        const box = document.getElementById("aiAdviceContent");
+        if(box){
+            box.innerHTML = `⚠️ ${escapeHtml(data.message || "Live farming advice temporarily unavailable. Please try again.")}`;
+        }
+    }
 }
 
 async function askAI(){
