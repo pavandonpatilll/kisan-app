@@ -1,7 +1,7 @@
 from fastapi.staticfiles import StaticFiles
 import json
 from urllib import response
-from fastapi import FastAPI, UploadFile, File, Form, Request
+from fastapi import FastAPI, UploadFile, File, Form, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
@@ -5729,8 +5729,17 @@ Keep the meaning natural, short and farmer-friendly. Do not add explanations."""
         return {}
 
 
+def translate_group_message_background(message_id: str, message: str, source_language: str = "hi"):
+    try:
+        translations = translate_kisan_connect_message(message, source_language)
+        if translations:
+            firestore_db.collection("messages").document(message_id).update({"translations": translations})
+    except Exception as e:
+        print("KISAN CONNECT BACKGROUND TRANSLATION ERROR:", e)
+
+
 @app.post("/send-group-chat")
-def send_group_chat(data: dict):
+def send_group_chat(data: dict, background_tasks: BackgroundTasks):
     try:
         sender_id = str(data.get("sender_id") or "").strip()
         crop = str(data.get("crop") or "").strip()
@@ -5753,14 +5762,12 @@ def send_group_chat(data: dict):
         if not message and not image and message_type != "location":
             return {"status": False, "message": "Message is empty"}
 
+        # Save the message FIRST so chat feels instant. Translation runs in the
+        # background and never blocks the farmer's send action.
         translations = {}
-        if message_type == "text" and message:
-            translations = translate_kisan_connect_message(
-                message, sender_data.get("language", "hi")
-            )
-
         message_id = str(uuid.uuid4())
         created_at = datetime.now().isoformat()
+        source_language = sender_data.get("language", "hi")
         firestore_db.collection("messages").document(message_id).set({
             "id": message_id,
             "chat_type": "crop_group",
@@ -5769,7 +5776,7 @@ def send_group_chat(data: dict):
             "sender_name": sender_data.get("name", "Farmer"),
             "message": message,
             "translations": translations,
-            "source_language": sender_data.get("language", "hi"),
+            "source_language": source_language,
             "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "message_type": message_type,
             "image": image,
@@ -5780,7 +5787,36 @@ def send_group_chat(data: dict):
             "reactions": {},
             "created_at": created_at
         })
-        return {"status": True, "message": "Sent", "id": message_id}
+        # Translate after the message is already visible to all farmers.
+        if message_type == "text" and message:
+            background_tasks.add_task(
+                translate_group_message_background,
+                message_id,
+                message,
+                source_language
+            )
+
+        return {
+            "status": True,
+            "message": "Sent",
+            "id": message_id,
+            "message_data": {
+                "id": message_id,
+                "sender": sender_id,
+                "sender_name": sender_data.get("name", "Farmer"),
+                "message": message,
+                "translations": {},
+                "source_language": source_language,
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "message_type": message_type,
+                "image": image,
+                "latitude": latitude,
+                "longitude": longitude,
+                "reply_to_id": reply_to_id,
+                "reply_to_text": reply_to_text,
+                "reactions": {}
+            }
+        }
     except Exception as e:
         return {"status": False, "message": str(e)}
 
@@ -5825,6 +5861,36 @@ def get_group_chat(crop: str, limit: int = 100):
         return {"status": True, "crop": crop, "chat": data}
     except Exception as e:
         return {"status": False, "message": str(e), "chat": []}
+
+@app.post("/group-chat-delete")
+def group_chat_delete(data: dict):
+    try:
+        message_id = str(data.get("message_id") or "").strip()
+        user_id = str(data.get("user_id") or "").strip()
+        crop = str(data.get("crop") or "").strip()
+
+        if not message_id or not user_id or crop not in KISAN_CONNECT_CROPS:
+            return {"status": False, "message": "Invalid delete request"}
+
+        user_doc = firestore_db.collection("users").document(user_id).get()
+        msg_ref = firestore_db.collection("messages").document(message_id)
+        msg_doc = msg_ref.get()
+
+        if not user_doc.exists or not msg_doc.exists:
+            return {"status": False, "message": "User or message not found"}
+
+        msg = msg_doc.to_dict() or {}
+        if msg.get("chat_type") != "crop_group" or str(msg.get("group_crop", "")) != crop:
+            return {"status": False, "message": "Message does not belong to this group"}
+
+        if str(msg.get("sender_id", "")) != user_id:
+            return {"status": False, "message": "You can delete only your own messages"}
+
+        msg_ref.delete()
+        return {"status": True, "message": "Message deleted", "id": message_id}
+    except Exception as e:
+        return {"status": False, "message": str(e)}
+
 
 @app.post("/group-chat-reaction")
 def group_chat_reaction(data: dict):
