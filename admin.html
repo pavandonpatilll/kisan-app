@@ -1079,32 +1079,6 @@ body{
 const API_URL =
     "https://kisan-app-1.onrender.com";
 
-function escapeHtml(value){
-    return String(value ?? "").replace(/[&<>"']/g, character => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
-    }[character]));
-}
-
-async function adminFetch(url, options = {}){
-    const token = sessionStorage.getItem("adminSessionToken");
-    if(!token){
-        throw new Error("Admin login required");
-    }
-
-    const headers = new Headers(options.headers || {});
-    headers.set("Authorization", "Bearer " + token);
-    const response = await fetch(url, {...options, headers});
-    if(response.status === 401){
-        adminLogout();
-        throw new Error("Admin session expired. Please log in again.");
-    }
-    return response;
-}
-
 
 /* =========================
    ADMIN LOGIN
@@ -1163,7 +1137,10 @@ async function adminLogin(){
 
         if(data.status){
 
-            sessionStorage.setItem("adminSessionToken", data.session_token);
+            localStorage.setItem(
+                "adminLoggedIn",
+                "true"
+            );
 
 
             document
@@ -1206,7 +1183,7 @@ async function loadDashboard(){
 
     try{
 
-        const response = await adminFetch(
+        const response = await fetch(
             API_URL + "/admin/dashboard"
         );
 
@@ -1319,7 +1296,9 @@ function showSection(id){
 
 function adminLogout(){
 
-    sessionStorage.removeItem("adminSessionToken");
+    localStorage.removeItem(
+        "adminLoggedIn"
+    );
 
     document
     .getElementById("adminPage")
@@ -1340,7 +1319,11 @@ window.addEventListener(
     "load",
     function(){
 
-        if(sessionStorage.getItem("adminSessionToken")){
+        if(
+            localStorage.getItem(
+                "adminLoggedIn"
+            ) === "true"
+        ){
 
             document
             .getElementById("loginPage")
@@ -1349,8 +1332,6 @@ window.addEventListener(
             document
             .getElementById("adminPage")
             .style.display="block";
-
-            loadDashboard();
 
         }
 
@@ -1433,7 +1414,7 @@ async function addMandiRate(){
     try{
 
         const response =
-            await adminFetch(
+            await fetch(
                 API_URL + "/admin/mandi",
                 {
                     method: "POST",
@@ -1546,7 +1527,7 @@ async function loadMandiRates(){
     try{
 
         const response =
-            await adminFetch(
+            await fetch(
                 API_URL + "/admin/mandi"
             );
 
@@ -1584,30 +1565,30 @@ async function loadMandiRates(){
                 ">
 
                     <h3>
-                        🌾 ${escapeHtml(item.crop)}
+                        🌾 ${item.crop}
                     </h3>
 
                     <p>
-                        📍 ${escapeHtml(item.location)}
+                        📍 ${item.location}
                     </p>
 
                     <p>
                         🔻 Minimum:
-                        ₹${escapeHtml(item.min_price)}
+                        ₹${item.min_price}
                     </p>
 
                     <p>
                         🔺 Maximum:
-                        ₹${escapeHtml(item.max_price)}
+                        ₹${item.max_price}
                     </p>
 
                     <p>
                         💰 Average:
-                        ₹${escapeHtml(item.avg_price)}
+                        ₹${item.avg_price}
                     </p>
 
                     <small>
-                        📅 ${escapeHtml(item.date)}
+                        📅 ${item.date}
                     </small>
 
                 </div>
@@ -1660,7 +1641,7 @@ async function addNews(){
     try{
 
         const response =
-            await adminFetch(
+            await fetch(
                 API_URL + "/admin/news",
                 {
                     method: "POST",
@@ -1761,7 +1742,7 @@ async function addCropGuide(){
     try{
 
         const response =
-            await adminFetch(
+            await fetch(
                 API_URL + "/admin/crop-guide",
                 {
                     method:"POST",
@@ -1866,7 +1847,7 @@ async function addDiseaseData(){
     try{
 
         const response =
-            await adminFetch(
+            await fetch(
                 API_URL + "/admin/disease",
                 {
                     method: "POST",
@@ -1963,7 +1944,7 @@ async function sendNotification(){
 
     try{
 
-        const response = await adminFetch(
+        const response = await fetch(
 
             API_URL + "/admin/notification",
 
@@ -2059,7 +2040,7 @@ async function addGovernmentScheme(){
 
     try{
 
-        const response = await adminFetch(
+        const response = await fetch(
 
             API_URL + "/admin/scheme",
 
@@ -2159,7 +2140,7 @@ async function loadPremiumUsers(filter = "all") {
     try {
 
         const response =
-            await adminFetch(
+            await fetch(
                 API_URL + "/admin/premium-users"
             );
 
@@ -2382,7 +2363,7 @@ async function loadPremiumUsers(filter = "all") {
                         padding:12px;
                         border-top:1px solid #eee;
                     ">
-                        ${escapeHtml(user.id || "-")}
+                        ${user.id || "-"}
                     </td>
 
 
@@ -2393,7 +2374,7 @@ async function loadPremiumUsers(filter = "all") {
                         border-top:1px solid #eee;
                         font-weight:bold;
                     ">
-                        ${escapeHtml(user.name || "-")}
+                        ${user.name || "-"}
                     </td>
 
 
@@ -2403,7 +2384,7 @@ async function loadPremiumUsers(filter = "all") {
                         padding:12px;
                         border-top:1px solid #eee;
                     ">
-                        ${escapeHtml(user.mobile || "-")}
+                        ${user.mobile || "-"}
                     </td>
 
 
@@ -2413,7 +2394,7 @@ async function loadPremiumUsers(filter = "all") {
                         padding:12px;
                         border-top:1px solid #eee;
                     ">
-                        ${escapeHtml(user.premium_plan || "Free")}
+                        ${user.premium_plan || "Free"}
                     </td>
 
 
@@ -2435,7 +2416,7 @@ async function loadPremiumUsers(filter = "all") {
                         padding:12px;
                         border-top:1px solid #eee;
                     ">
-                        ${escapeHtml(user.premium_expiry || "-")}
+                        ${user.premium_expiry || "-"}
                     </td>
 
 
@@ -2446,7 +2427,7 @@ async function loadPremiumUsers(filter = "all") {
                         border-top:1px solid #eee;
                         font-size:13px;
                     ">
-                        ${escapeHtml(user.razorpay_subscription_id || "-")}
+                        ${user.razorpay_subscription_id || "-"}
                     </td>
 
 
@@ -2457,7 +2438,7 @@ async function loadPremiumUsers(filter = "all") {
                         border-top:1px solid #eee;
                         font-size:13px;
                     ">
-                        ${escapeHtml(user.razorpay_payment_id || "-")}
+                        ${user.razorpay_payment_id || "-"}
                     </td>
 
 
@@ -2491,7 +2472,7 @@ async function loadPremiumUsers(filter = "all") {
                         padding:12px;
                         border-top:1px solid #eee;
                     ">
-                        ${escapeHtml(user.last_payment_date || "-")}
+                        ${user.last_payment_date || "-"}
                     </td>
 
 
@@ -2501,7 +2482,7 @@ async function loadPremiumUsers(filter = "all") {
                         padding:12px;
                         border-top:1px solid #eee;
                     ">
-                        ${escapeHtml(user.next_payment_date || "-")}
+                        ${user.next_payment_date || "-"}
                     </td>
 
 
@@ -2539,7 +2520,7 @@ async function loadUsers(){
     try{
 
         const response =
-            await adminFetch(
+            await fetch(
                 API_URL + "/admin/users"
             );
 
@@ -2565,27 +2546,27 @@ async function loadUsers(){
                 <tr>
 
                     <td style="padding:12px;border-top:1px solid #eee;">
-                        ${escapeHtml(user.id)}
+                        ${user.id}
                     </td>
 
                     <td style="padding:12px;border-top:1px solid #eee;">
-                        ${escapeHtml(user.name || "-")}
+                        ${user.name || "-"}
                     </td>
 
                     <td style="padding:12px;border-top:1px solid #eee;">
-                        ${escapeHtml(user.mobile || "-")}
+                        ${user.mobile || "-"}
                     </td>
 
                     <td style="padding:12px;border-top:1px solid #eee;">
-                        ${escapeHtml(user.village || "-")}
+                        ${user.village || "-"}
                     </td>
 
                     <td style="padding:12px;border-top:1px solid #eee;">
-                        ${escapeHtml(user.crop || "-")}
+                        ${user.crop || "-"}
                     </td>
 
                     <td style="padding:12px;border-top:1px solid #eee;">
-                        ${escapeHtml(user.language || "-")}
+                        ${user.language || "-"}
                     </td>
 
                 </tr>
