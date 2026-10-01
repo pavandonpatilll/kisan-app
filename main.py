@@ -1770,7 +1770,7 @@ def get_weather(lat: float, lon: float):
         response = requests.get(
             url,
             headers={
-                "User-Agent": "ShrimantShetkari/1.0 weather-service"
+                "User-Agent": "Cropjit/1.0 weather-service"
             },
             timeout=10
         )
@@ -3430,7 +3430,7 @@ def farming_advice(user_id: str, language: str = None, lat: float = None, lon: f
                         "limit": 1,
                         "countrycodes": "in"
                     },
-                    headers={"User-Agent": "ShrimantShetkari/1.0"},
+                    headers={"User-Agent": "Cropjit/1.0"},
                     timeout=6
                 )
                 geo_response.raise_for_status()
@@ -3455,7 +3455,7 @@ def farming_advice(user_id: str, language: str = None, lat: float = None, lon: f
 
                 weather_response = requests.get(
                     url,
-                    headers={"User-Agent": "ShrimantShetkari/1.0"},
+                    headers={"User-Agent": "Cropjit/1.0"},
                     timeout=8
                 )
                 weather_response.raise_for_status()
@@ -4032,7 +4032,7 @@ def smart_alerts(user_id: str):
 
                 weather_response = requests.get(
                     url,
-                    headers={"User-Agent": "ShrimantShetkari/1.0"},
+                    headers={"User-Agent": "Cropjit/1.0"},
                     timeout=12
                 )
 
@@ -4645,7 +4645,7 @@ def rain_alert(user_id: str):
 
                 weather_response = requests.get(
                     url,
-                    headers={"User-Agent": "ShrimantShetkari/1.0"},
+                    headers={"User-Agent": "Cropjit/1.0"},
                     timeout=12
                 )
 
