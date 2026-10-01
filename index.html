@@ -6341,8 +6341,8 @@ Back Home
 <section id="kisanPage" class="featurePage kcPage">
   <div class="kcWrap">
     <div class="kcTop">
-    <h1 id="kcPageTitle">👥 Kisan Connect</h1>
-    <p id="kcPageSubtitle">अपने crop के farmers के group में जुड़ो और Telegram-style chat करो</p>
+            <h1>👥 Kisan Connect</h1>
+            <p>अपने crop के farmers के group में जुड़ो और Telegram-style chat करो</p>
       <input id="kcGroupSearch" class="kcSearch" placeholder="🔎 Crop group search..." oninput="filterCropGroups()">
     </div>
     <div id="cropGroupList" class="kcGroups">
@@ -9210,7 +9210,7 @@ async function loadHomeMandiTicker(){
     try{
 
         const response = await fetch(
-            API + "/mandi-feed",
+            "https://kisan-app-1.onrender.com/admin/mandi",
             {method:"GET",cache:"no-store"}
         );
 
@@ -9231,10 +9231,10 @@ async function loadHomeMandiTicker(){
         }
 
         const items = rates.map(function(item){
-            const crop = escapeHtml(item.crop);
-            const location = escapeHtml(item.location || "Maharashtra");
+            const crop = item.crop;
+            const location = item.location || "Maharashtra";
             const price = Number(item.avg_price).toLocaleString("en-IN");
-            const date = escapeHtml(item.date || "Today");
+            const date = item.date || "Today";
             return `<div class="homeMandiItem"><strong>🌾 ${crop}</strong><div class="homeMandiPrice">₹ ${price} <small style="display:inline;">/ क्विंटल</small></div><small>📍 ${location} • ${date}</small></div>`;
         }).join("");
 
