@@ -93,8 +93,8 @@ ADMIN_SESSION_SECONDS = 30 * 60
 
 
 def create_admin_session_token(username):
-    if len(ADMIN_SESSION_SECRET.encode()) < 32:
-        raise RuntimeError("ADMIN_SESSION_SECRET must be at least 32 bytes")
+    if not ADMIN_SESSION_SECRET:
+        raise RuntimeError("ADMIN_SESSION_SECRET is not configured")
 
     payload = json.dumps({
         "sub": username,
@@ -112,7 +112,7 @@ def create_admin_session_token(username):
 
 
 def verify_admin_session_token(token):
-    if len(ADMIN_SESSION_SECRET.encode()) < 32 or not token:
+    if not ADMIN_SESSION_SECRET or not token:
         return None
 
     try:
@@ -842,6 +842,9 @@ class SchemeModel(BaseModel):
 @app.post("/admin/login")
 def admin_login(data: AdminLoginModel):
 
+    password_hash = hashlib.sha256(
+        data.password.encode()
+    ).hexdigest()
     admin = None
     admin_docs = (
         firestore_db
@@ -854,18 +857,15 @@ def admin_login(data: AdminLoginModel):
     for doc in admin_docs:
         admin_data = doc.to_dict() or {}
         stored_hash = str(admin_data.get("password", ""))
-        if (
-            doc.id != "default-admin"
-            and verify_password(data.password, stored_hash)
-        ):
+        is_legacy_default = (
+            data.username == "admin"
+            and hmac.compare_digest(password_hash, hashlib.sha256(b"admin123").hexdigest())
+        )
+        if stored_hash and hmac.compare_digest(stored_hash, password_hash) and not is_legacy_default:
             admin = {
                 "id": admin_data.get("id", doc.id),
                 "username": admin_data.get("username", data.username)
             }
-            if not stored_hash.startswith("pbkdf2_sha256$"):
-                firestore_db.collection("admins").document(doc.id).update({
-                    "password": hash_password(data.password)
-                })
         break
 
     configured_username = os.getenv("ADMIN_USERNAME", "")
@@ -885,10 +885,10 @@ def admin_login(data: AdminLoginModel):
             "message": "Invalid username or password"
         }
 
-    if len(ADMIN_SESSION_SECRET.encode()) < 32:
+    if not ADMIN_SESSION_SECRET:
         return {
             "status": False,
-            "message": "ADMIN_SESSION_SECRET must be at least 32 bytes"
+            "message": "Admin session signing is not configured"
         }
 
     session_token = create_admin_session_token(admin["username"])
@@ -6177,51 +6177,77 @@ async def upload_chat_image(
 ):
 
     try:
-        if not FIREBASE_STORAGE_BUCKET:
+
+        if not file.content_type:
+
             return {
                 "status": False,
-                "message": "Firebase Storage bucket is not configured"
+                "message": "Invalid file"
             }
 
-        max_image_size = 10 * 1024 * 1024
-        image_data = await file.read(max_image_size + 1)
-        if len(image_data) > max_image_size:
+
+        if not file.content_type.startswith(
+            "image/"
+        ):
+
+            return {
+                "status": False,
+                "message": "Only images are allowed"
+            }
+
+
+        image_data = await file.read()
+
+        if len(image_data) > 10 * 1024 * 1024:
             return {
                 "status": False,
                 "message": "Image must be smaller than 10 MB"
             }
 
-        with Image.open(io.BytesIO(image_data)) as image:
-            image_format = image.format
-            image.verify()
+        image = Image.open(io.BytesIO(image_data))
+        image.verify()
 
-        format_details = {
-            "JPEG": (".jpg", "image/jpeg"),
-            "PNG": (".png", "image/png"),
-            "WEBP": (".webp", "image/webp"),
-            "GIF": (".gif", "image/gif")
+        extension_by_type = {
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "image/webp": ".webp",
+            "image/gif": ".gif"
         }
-        if image_format not in format_details:
-            return {
-                "status": False,
-                "message": "Only JPEG, PNG, WebP and GIF images are supported"
-            }
 
-        extension, content_type = format_details[image_format]
-        object_name = f"chat/{uuid.uuid4()}{extension}"
-        download_token = secrets.token_urlsafe(32)
-        bucket = storage.bucket(FIREBASE_STORAGE_BUCKET)
-        blob = bucket.blob(object_name)
-        blob.metadata = {"firebaseStorageDownloadTokens": download_token}
-        blob.upload_from_string(image_data, content_type=content_type)
-
-        image_url = (
-            "https://firebasestorage.googleapis.com/v0/b/"
-            f"{quote(bucket.name, safe='')}/o/{quote(object_name, safe='')}"
-            f"?alt=media&token={quote(download_token, safe='')}"
+        extension = extension_by_type.get(
+            file.content_type,
+            ".jpg"
         )
 
-        return {"status": True, "image_url": image_url}
+
+        filename = (
+            str(uuid.uuid4())
+            + extension
+        )
+
+
+        file_path = os.path.join(
+            CHAT_UPLOAD_DIR,
+            filename
+        )
+
+
+        with open(
+            file_path,
+            "wb"
+        ) as buffer:
+
+            buffer.write(image_data)
+
+
+        return {
+
+            "status": True,
+
+            "image_url":
+                "/uploads/chat/" + filename
+
+        }
 
 
     except Exception as e:
