@@ -6455,42 +6455,11 @@ Back Home
 <script>
 
 let allNews=[];
-let diseaseHistoryCache=[];
 let chatUserId = null;
 let chatUserName = "";
 let sendingMessage = false;
 
 const API = "https://kisan-app-1.onrender.com";
-const nativeFetch = window.fetch.bind(window);
-
-window.fetch = function(input, init = {}){
-    const requestUrl = typeof input === "string" ? input : input.url;
-    let isApiRequest = false;
-    try{
-        isApiRequest = new URL(requestUrl, window.location.href).origin === new URL(API).origin;
-    }catch(error){
-        return nativeFetch(input, init);
-    }
-
-    const token = localStorage.getItem("appSessionToken");
-    if(!isApiRequest || !token){
-        return nativeFetch(input, init);
-    }
-
-    const headers = new Headers(
-        init.headers || (input instanceof Request ? input.headers : undefined)
-    );
-    headers.set("Authorization", "Bearer " + token);
-    return nativeFetch(input, {...init, headers}).then(response => {
-        if(response.status === 401 && localStorage.getItem("appSessionToken")){
-            localStorage.removeItem("user");
-            localStorage.removeItem("userId");
-            localStorage.removeItem("appSessionToken");
-            window.location.reload();
-        }
-        return response;
-    });
-};
 
 initializeAppHistory();
 
@@ -6623,7 +6592,6 @@ localStorage.setItem(
     "user",
     JSON.stringify(data.user)
 );
-localStorage.setItem("appSessionToken", data.session_token);
 
 localStorage.setItem("userId", data.user.id);
 
@@ -6681,7 +6649,6 @@ async function loginUser(){
             "user",
             JSON.stringify(data.user)
         );
-        localStorage.setItem("appSessionToken", data.session_token);
         loadPremiumStatus();
 
         localStorage.setItem(
@@ -6700,7 +6667,7 @@ async function loginUser(){
 
         loadDiseaseSummary();
 
-        document.getElementById("farmerName").textContent =
+        document.getElementById("farmerName").innerHTML =
             data.user.name;
 
     }
@@ -6774,12 +6741,6 @@ function checkSavedLogin(){
 
     const userData =
         localStorage.getItem("user");
-
-    if(!localStorage.getItem("appSessionToken")){
-        localStorage.removeItem("user");
-        localStorage.removeItem("userId");
-        return;
-    }
 
     if(!userData){
 
@@ -6855,8 +6816,6 @@ function logout(){
     localStorage.removeItem("user");
 
     localStorage.removeItem("userId");
-
-    localStorage.removeItem("appSessionToken");
 
     localStorage.removeItem("kisanUser");
 
@@ -7331,7 +7290,6 @@ function closeKcPhoto(fromHistory=false){
 }
 
 function escapeHtml(value){return String(value??"").replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
-function safeExternalUrl(value){try{const url=new URL(String(value||""));return url.protocol==="https:"?url.href:"#";}catch(error){return "#";}}
 
 async function loadFarmers(){
 
@@ -7394,19 +7352,19 @@ async function loadFarmers(){
             <div class="farmerCard">
 
                 <h3>
-                    👨‍🌾 ${escapeHtml(f.name || "Farmer")}
+                    👨‍🌾 ${f.name}
                 </h3>
 
                 <p>
-                    🌱 Crop: ${escapeHtml(f.crop || "Not Added")}
+                    🌱 Crop: ${f.crop || "Not Added"}
                 </p>
 
                 <p>
-                    📍 ${escapeHtml(f.village || "Not Added")}
+                    📍 ${f.village || "Not Added"}
                 </p>
 
                 <button
-                    onclick="openChat('${encodeURIComponent(String(f.id))}', '${encodeURIComponent(f.name || "Farmer").replace(/'/g, "%27")}')"
+                    onclick="openChat('${encodeURIComponent(String(f.id))}', '${encodeURIComponent(f.name || "Farmer")}')"
                 >
 
                     💬 Chat
@@ -7447,7 +7405,7 @@ function openChat(id, name){
 
     document.getElementById(
         "chatTitle"
-    ).textContent =
+    ).innerHTML =
         "💬 Chat with " + chatUserName;
 
     loadChat();
@@ -7925,28 +7883,31 @@ html += `
 
 <div class="newsCategory ${badge}">
 
-${escapeHtml(n.icon || "🌱")} ${escapeHtml(n.category || "Crop")}
+${n.icon} ${n.category}
 
 </div>
 
 <h3>
 
-${escapeHtml(n.title || "Agriculture News")}
+${n.title}
 
 </h3>
 
 <p>
-${escapeHtml((n.description || "Latest agriculture update").substring(0,180))}
+${
+(n.description || "Latest agriculture update")
+.substring(0,180)
+}
 ...
 </p>
 
 <div class="newsFooter">
 
-📰 ${escapeHtml(n.source || "News")}
+📰 ${n.source}
 
 <br>
 
-📅 ${escapeHtml(n.date || "")}
+📅 ${n.date}
 
 </div>
 
@@ -8004,16 +7965,16 @@ html += `
 
 <div class="newsCategory">
 
-${escapeHtml(n.icon || "🌱")} ${escapeHtml(n.category || "Crop")}
+${n.icon} ${n.category}
 
 </div>
 
 <h3>
-${escapeHtml(n.title || "Agriculture News")}
+${n.title}
 </h3>
 
 <p>
-${escapeHtml(n.description || "Latest agriculture update")}
+${n.description || "Latest agriculture update"}
 </p>
 
 <div class="farmerMeaning">
@@ -8022,17 +7983,17 @@ ${escapeHtml(n.description || "Latest agriculture update")}
 
 <br><br>
 
-🌾 ${escapeHtml(n.farmer_meaning || "Farming impact check kare.")}
+🌾 ${n.farmer_meaning || "Farming impact check kare."}
 
 </div>
 
 <div class="newsFooter">
 
-📰 ${escapeHtml(n.source || "News")}
+📰 ${n.source}
 
 <br>
 
-📅 ${escapeHtml(n.date || "")}
+📅 ${n.date}
 
 </div>
 
@@ -8154,12 +8115,12 @@ async function loadNotificationPage(){
 
                         <div class="aiValue">
 
-                            ${escapeHtml(notification.message || "")}
+                            ${notification.message}
 
                             <br><br>
 
                             <small>
-                                📅 ${escapeHtml(notification.date || "")}
+                                📅 ${notification.date}
                             </small>
 
                         </div>
@@ -8200,7 +8161,7 @@ async function loadNotificationPage(){
 
                     <div class="aiValue">
 
-                        ${escapeHtml(rainWeatherAvailable ? (rainData.weather || "Live weather") : (fastWeather?.weather || "Live weather from your location"))}
+                        ${rainWeatherAvailable ? (rainData.weather || "Live weather") : (fastWeather?.weather || "Live weather from your location")}
 
                         <br><br>
 
@@ -8225,7 +8186,7 @@ async function loadNotificationPage(){
 
                         <br>
 
-                        ${escapeHtml(rainData.rain_status || "--")}
+                        ${rainData.rain_status || "--"}
 
                     </div>
 
@@ -8240,11 +8201,11 @@ async function loadNotificationPage(){
                     <div class="aiValue">
 
                         🌾 Crop:
-                        ${escapeHtml(rainData.crop || "--")}
+                        ${rainData.crop || "--"}
 
                         <br><br>
 
-                        ${escapeHtml(rainData.crop_risk || "--")}
+                        ${rainData.crop_risk || "--"}
 
                     </div>
 
@@ -8258,7 +8219,7 @@ async function loadNotificationPage(){
 
                     <div class="aiValue">
 
-                        ${escapeHtml(rainData.advice || "--")}
+                        ${rainData.advice || "--"}
 
                     </div>
 
@@ -8272,7 +8233,7 @@ async function loadNotificationPage(){
 
                     <div class="aiValue">
 
-                        ${escapeHtml(rainData.action || "--")}
+                        ${rainData.action || "--"}
 
                     </div>
 
@@ -8286,7 +8247,7 @@ async function loadNotificationPage(){
 
                     <div class="aiValue">
 
-                        ${escapeHtml(rainData.location || "--")}
+                        ${rainData.location || "--"}
 
                     </div>
 
@@ -8395,11 +8356,11 @@ if(user){
     }
 
     if(document.getElementById("homeCrop")){
-        document.getElementById("homeCrop").textContent = user.crop;
+        document.getElementById("homeCrop").innerHTML = user.crop;
     }
 
     if(document.getElementById("homeVillage")){
-        document.getElementById("homeVillage").textContent = user.village;
+        document.getElementById("homeVillage").innerHTML = user.village;
     }
 
     }
@@ -8572,7 +8533,7 @@ if(data.status){
 
 document.getElementById(
 "currentLocation"
-).textContent =
+).innerHTML =
 data.location;
 
 }
@@ -9183,7 +9144,7 @@ async function loadLocationName(lat, lon){
 
     if(data.status){
 
-        document.getElementById("weatherCity").textContent =
+        document.getElementById("weatherCity").innerHTML =
         "📍 " + data.village + ", " + data.state;
 
     }
@@ -9587,49 +9548,49 @@ async function loadCropGuide(){
             // Crop
             document
             .getElementById("guideCrop")
-            .textContent =
+            .innerHTML =
                 "🌾 " + data.crop;
 
             // Location
             document
             .getElementById("guideLocation")
-            .textContent =
+            .innerHTML =
                 "📍 " + data.location;
 
             // Stage
             document
             .getElementById("guideStage")
-            .textContent =
+            .innerHTML =
                 data.stage;
 
             // Irrigation
             document
             .getElementById("guideWater")
-            .textContent =
+            .innerHTML =
                 data.irrigation;
 
             // Fertilizer
             document
             .getElementById("guideFertilizer")
-            .textContent =
+            .innerHTML =
                 data.fertilizer;
 
             // Weather
             document
             .getElementById("guideWeather")
-            .textContent =
+            .innerHTML =
                 data.weather;
 
             // Pest
             document
             .getElementById("guidePest")
-            .textContent =
+            .innerHTML =
                 data.pest;
 
             // AI Advice
             document
             .getElementById("guideAI")
-            .textContent =
+            .innerHTML =
                 data.ai;
 
             // --------------------------------
@@ -9859,7 +9820,7 @@ async function scanDisease(){
                     <br>
 
                     🎯 Confidence :
-                    ${escapeHtml(data.confidence || "--")}
+                    ${data.confidence}
 
                 </div>
 
@@ -9870,7 +9831,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.crop || "--")}
+                        ${data.crop}
                     </div>
 
                 </div>
@@ -9882,7 +9843,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.disease || "--")}
+                        ${data.disease}
                     </div>
 
                 </div>
@@ -9900,7 +9861,7 @@ async function scanDisease(){
                             font-weight:bold;
                         "
                     >
-                        ${escapeHtml(data.severity || "--")}
+                        ${data.severity}
                     </div>
 
                 </div>
@@ -9912,7 +9873,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.affected || "--")}
+                        ${data.affected}
                     </div>
 
                 </div>
@@ -9924,7 +9885,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.reason || "--")}
+                        ${data.reason}
                     </div>
 
                 </div>
@@ -9936,7 +9897,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.symptoms || "--")}
+                        ${data.symptoms}
                     </div>
 
                 </div>
@@ -9948,7 +9909,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.medicine || "--")}
+                        ${data.medicine}
                     </div>
 
                 </div>
@@ -9960,7 +9921,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.organic || "--")}
+                        ${data.organic}
                     </div>
 
                 </div>
@@ -9973,7 +9934,8 @@ async function scanDisease(){
 
                     <div class="aiValue">
                         ${
-                            escapeHtml(data.admin_treatment || "No additional admin treatment available.")
+                            data.admin_treatment ||
+                            "No additional admin treatment available."
                         }
                     </div>
 
@@ -9986,7 +9948,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.recovery || "--")}
+                        ${data.recovery}
                     </div>
 
                 </div>
@@ -9998,7 +9960,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.yield_loss || "--")}
+                        ${data.yield_loss}
                     </div>
 
                 </div>
@@ -10010,7 +9972,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.prevention || "--")}
+                        ${data.prevention}
                     </div>
 
                 </div>
@@ -10022,7 +9984,7 @@ async function scanDisease(){
                     </div>
 
                     <div class="aiValue">
-                        ${escapeHtml(data.ai || "--")}
+                        ${data.ai}
                     </div>
 
                 </div>
@@ -10036,7 +9998,7 @@ async function scanDisease(){
             document
             .getElementById("scanResult")
             .innerHTML =
-                "❌ " + escapeHtml(data.message || "Scan failed");
+                "❌ " + data.message;
 
         }
 
@@ -10086,44 +10048,42 @@ async function loadDiseaseHistory(){
 
         if(data.status && data.history.length > 0){
 
-            diseaseHistoryCache = data.history;
-
-            data.history.forEach((item, index) => {
+            data.history.forEach(item => {
 
                 html += `
 
 <div class="historyCard"
-onclick="openReportByIndex(${index})">
+onclick='openReport(${JSON.stringify(item)})'>
 
 <div class="historyCrop">
 
-🌾 ${escapeHtml(item.crop || "--")}
+🌾 ${item.crop}
 
 </div>
 
 <div class="historyDisease">
 
-🦠 ${escapeHtml(item.disease || "--")}
+🦠 ${item.disease}
 
 </div>
 
 <p>
 
 🎯 Confidence:
-${escapeHtml(item.confidence || "--")}
+${item.confidence}
 
 </p>
 
 <p>
 
 ⚠ Severity:
-${escapeHtml(item.severity || "--")}
+${item.severity}
 
 </p>
 
 <p>
 
-📅 ${escapeHtml(item.date || "--")}
+📅 ${item.date}
 
 </p>
 
@@ -10142,8 +10102,6 @@ View Full Report
         }
 
         else{
-
-            diseaseHistoryCache = [];
 
             html = `
 
@@ -10174,13 +10132,6 @@ No Disease History Found
 
 }
 
-function openReportByIndex(index){
-    const item = diseaseHistoryCache[Number(index)];
-    if(item){
-        openReport(item);
-    }
-}
-
 function openReport(item){
 
 localStorage.setItem(
@@ -10193,12 +10144,12 @@ openPage("reportPage");
 let html = `
 
 <h2>
-🌾 ${escapeHtml(item.crop || "--")}
+🌾 ${item.crop}
 </h2>
 
 <h2 style="color:red">
 
-🦠 ${escapeHtml(item.disease || "--")}
+🦠 ${item.disease}
 
 </h2>
 
@@ -10209,7 +10160,7 @@ let html = `
 </h3>
 
 <p>
-${escapeHtml(item.confidence || "--")}
+${item.confidence}
 </p>
 
 <h3>
@@ -10217,7 +10168,7 @@ ${escapeHtml(item.confidence || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.severity || "--")}
+${item.severity}
 </p>
 
 <hr>
@@ -10227,7 +10178,7 @@ ${escapeHtml(item.severity || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.reason || "--")}
+${item.reason || "--"}
 </p>
 
 <h3>
@@ -10235,7 +10186,7 @@ ${escapeHtml(item.reason || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.symptoms || "--")}
+${item.symptoms || "--"}
 </p>
 
 <h3>
@@ -10243,7 +10194,7 @@ ${escapeHtml(item.symptoms || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.medicine || "--")}
+${item.medicine || "--"}
 </p>
 
 <h3>
@@ -10251,7 +10202,7 @@ ${escapeHtml(item.medicine || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.organic || "--")}
+${item.organic || "--"}
 </p>
 
 <h3>
@@ -10259,7 +10210,7 @@ ${escapeHtml(item.organic || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.recovery || "--")}
+${item.recovery || "--"}
 </p>
 
 <h3>
@@ -10267,7 +10218,7 @@ ${escapeHtml(item.recovery || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.yield_loss || "--")}
+${item.yield_loss || "--"}
 </p>
 
 <h3>
@@ -10275,7 +10226,7 @@ ${escapeHtml(item.yield_loss || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.prevention || "--")}
+${item.prevention || "--"}
 </p>
 
 <h3>
@@ -10283,7 +10234,7 @@ ${escapeHtml(item.prevention || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.ai || "--")}
+${item.ai || "--"}
 </p>
 
 <h3>
@@ -10291,7 +10242,7 @@ ${escapeHtml(item.ai || "--")}
 </h3>
 
 <p>
-${escapeHtml(item.weather || "--")}
+${item.weather || "--"}
 </p>
 
 `;
@@ -10426,25 +10377,25 @@ data.history[0];
     const totalScans = document.getElementById("totalScans");
 
     if(totalScans){
-        totalScans.textContent = data.count;
+        totalScans.innerHTML = data.count;
     }
 
     const lastCrop = document.getElementById("lastCrop");
 
     if(lastCrop){
-        lastCrop.textContent = latest.crop || "--";
+        lastCrop.innerHTML = latest.crop || "--";
     }
 
     const lastDisease = document.getElementById("lastDisease");
 
     if(lastDisease){
-        lastDisease.textContent = latest.disease || "--";
+        lastDisease.innerHTML = latest.disease || "--";
     }
 
     const riskLevel = document.getElementById("riskLevel");
 
     if(riskLevel){
-        riskLevel.textContent = latest.severity || "--";
+        riskLevel.innerHTML = latest.severity || "--";
     }
 
 }
@@ -10614,13 +10565,13 @@ async function askAI(){
         if(data.status){
 
             document.getElementById("aiAnswer").innerHTML =
-                escapeHtml(data.answer || "").replace(/\n/g,"<br>");
+                data.answer.replace(/\n/g,"<br>");
 
         }
         else{
 
             document.getElementById("aiAnswer").innerHTML =
-                escapeHtml(data.message || "AI answer nahi de paya.");
+                data.message || "AI answer nahi de paya.";
 
         }
 
@@ -10659,23 +10610,23 @@ html += `
 
 <div class="weatherCard">
 
-<h2>🏛 ${escapeHtml(s.name || "")}</h2>
+<h2>🏛 ${s.name}</h2>
 
 <p>
-📝 ${escapeHtml(s.description || "")}
+📝 ${s.description}
 </p>
 
 <p>
 💰 Benefit:
-${escapeHtml(s.benefit || "")}
+${s.benefit}
 </p>
 
 <p>
 👨‍🌾 Eligibility:
-${escapeHtml(s.eligibility || "")}
+${s.eligibility}
 </p>
 
-<a href="${escapeHtml(safeExternalUrl(s.apply))}" target="_blank" rel="noopener noreferrer">
+<a href="${s.apply}" target="_blank">
 
 <button>
 🌐 Apply Now
@@ -10986,7 +10937,7 @@ async function loadAlerts(){
     if(user.village){
 
         document.getElementById("alertLocation").innerHTML =
-        " " + escapeHtml(user.village);
+        " " + user.village;
 
     }
 
@@ -11040,7 +10991,7 @@ async function loadAlerts(){
         // Location
 
         document.getElementById("alertLocation").innerHTML =
-        "📍 " + escapeHtml(data.location || "");
+        "📍 " + data.location;
 
         // Weather: backend AI response may be slower/stale. Only replace the visible
         // weather card when backend has a real live weather payload.
@@ -11071,7 +11022,7 @@ async function loadAlerts(){
             <br>
             🌧 Rain Probability: ${weather.rain ?? "--"} %
             <br><br>
-            ${escapeHtml(data.weather_alert || "Live weather alert unavailable.")}
+            ${data.weather_alert || "Live weather alert unavailable."}
             `;
         }
 
@@ -11081,16 +11032,16 @@ async function loadAlerts(){
         const rain6Value = Number(weather.rain_6h_max);
         let rainRiskText = "🌤️ Immediate rain risk is low based on the next 6-hour forecast.";
         if(Number.isFinite(rain6Value) && rain6Value >= 70){
-            rainRiskText = `🚨 <b>High rain risk:</b> ${rain6Value}% chance in the next 6 hours. ${escapeHtml(cropName)} field work may be affected; avoid spraying before a rain window.`;
+            rainRiskText = `🚨 <b>High rain risk:</b> ${rain6Value}% chance in the next 6 hours. ${cropName} field work may be affected; avoid spraying before a rain window.`;
         }else if(Number.isFinite(rain6Value) && rain6Value >= 40){
             rainRiskText = `⚠️ <b>Medium rain risk:</b> ${rain6Value}% chance in the next 6 hours. Recheck rain before irrigation, spraying or harvesting work.`;
         }
 
         document.getElementById("cropAlert").innerHTML =
         `
-        🌾 <b>${escapeHtml(cropName)}</b>
+        🌾 <b>${cropName}</b>
         <br><br>
-        ${escapeHtml(data.crop_alert || "")}
+        ${data.crop_alert}
         <br><br>
         ${rainRiskText}
         `;
@@ -11112,21 +11063,21 @@ async function loadAlerts(){
         `
         🌧️ Next 6-hour rain risk: ${rain6 != null ? rain6 + " %" : "Unavailable"}
         <br><br>
-        ${escapeHtml(sprayText)}
+        ${sprayText}
         `;
 
         // Disease / Pest Early Warning
         let disease = data.disease_alert || {};
         let symptoms = Array.isArray(disease.symptoms_to_check) ? disease.symptoms_to_check : [];
         let symptomHTML = symptoms.length
-            ? `<ul class="diseaseCheckList">${symptoms.map(function(item){ return `<li>${escapeHtml(item)}</li>`; }).join("")}</ul>`
+            ? `<ul class="diseaseCheckList">${symptoms.map(function(item){ return `<li>${item}</li>`; }).join("")}</ul>`
             : "";
 
         document.getElementById("diseaseRisk").innerHTML =
         `
-        ⚠️ Risk: ${escapeHtml(disease.risk || "Low")}
+        ⚠️ Risk: ${disease.risk || "Low"}
         <br><br>
-        ${escapeHtml(disease.message || "No specific early warning right now.")}
+        ${disease.message || "No specific early warning right now."}
         ${symptomHTML}
         `;
 
@@ -11134,7 +11085,7 @@ async function loadAlerts(){
 
         document.getElementById("farmReminder").innerHTML =
         `
-        ${escapeHtml(data.reminder || "")}
+        ${data.reminder}
         `;
 
         // Tasks
@@ -11147,7 +11098,7 @@ async function loadAlerts(){
 
             taskHTML += `
             <div style="margin:8px 0;">
-                ${escapeHtml(task)}
+                ${task}
             </div>
             `;
 
@@ -11324,7 +11275,7 @@ async function loadNotificationPopup(){
 
             html += `
             <div style="margin:10px 0;">
-                ${escapeHtml(data.weather_alert)}
+                ${data.weather_alert}
             </div>
             `;
 
@@ -11336,7 +11287,7 @@ async function loadNotificationPopup(){
 
             html += `
             <div style="margin:10px 0;">
-                ${escapeHtml(data.crop_alert)}
+                ${data.crop_alert}
             </div>
             `;
 
@@ -11348,7 +11299,7 @@ async function loadNotificationPopup(){
 
             html += `
             <div style="margin:10px 0;">
-                ${escapeHtml(data.disease_alert.message)}
+                ${data.disease_alert.message}
             </div>
             `;
 
@@ -11367,7 +11318,7 @@ async function loadNotificationPopup(){
 
             html += `
             <div style="margin:10px 0;">
-                ${escapeHtml(data.reminder)}
+                ${data.reminder}
             </div>
             `;
 

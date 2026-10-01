@@ -4,7 +4,7 @@ import json
 import secrets
 import time
 from urllib.parse import quote
-from fastapi import FastAPI, UploadFile, File, Form, Request, BackgroundTasks, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -60,7 +60,6 @@ if not firebase_admin._apps:
 firestore_db = firestore.client()
 
 MANDI_API_KEY = os.getenv("MANDI_API_KEY")
-NEWSDATA_API_KEY = os.getenv("NEWSDATA_API_KEY", "").strip()
 
 # ==========================
 # RAZORPAY
@@ -93,14 +92,14 @@ ADMIN_SESSION_SECRET = os.getenv("ADMIN_SESSION_SECRET", "")
 ADMIN_SESSION_SECONDS = 30 * 60
 
 
-def create_session_token(subject, role, lifetime):
+def create_admin_session_token(username):
     if len(ADMIN_SESSION_SECRET.encode()) < 32:
         raise RuntimeError("ADMIN_SESSION_SECRET must be at least 32 bytes")
 
     payload = json.dumps({
-        "sub": str(subject),
-        "role": role,
-        "exp": int(time.time()) + lifetime
+        "sub": username,
+        "role": "admin",
+        "exp": int(time.time()) + ADMIN_SESSION_SECONDS
     }, separators=(",", ":")).encode()
     encoded_payload = base64.urlsafe_b64encode(payload).rstrip(b"=").decode()
     signature = hmac.new(
@@ -112,15 +111,7 @@ def create_session_token(subject, role, lifetime):
     return f"{encoded_payload}.{encoded_signature}"
 
 
-def create_admin_session_token(username):
-    return create_session_token(username, "admin", ADMIN_SESSION_SECONDS)
-
-
-def create_user_session_token(user_id):
-    return create_session_token(user_id, "user", 7 * 24 * 60 * 60)
-
-
-def verify_session_token(token):
+def verify_admin_session_token(token):
     if len(ADMIN_SESSION_SECRET.encode()) < 32 or not token:
         return None
 
@@ -141,106 +132,30 @@ def verify_session_token(token):
             encoded_payload + "=" * (-len(encoded_payload) % 4)
         )
         claims = json.loads(payload)
-        if claims.get("role") not in {"admin", "user"} or int(claims.get("exp", 0)) <= int(time.time()):
+        if claims.get("role") != "admin" or int(claims.get("exp", 0)) <= int(time.time()):
             return None
         return claims
     except (ValueError, TypeError, json.JSONDecodeError):
         return None
 
 
-def verify_admin_session_token(token):
-    claims = verify_session_token(token)
-    return claims if claims and claims.get("role") == "admin" else None
-
-
 @app.middleware("http")
-async def require_session(request: Request, call_next):
+async def require_admin_session(request: Request, call_next):
     path = request.url.path
-    public_path = (
-        path in {"/register", "/login", "/admin/login", "/razorpay-webhook", "/mandi-feed", "/crop-groups"}
-        or path.startswith((
-            "/weather/", "/location/", "/location-name/", "/mandi/",
-            "/mandi-all/", "/schemes/", "/uploads/"
-        ))
-    )
-    if request.method == "OPTIONS" or public_path:
+    if request.method == "OPTIONS" or not path.startswith("/admin/") or path == "/admin/login":
         return await call_next(request)
 
     authorization = request.headers.get("Authorization", "")
     scheme, _, token = authorization.partition(" ")
-    claims = verify_session_token(token) if scheme.lower() == "bearer" else None
-    required_role = "admin" if path.startswith("/admin/") or path == "/check-history" else "user"
-    if not claims or claims.get("role") != required_role:
+    claims = verify_admin_session_token(token) if scheme.lower() == "bearer" else None
+    if not claims:
         return JSONResponse(
             status_code=401,
-            content={"status": False, "message": "Session is missing, expired, or has insufficient permissions"}
+            content={"status": False, "message": "Admin session is missing or expired"}
         )
 
-    if required_role == "admin":
-        request.state.admin_username = claims["sub"]
-        return await call_next(request)
-
-    user_id = str(claims["sub"])
-    request.state.user_id = user_id
-    parts = path.strip("/").split("/")
-    user_path_routes = {
-        "language", "profile", "notifications", "crop-guide", "disease-history",
-        "farming-advice", "alerts", "rain-alert", "agri-news", "premium-status"
-    }
-    if len(parts) > 1 and parts[0] in user_path_routes and parts[1] != user_id:
-        return JSONResponse(
-            status_code=403,
-            content={"status": False, "message": "This session cannot access another user's data"}
-        )
-
-    if parts[0] == "chat" and (len(parts) != 3 or user_id not in parts[1:]):
-        return JSONResponse(
-            status_code=403,
-            content={"status": False, "message": "This session cannot access that chat"}
-        )
-
-    json_owner_fields = {
-        "/save-location": "user_id",
-        "/update-home-crop": "user_id",
-        "/send-group-chat": "sender_id",
-        "/group-chat-delete": "user_id",
-        "/group-chat-reaction": "user_id",
-        "/send-chat": "sender_id",
-        "/create-subscription": "user_id",
-        "/verify-subscription": "user_id",
-        "/recover-premium-payment": "user_id"
-    }
-    owner_field = json_owner_fields.get(path)
-    if owner_field and request.method in {"POST", "PUT", "PATCH"}:
-        try:
-            raw_body = await request.body()
-            payload = json.loads(raw_body) if raw_body else {}
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            return JSONResponse(
-                status_code=400,
-                content={"status": False, "message": "Invalid JSON request body"}
-            )
-
-        request._receive = lambda: {
-            "type": "http.request",
-            "body": raw_body,
-            "more_body": False
-        }
-        if not isinstance(payload, dict) or str(payload.get(owner_field, "")) != user_id:
-            return JSONResponse(
-                status_code=403,
-                content={"status": False, "message": "This session cannot act for another user"}
-            )
-
+    request.state.admin_username = claims["sub"]
     return await call_next(request)
-
-
-def require_current_user(request: Request, user_id):
-    if str(user_id) != str(getattr(request.state, "user_id", "")):
-        raise HTTPException(
-            status_code=403,
-            detail="This session cannot modify another user's data"
-        )
 
 # ==========================
 # CREATE UPLOAD FOLDERS
@@ -1583,12 +1498,6 @@ def get_notifications(user_id: str):
 @app.post("/register")
 def register(user: RegisterModel):
 
-    if len(ADMIN_SESSION_SECRET.encode()) < 32:
-        return {
-            "status": False,
-            "message": "App session signing is not configured"
-        }
-
     # Mobile Validation
     if len(user.mobile) != 10 or not user.mobile.isdigit():
         return {
@@ -1637,8 +1546,6 @@ def register(user: RegisterModel):
     return {
         "status": True,
         "message": "Registration Successful",
-        "session_token": create_user_session_token(user_id),
-        "expires_in": 7 * 24 * 60 * 60,
         "user": {
             "id": user_id,
             "name": user.name,
@@ -1656,12 +1563,6 @@ def register(user: RegisterModel):
 
 @app.post("/login")
 def login(user: LoginModel):
-
-    if len(ADMIN_SESSION_SECRET.encode()) < 32:
-        return {
-            "status": False,
-            "message": "App session signing is not configured"
-        }
 
     # Find User By Mobile
     users = (
@@ -1701,14 +1602,11 @@ def login(user: LoginModel):
             "password": hash_password(user.password)
         })
 
-    user_id = str(data.get("id") or user_doc.id)
     return {
         "status": True,
         "message": "Login Successful",
-        "session_token": create_user_session_token(user_id),
-        "expires_in": 7 * 24 * 60 * 60,
         "user": {
-            "id": user_id,
+            "id": data.get("id"),
             "name": data.get("name"),
             "mobile": data.get("mobile"),
             "village": data.get("village"),
@@ -2771,12 +2669,9 @@ def add_admin_crop_guide(data: AdminCropGuideModel):
 
 @app.post("/disease-scan")
 async def disease_scan(
-    request: Request,
     file: UploadFile = File(...),
     user_id: str = Form(...)
 ):
-
-    require_current_user(request, user_id)
 
     try:
 
@@ -5538,7 +5433,7 @@ def agri_news(user_id: str):
 
             url = (
                 "https://newsdata.io/api/1/news?"
-                f"apikey={NEWSDATA_API_KEY}"
+                "apikey=pub_28ba34b1a77041cfae4e3f43b21bbf3b"
                 "&q=agriculture OR farmer OR crop OR mandi OR farming"
                 "&country=in"
                 "&language=en"
@@ -6411,14 +6306,9 @@ RAZORPAY_PLANS = {
 
 def subscription_matches_purchase(subscription, user_id, plan_key):
     notes = subscription.get("notes") or {}
-    plan_id_key = {
-        "basic_monthly": "basic_recurring",
-        "advanced_monthly": "advanced_recurring"
-    }.get(plan_key, plan_key)
     return (
         str(notes.get("user_id", "")) == str(user_id)
         and notes.get("selected_plan") == plan_key
-        and subscription.get("plan_id") == RAZORPAY_PLANS.get(plan_id_key)
     )
 
 # ==========================
