@@ -1,8 +1,12 @@
 from fastapi.staticfiles import StaticFiles
+import base64
 import json
-from urllib import response
-from fastapi import FastAPI, UploadFile, File, Form, Request, BackgroundTasks
+import secrets
+import time
+from urllib.parse import quote
+from fastapi import FastAPI, UploadFile, File, Form, Request, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import requests
 from google import genai
@@ -15,7 +19,7 @@ import os
 import uuid
 from dotenv import load_dotenv
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 from PIL import Image
 import io
 
@@ -26,6 +30,7 @@ load_dotenv()
 # ==========================
 
 firebase_credentials_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+FIREBASE_STORAGE_BUCKET = (os.getenv("FIREBASE_STORAGE_BUCKET") or "").removeprefix("gs://").strip()
 
 if firebase_credentials_json:
 
@@ -46,12 +51,16 @@ else:
 
 if not firebase_admin._apps:
 
-    firebase_admin.initialize_app(firebase_cred)
+    firebase_admin.initialize_app(
+        firebase_cred,
+        {"storageBucket": FIREBASE_STORAGE_BUCKET} if FIREBASE_STORAGE_BUCKET else {}
+    )
 
 
 firestore_db = firestore.client()
 
 MANDI_API_KEY = os.getenv("MANDI_API_KEY")
+NEWSDATA_API_KEY = os.getenv("NEWSDATA_API_KEY", "").strip()
 
 # ==========================
 # RAZORPAY
@@ -74,8 +83,164 @@ razorpay_client = razorpay.Client(
 
 app = FastAPI(
     title="Kisan AI API",
-    version="1.0"
+    version="1.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None
 )
+
+ADMIN_SESSION_SECRET = os.getenv("ADMIN_SESSION_SECRET", "")
+ADMIN_SESSION_SECONDS = 30 * 60
+
+
+def create_session_token(subject, role, lifetime):
+    if len(ADMIN_SESSION_SECRET.encode()) < 32:
+        raise RuntimeError("ADMIN_SESSION_SECRET must be at least 32 bytes")
+
+    payload = json.dumps({
+        "sub": str(subject),
+        "role": role,
+        "exp": int(time.time()) + lifetime
+    }, separators=(",", ":")).encode()
+    encoded_payload = base64.urlsafe_b64encode(payload).rstrip(b"=").decode()
+    signature = hmac.new(
+        ADMIN_SESSION_SECRET.encode(),
+        encoded_payload.encode(),
+        hashlib.sha256
+    ).digest()
+    encoded_signature = base64.urlsafe_b64encode(signature).rstrip(b"=").decode()
+    return f"{encoded_payload}.{encoded_signature}"
+
+
+def create_admin_session_token(username):
+    return create_session_token(username, "admin", ADMIN_SESSION_SECONDS)
+
+
+def create_user_session_token(user_id):
+    return create_session_token(user_id, "user", 7 * 24 * 60 * 60)
+
+
+def verify_session_token(token):
+    if len(ADMIN_SESSION_SECRET.encode()) < 32 or not token:
+        return None
+
+    try:
+        encoded_payload, encoded_signature = token.split(".", 1)
+        expected_signature = hmac.new(
+            ADMIN_SESSION_SECRET.encode(),
+            encoded_payload.encode(),
+            hashlib.sha256
+        ).digest()
+        provided_signature = base64.urlsafe_b64decode(
+            encoded_signature + "=" * (-len(encoded_signature) % 4)
+        )
+        if not hmac.compare_digest(expected_signature, provided_signature):
+            return None
+
+        payload = base64.urlsafe_b64decode(
+            encoded_payload + "=" * (-len(encoded_payload) % 4)
+        )
+        claims = json.loads(payload)
+        if claims.get("role") not in {"admin", "user"} or int(claims.get("exp", 0)) <= int(time.time()):
+            return None
+        return claims
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return None
+
+
+def verify_admin_session_token(token):
+    claims = verify_session_token(token)
+    return claims if claims and claims.get("role") == "admin" else None
+
+
+@app.middleware("http")
+async def require_session(request: Request, call_next):
+    path = request.url.path
+    public_path = (
+        path in {"/register", "/login", "/admin/login", "/razorpay-webhook", "/mandi-feed", "/crop-groups"}
+        or path.startswith((
+            "/weather/", "/location/", "/location-name/", "/mandi/",
+            "/mandi-all/", "/schemes/", "/uploads/"
+        ))
+    )
+    if request.method == "OPTIONS" or public_path:
+        return await call_next(request)
+
+    authorization = request.headers.get("Authorization", "")
+    scheme, _, token = authorization.partition(" ")
+    claims = verify_session_token(token) if scheme.lower() == "bearer" else None
+    required_role = "admin" if path.startswith("/admin/") or path == "/check-history" else "user"
+    if not claims or claims.get("role") != required_role:
+        return JSONResponse(
+            status_code=401,
+            content={"status": False, "message": "Session is missing, expired, or has insufficient permissions"}
+        )
+
+    if required_role == "admin":
+        request.state.admin_username = claims["sub"]
+        return await call_next(request)
+
+    user_id = str(claims["sub"])
+    request.state.user_id = user_id
+    parts = path.strip("/").split("/")
+    user_path_routes = {
+        "language", "profile", "notifications", "crop-guide", "disease-history",
+        "farming-advice", "alerts", "rain-alert", "agri-news", "premium-status"
+    }
+    if len(parts) > 1 and parts[0] in user_path_routes and parts[1] != user_id:
+        return JSONResponse(
+            status_code=403,
+            content={"status": False, "message": "This session cannot access another user's data"}
+        )
+
+    if parts[0] == "chat" and (len(parts) != 3 or user_id not in parts[1:]):
+        return JSONResponse(
+            status_code=403,
+            content={"status": False, "message": "This session cannot access that chat"}
+        )
+
+    json_owner_fields = {
+        "/save-location": "user_id",
+        "/update-home-crop": "user_id",
+        "/send-group-chat": "sender_id",
+        "/group-chat-delete": "user_id",
+        "/group-chat-reaction": "user_id",
+        "/send-chat": "sender_id",
+        "/create-subscription": "user_id",
+        "/verify-subscription": "user_id",
+        "/recover-premium-payment": "user_id"
+    }
+    owner_field = json_owner_fields.get(path)
+    if owner_field and request.method in {"POST", "PUT", "PATCH"}:
+        try:
+            raw_body = await request.body()
+            payload = json.loads(raw_body) if raw_body else {}
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JSONResponse(
+                status_code=400,
+                content={"status": False, "message": "Invalid JSON request body"}
+            )
+
+        request._receive = lambda: {
+            "type": "http.request",
+            "body": raw_body,
+            "more_body": False
+        }
+        if not isinstance(payload, dict) or str(payload.get(owner_field, "")) != user_id:
+            return JSONResponse(
+                status_code=403,
+                content={"status": False, "message": "This session cannot act for another user"}
+            )
+
+    return await call_next(request)
+
+
+def require_current_user(request: Request, user_id):
+    if str(user_id) != str(getattr(request.state, "user_id", "")):
+        raise HTTPException(
+            status_code=403,
+            detail="This session cannot modify another user's data"
+        )
 
 # ==========================
 # CREATE UPLOAD FOLDERS
@@ -489,28 +654,6 @@ CREATE TABLE IF NOT EXISTS admins(
 conn.commit()
 
 
-# Default Admin
-# Username: admin
-# Password: admin123
-
-admin_password = hashlib.sha256(
-    "admin123".encode()
-).hexdigest()
-
-try:
-
-    cursor.execute(
-        "INSERT INTO admins (username, password) VALUES (?, ?)",
-        ("admin", admin_password)
-    )
-
-    conn.commit()
-
-except sqlite3.IntegrityError:
-
-    pass
-
-
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS admin_news(
 
@@ -784,13 +927,7 @@ class SchemeModel(BaseModel):
 @app.post("/admin/login")
 def admin_login(data: AdminLoginModel):
 
-    password_hash = hashlib.sha256(
-        data.password.encode()
-    ).hexdigest()
-
-
     admin = None
-
     admin_docs = (
         firestore_db
         .collection("admins")
@@ -800,47 +937,56 @@ def admin_login(data: AdminLoginModel):
     )
 
     for doc in admin_docs:
-        admin_data = doc.to_dict()
-        if admin_data.get("password") == password_hash:
+        admin_data = doc.to_dict() or {}
+        stored_hash = str(admin_data.get("password", ""))
+        if (
+            doc.id != "default-admin"
+            and verify_password(data.password, stored_hash)
+        ):
             admin = {
                 "id": admin_data.get("id", doc.id),
                 "username": admin_data.get("username", data.username)
             }
+            if not stored_hash.startswith("pbkdf2_sha256$"):
+                firestore_db.collection("admins").document(doc.id).update({
+                    "password": hash_password(data.password)
+                })
         break
 
-
-    if not admin and data.username == "admin" and data.password == "admin123":
-        admin_id = "default-admin"
-        firestore_db.collection("admins").document(admin_id).set({
-            "id": admin_id,
-            "username": "admin",
-            "password": password_hash,
-            "created_at": datetime.now().isoformat()
-        })
-        admin = {"id": admin_id, "username": "admin"}
+    configured_username = os.getenv("ADMIN_USERNAME", "")
+    configured_password = os.getenv("ADMIN_PASSWORD", "")
+    if (
+        not admin
+        and configured_username
+        and configured_password
+        and hmac.compare_digest(data.username, configured_username)
+        and hmac.compare_digest(data.password, configured_password)
+    ):
+        admin = {"id": "environment-admin", "username": configured_username}
 
     if not admin:
-
         return {
             "status": False,
             "message": "Invalid username or password"
         }
 
-
-    return {
-
-        "status": True,
-
-        "message": "Admin login successful",
-
-        "admin": {
-
-            "id": admin["id"],
-
-            "username": admin["username"]
-
+    if len(ADMIN_SESSION_SECRET.encode()) < 32:
+        return {
+            "status": False,
+            "message": "ADMIN_SESSION_SECRET must be at least 32 bytes"
         }
 
+    session_token = create_admin_session_token(admin["username"])
+
+    return {
+        "status": True,
+        "message": "Admin login successful",
+        "session_token": session_token,
+        "expires_in": ADMIN_SESSION_SECONDS,
+        "admin": {
+            "id": admin["id"],
+            "username": admin["username"]
+        }
     }
 
 
@@ -1214,6 +1360,7 @@ def add_mandi(data: MandiModel):
 # ==========================
 
 @app.get("/admin/mandi")
+@app.get("/mandi-feed")
 def get_admin_mandi():
 
     mandi_docs = (
@@ -1436,6 +1583,12 @@ def get_notifications(user_id: str):
 @app.post("/register")
 def register(user: RegisterModel):
 
+    if len(ADMIN_SESSION_SECRET.encode()) < 32:
+        return {
+            "status": False,
+            "message": "App session signing is not configured"
+        }
+
     # Mobile Validation
     if len(user.mobile) != 10 or not user.mobile.isdigit():
         return {
@@ -1484,6 +1637,8 @@ def register(user: RegisterModel):
     return {
         "status": True,
         "message": "Registration Successful",
+        "session_token": create_user_session_token(user_id),
+        "expires_in": 7 * 24 * 60 * 60,
         "user": {
             "id": user_id,
             "name": user.name,
@@ -1501,6 +1656,12 @@ def register(user: RegisterModel):
 
 @app.post("/login")
 def login(user: LoginModel):
+
+    if len(ADMIN_SESSION_SECRET.encode()) < 32:
+        return {
+            "status": False,
+            "message": "App session signing is not configured"
+        }
 
     # Find User By Mobile
     users = (
@@ -1540,11 +1701,14 @@ def login(user: LoginModel):
             "password": hash_password(user.password)
         })
 
+    user_id = str(data.get("id") or user_doc.id)
     return {
         "status": True,
         "message": "Login Successful",
+        "session_token": create_user_session_token(user_id),
+        "expires_in": 7 * 24 * 60 * 60,
         "user": {
-            "id": data.get("id"),
+            "id": user_id,
             "name": data.get("name"),
             "mobile": data.get("mobile"),
             "village": data.get("village"),
@@ -2607,9 +2771,12 @@ def add_admin_crop_guide(data: AdminCropGuideModel):
 
 @app.post("/disease-scan")
 async def disease_scan(
+    request: Request,
     file: UploadFile = File(...),
     user_id: str = Form(...)
 ):
+
+    require_current_user(request, user_id)
 
     try:
 
@@ -5371,7 +5538,7 @@ def agri_news(user_id: str):
 
             url = (
                 "https://newsdata.io/api/1/news?"
-                "apikey=pub_28ba34b1a77041cfae4e3f43b21bbf3b"
+                f"apikey={NEWSDATA_API_KEY}"
                 "&q=agriculture OR farmer OR crop OR mandi OR farming"
                 "&country=in"
                 "&language=en"
@@ -5674,20 +5841,33 @@ KISAN_CONNECT_CROPS = [
     "Pomegranate", "Papaya", "Other"
 ]
 
+CROP_GROUPS_CACHE_SECONDS = 30
+crop_groups_cache = {"expires_at": 0.0, "groups": None}
+
 @app.get("/crop-groups")
 def get_crop_groups():
     try:
+        now = datetime.now().timestamp()
+        cached_groups = crop_groups_cache["groups"]
+        if cached_groups is not None and now < crop_groups_cache["expires_at"]:
+            return {"status": True, "groups": cached_groups}
+
         counts = {crop: 0 for crop in KISAN_CONNECT_CROPS}
         for doc in firestore_db.collection("users").stream():
             crop = str((doc.to_dict() or {}).get("crop") or "").strip()
             if crop in counts:
                 counts[crop] += 1
+        groups = [
+            {"crop": crop, "members": counts[crop]}
+            for crop in KISAN_CONNECT_CROPS
+        ]
+        crop_groups_cache.update({
+            "expires_at": now + CROP_GROUPS_CACHE_SECONDS,
+            "groups": groups
+        })
         return {
             "status": True,
-            "groups": [
-                {"crop": crop, "members": counts[crop]}
-                for crop in KISAN_CONNECT_CROPS
-            ]
+            "groups": groups
         }
     except Exception as e:
         return {"status": False, "message": str(e), "groups": []}
@@ -5827,7 +6007,9 @@ def get_group_chat(crop: str, limit: int = 100):
         if crop not in KISAN_CONNECT_CROPS:
             return {"status": False, "message": "Crop group not found", "chat": []}
         data = []
-        for doc in firestore_db.collection("messages").stream():
+        for doc in firestore_db.collection("messages").where(
+            "group_crop", "==", crop
+        ).stream():
             item = doc.to_dict() or {}
             if item.get("chat_type") != "crop_group" or str(item.get("group_crop", "")) != crop:
                 continue
@@ -5910,19 +6092,46 @@ def group_chat_reaction(data: dict):
         msg = msg_doc.to_dict() or {}
         if msg.get("chat_type") != "crop_group" or str(msg.get("group_crop", "")) != crop:
             return {"status": False, "message": "Message does not belong to this group"}
-        reactions = msg.get("reactions", {}) or {}
-        # One reaction per farmer per message; tapping the same emoji toggles it off.
-        for key in list(reactions.keys()):
-            users = [str(x) for x in (reactions.get(key) or []) if str(x) != user_id]
-            if users:
-                reactions[key] = users
-            else:
-                reactions.pop(key, None)
-        old_users = [str(x) for x in (reactions.get(emoji) or [])]
-        if user_id not in old_users:
-            old_users.append(user_id)
-            reactions[emoji] = old_users
-        msg_ref.update({"reactions": reactions})
+        transaction = firestore_db.transaction()
+
+        @firestore.transactional
+        def update_reactions(transaction, message_ref):
+            snapshot = message_ref.get(transaction=transaction)
+            if not snapshot.exists:
+                return False
+
+            current_message = snapshot.to_dict() or {}
+            if (
+                current_message.get("chat_type") != "crop_group"
+                or str(current_message.get("group_crop", "")) != crop
+            ):
+                return False
+
+            reactions = current_message.get("reactions", {}) or {}
+            current_users = [
+                str(value) for value in (reactions.get(emoji) or [])
+            ]
+            remove_reaction = user_id in current_users
+
+            for key in list(reactions.keys()):
+                users = [
+                    str(value)
+                    for value in (reactions.get(key) or [])
+                    if str(value) != user_id
+                ]
+                if users:
+                    reactions[key] = users
+                else:
+                    reactions.pop(key, None)
+
+            if not remove_reaction:
+                reactions.setdefault(emoji, []).append(user_id)
+
+            transaction.update(message_ref, {"reactions": reactions})
+            return True
+
+        if not update_reactions(transaction, msg_ref):
+            return {"status": False, "message": "Message not found in this group"}
         return {"status": True, "message": "Reaction updated"}
     except Exception as e:
         return {"status": False, "message": str(e)}
@@ -6018,30 +6227,27 @@ def get_chat(
         }
 
     data = []
-    message_docs = firestore_db.collection("messages").stream()
+    message_collection = firestore_db.collection("messages")
+    for sender_id, receiver_id in ((user1, user2), (user2, user1)):
+        message_docs = message_collection.where(
+            "sender_id", "==", sender_id
+        ).stream()
 
-    for doc in message_docs:
-        chat = doc.to_dict()
-        sender_id = str(chat.get("sender_id", ""))
-        receiver_id = str(chat.get("receiver_id", ""))
+        for doc in message_docs:
+            chat = doc.to_dict() or {}
+            if str(chat.get("receiver_id", "")) != receiver_id:
+                continue
 
-        if not (
-            (sender_id == user1 and receiver_id == user2)
-            or
-            (sender_id == user2 and receiver_id == user1)
-        ):
-            continue
-
-        data.append({
-            "sender": sender_id,
-            "message": chat.get("message", ""),
-            "time": chat.get("time", ""),
-            "message_type": chat.get("message_type", "text"),
-            "image": chat.get("image"),
-            "latitude": chat.get("latitude"),
-            "longitude": chat.get("longitude"),
-            "created_at": chat.get("created_at", "")
-        })
+            data.append({
+                "sender": sender_id,
+                "message": chat.get("message", ""),
+                "time": chat.get("time", ""),
+                "message_type": chat.get("message_type", "text"),
+                "image": chat.get("image"),
+                "latitude": chat.get("latitude"),
+                "longitude": chat.get("longitude"),
+                "created_at": chat.get("created_at", "")
+            })
 
     data.sort(key=lambda item: item.get("created_at", ""))
 
@@ -6076,77 +6282,51 @@ async def upload_chat_image(
 ):
 
     try:
-
-        if not file.content_type:
-
+        if not FIREBASE_STORAGE_BUCKET:
             return {
                 "status": False,
-                "message": "Invalid file"
+                "message": "Firebase Storage bucket is not configured"
             }
 
-
-        if not file.content_type.startswith(
-            "image/"
-        ):
-
-            return {
-                "status": False,
-                "message": "Only images are allowed"
-            }
-
-
-        image_data = await file.read()
-
-        if len(image_data) > 10 * 1024 * 1024:
+        max_image_size = 10 * 1024 * 1024
+        image_data = await file.read(max_image_size + 1)
+        if len(image_data) > max_image_size:
             return {
                 "status": False,
                 "message": "Image must be smaller than 10 MB"
             }
 
-        image = Image.open(io.BytesIO(image_data))
-        image.verify()
+        with Image.open(io.BytesIO(image_data)) as image:
+            image_format = image.format
+            image.verify()
 
-        extension_by_type = {
-            "image/jpeg": ".jpg",
-            "image/png": ".png",
-            "image/webp": ".webp",
-            "image/gif": ".gif"
+        format_details = {
+            "JPEG": (".jpg", "image/jpeg"),
+            "PNG": (".png", "image/png"),
+            "WEBP": (".webp", "image/webp"),
+            "GIF": (".gif", "image/gif")
         }
+        if image_format not in format_details:
+            return {
+                "status": False,
+                "message": "Only JPEG, PNG, WebP and GIF images are supported"
+            }
 
-        extension = extension_by_type.get(
-            file.content_type,
-            ".jpg"
+        extension, content_type = format_details[image_format]
+        object_name = f"chat/{uuid.uuid4()}{extension}"
+        download_token = secrets.token_urlsafe(32)
+        bucket = storage.bucket(FIREBASE_STORAGE_BUCKET)
+        blob = bucket.blob(object_name)
+        blob.metadata = {"firebaseStorageDownloadTokens": download_token}
+        blob.upload_from_string(image_data, content_type=content_type)
+
+        image_url = (
+            "https://firebasestorage.googleapis.com/v0/b/"
+            f"{quote(bucket.name, safe='')}/o/{quote(object_name, safe='')}"
+            f"?alt=media&token={quote(download_token, safe='')}"
         )
 
-
-        filename = (
-            str(uuid.uuid4())
-            + extension
-        )
-
-
-        file_path = os.path.join(
-            CHAT_UPLOAD_DIR,
-            filename
-        )
-
-
-        with open(
-            file_path,
-            "wb"
-        ) as buffer:
-
-            buffer.write(image_data)
-
-
-        return {
-
-            "status": True,
-
-            "image_url":
-                "/uploads/chat/" + filename
-
-        }
+        return {"status": True, "image_url": image_url}
 
 
     except Exception as e:
@@ -6227,6 +6407,19 @@ RAZORPAY_PLANS = {
         "plan_TQTadndbEu7Uwm"
 
 }
+
+
+def subscription_matches_purchase(subscription, user_id, plan_key):
+    notes = subscription.get("notes") or {}
+    plan_id_key = {
+        "basic_monthly": "basic_recurring",
+        "advanced_monthly": "advanced_recurring"
+    }.get(plan_key, plan_key)
+    return (
+        str(notes.get("user_id", "")) == str(user_id)
+        and notes.get("selected_plan") == plan_key
+        and subscription.get("plan_id") == RAZORPAY_PLANS.get(plan_id_key)
+    )
 
 # ==========================
 # CREATE SUBSCRIPTION
@@ -6318,7 +6511,12 @@ def create_subscription(data: dict):
                         1,
 
                     "total_count":
-                        12
+                        12,
+
+                    "notes": {
+                        "user_id": str(user_id),
+                        "selected_plan": plan_key
+                    }
 
                 })
             )
@@ -6559,6 +6757,13 @@ def verify_subscription(data: dict):
                 signature
 
         })
+
+        subscription = razorpay_client.subscription.fetch(subscription_id)
+        if not subscription_matches_purchase(subscription, user_id, plan_key):
+            return {
+                "status": False,
+                "message": "Subscription does not match this user and plan"
+            }
 
 
         # ==========================
@@ -6978,6 +7183,13 @@ def recover_premium_payment(data: dict):
             )
 
         )
+
+        if not subscription_matches_purchase(subscription, user_id, plan_key):
+            return {
+                "status": False,
+                "premium": False,
+                "message": "Subscription does not match this user and plan"
+            }
 
 
         subscription_status = (
