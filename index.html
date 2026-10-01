@@ -7096,7 +7096,7 @@ async function deleteKcMessageFromMenu(){
     const user=JSON.parse(localStorage.getItem("user")||"null");
     if(!id || !user?.id || !selectedCropGroup)return;
     hideKcReactionMenu();
-    if(!confirm("Ye message sabhi farmers ke group chat se delete karna hai?"))return;
+    if(!confirm("delete ?"))return;
     try{
         const res=await fetch(API+"/group-chat-delete",{
             method:"POST",
