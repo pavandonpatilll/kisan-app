@@ -6737,74 +6737,85 @@ async function syncLanguageWithServer(lang){
 // CHECK SAVED LOGIN
 // ==========================
 
+function showLoggedInApp(user){
+
+    if(!user || !user.id){
+        return false;
+    }
+
+    document.body.classList.remove("registration-active");
+
+    const languagePage = document.getElementById("languagePage");
+    const loginSection = document.getElementById("loginSection");
+    const registerSection = document.getElementById("registerSection");
+    const homeSection = document.getElementById("homeSection");
+
+    if(languagePage) languagePage.style.display = "none";
+    if(loginSection) loginSection.style.display = "none";
+    if(registerSection) registerSection.style.display = "none";
+    if(homeSection) homeSection.style.display = "block";
+
+    document.querySelectorAll(".featurePage").forEach(function(page){
+        page.style.display = "none";
+    });
+
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("userId", user.id);
+
+    updateUserUI(user);
+    applyLanguage();
+    loadHomeMandiTicker();
+
+    return true;
+}
+
 function checkSavedLogin(){
 
-    const userData =
-        localStorage.getItem("user");
+    const userData = localStorage.getItem("user");
 
-    if(!userData){
+    // Existing login is restored immediately from localStorage.
+    if(userData){
+        try{
+            const user = JSON.parse(userData);
 
-        // User logged out / first time
-        return;
-
-    }
-
-    try{
-
-        const user =
-            JSON.parse(userData);
-
-        if(
-            !user ||
-            !user.id
-        ){
+            if(showLoggedInApp(user)){
+                return;
+            }
 
             localStorage.removeItem("user");
-
-            return;
-
+            localStorage.removeItem("userId");
         }
+        catch(error){
+            console.error("Saved login error:", error);
+            localStorage.removeItem("user");
+            localStorage.removeItem("userId");
+        }
+    }
 
-        // ==========================
-        // USER IS ALREADY LOGGED IN
-        // ==========================
+    // IMPORTANT: Never force Register on every refresh.
+    // If language was already selected, open Login.
+    // Only the very first visit shows language selection.
+    const savedLanguage = localStorage.getItem("appLanguage");
+    const languagePage = document.getElementById("languagePage");
+    const loginSection = document.getElementById("loginSection");
+    const registerSection = document.getElementById("registerSection");
+    const homeSection = document.getElementById("homeSection");
 
-        document.getElementById(
-            "loginSection"
-        ).style.display = "none";
-
-        document.getElementById(
-            "homeSection"
-        ).style.display = "block";
-
-        updateUserUI(user);
+    if(savedLanguage){
+        if(languagePage) languagePage.style.display = "none";
+        if(registerSection) registerSection.style.display = "none";
+        if(homeSection) homeSection.style.display = "none";
+        if(loginSection) loginSection.style.display = "flex";
+        document.body.classList.remove("registration-active");
         applyLanguage();
-        loadHomeMandiTicker();
-
-        // Keep user ID also available
-
-        localStorage.setItem(
-            "userId",
-            user.id
-        );
-
-        // Premium status is loaded in parallel during app startup.
-        // Do not block the home screen here.
-
     }
-    catch(error){
-
-        console.error(
-            "Saved login error:",
-            error
-        );
-
-        localStorage.removeItem(
-            "user"
-        );
-
+    else{
+        if(languagePage) languagePage.style.display = "flex";
+        if(loginSection) loginSection.style.display = "none";
+        if(registerSection) registerSection.style.display = "none";
+        if(homeSection) homeSection.style.display = "none";
+        document.body.classList.remove("registration-active");
     }
-
 }
 
 // ----------------------------
@@ -11702,26 +11713,10 @@ function changeAppLanguage(lang){
 
 window.addEventListener("load", function () {
 
-    let lang = localStorage.getItem("appLanguage");
-
-    if (lang) {
-
-        let languagePage = document.getElementById("languagePage");
-        let loginSection = document.getElementById("loginSection");
-
-        if (languagePage) {
-            languagePage.style.display = "none";
-        }
-
-        if (loginSection) {
-            loginSection.style.display = "none";
-        }
-
-        if(!localStorage.getItem("user")){
-            document.getElementById("registerSection").style.display = "flex";
-        }
-
-    }
+    // Do not override the startup auth state here.
+    // checkSavedLogin() already decides: saved user -> Home,
+    // saved language -> Login, first visit -> Language selection.
+    checkSavedLogin();
 
 });
 
@@ -12987,61 +12982,81 @@ document.addEventListener(
     "DOMContentLoaded",
     function(){
 
-        // Show the app immediately.
+        // Restore authentication before any slow API call.
         checkSavedLogin();
 
-        // Do background startup work in parallel.
-        Promise.allSettled([
-            loadPremiumStatus(),
-            recoverPendingPremiumPayment()
-        ]);
+        // Non-blocking background startup.
+        setTimeout(function(){
+            Promise.allSettled([
+                loadPremiumStatus(),
+                recoverPendingPremiumPayment()
+            ]);
+        }, 150);
 
     }
 );
 
 async function loadProfile(){
 
-let user=JSON.parse(
-localStorage.getItem("user")
-);
+    const user = JSON.parse(localStorage.getItem("user") || "null");
 
-if(!user){
+    if(!user || !user.id){
+        return;
+    }
 
-return;
+    // Show cached profile instantly. Network refresh happens silently below.
+    renderProfileUser(user);
 
+    try{
+        const controller = new AbortController();
+        const timeout = setTimeout(function(){ controller.abort(); }, 5000);
+
+        const response = await fetch(
+            "https://kisan-app-1.onrender.com/profile/" + encodeURIComponent(user.id),
+            {
+                method:"GET",
+                cache:"no-store",
+                signal:controller.signal
+            }
+        );
+
+        clearTimeout(timeout);
+
+        if(!response.ok){
+            return;
+        }
+
+        const data = await response.json();
+
+        if(data.status && data.user){
+            const freshUser = {...user, ...data.user};
+            localStorage.setItem("user", JSON.stringify(freshUser));
+            renderProfileUser(freshUser);
+            updateUserUI(freshUser);
+        }
+    }
+    catch(error){
+        // Cached data is already visible, so a slow Render wake-up must not block UI.
+        console.log("Profile background refresh:", error.message);
+    }
 }
 
-let response=await fetch(
+function renderProfileUser(user){
+    const name = document.getElementById("profileName");
+    const mobile = document.getElementById("profileMobile");
+    const village = document.getElementById("profileVillage");
+    const editName = document.getElementById("editProfileName");
+    const editMobile = document.getElementById("editProfileMobile");
+    const editVillage = document.getElementById("editProfileVillage");
+    const editCrop = document.getElementById("editProfileCrop");
 
-"https://kisan-app-1.onrender.com/profile/"+user.id
-
-);
-
-let data=await response.json();
-
-if(data.status){
-
-document.getElementById("profileName").innerHTML=
-"👨‍🌾 "+data.user.name;
-
-document.getElementById("profileMobile").innerHTML=
-"📱 "+data.user.mobile;
-
-document.getElementById("profileVillage").innerHTML=
-"🏡 "+data.user.village;
-
-document.getElementById("editProfileName").value = data.user.name || "";
-document.getElementById("editProfileMobile").value = data.user.mobile || "";
-document.getElementById("editProfileVillage").value = data.user.village || "";
-document.getElementById("editProfileCrop").value = data.user.crop || "";
-
-localStorage.setItem("user", JSON.stringify({
-    ...user,
-    ...data.user
-}));
-
-}
-
+    if(name) name.textContent = "👨‍🌾 " + (user.name || "");
+    if(mobile) mobile.textContent = "📱 " + (user.mobile || "");
+    if(village) village.textContent = "🏡 " + (user.village || "");
+    if(editName) editName.value = user.name || "";
+    if(editMobile) editMobile.value = user.mobile || "";
+    if(editVillage) editVillage.value = user.village || "";
+    if(editCrop) editCrop.value = user.crop || "";
 }
 
 async function saveProfile(event){
