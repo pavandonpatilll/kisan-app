@@ -6461,6 +6461,18 @@ let sendingMessage = false;
 
 const API = "https://kisan-app-1.onrender.com";
 
+/* ==========================
+   FAST STARTUP / PROFILE CACHE
+   ========================== */
+function getStoredUserFast(){
+    try{
+        return JSON.parse(localStorage.getItem("user") || "null");
+    }catch(error){
+        return null;
+    }
+}
+
+
 initializeAppHistory();
 
 window.addEventListener("popstate", function(event){
@@ -11659,10 +11671,7 @@ function selectLanguage(lang){
     syncLanguageWithServer(lang);
 
     applyLanguage();
-    applyFeatureLanguage();
-    applyCropLanguage();
     applyWeatherLanguage();
-    applyAlertLanguage();
     applyKisanConnectLanguage();
     updateLanguageUI(lang);
 
@@ -13001,47 +13010,84 @@ document.addEventListener(
 
 async function loadProfile(){
 
-let user=JSON.parse(
-localStorage.getItem("user")
-);
+    // Show cached profile immediately so the Profile page never waits
+    // for Render/Firebase network response.
+    let user = null;
 
-if(!user){
+    try{
+        user = JSON.parse(localStorage.getItem("user") || "null");
+    }catch(error){
+        console.error("Cached profile parse error:", error);
+    }
 
-return;
+    if(!user || !user.id){
+        return;
+    }
 
-}
+    function renderProfile(profile){
+        if(!profile){
+            return;
+        }
 
-let response=await fetch(
+        const name = document.getElementById("profileName");
+        const mobile = document.getElementById("profileMobile");
+        const village = document.getElementById("profileVillage");
+        const editName = document.getElementById("editProfileName");
+        const editMobile = document.getElementById("editProfileMobile");
+        const editVillage = document.getElementById("editProfileVillage");
+        const editCrop = document.getElementById("editProfileCrop");
 
-"https://kisan-app-1.onrender.com/profile/"+user.id
+        if(name) name.textContent = "👨‍🌾 " + (profile.name || "");
+        if(mobile) mobile.textContent = "📱 " + (profile.mobile || "");
+        if(village) village.textContent = "🏡 " + (profile.village || "");
+        if(editName) editName.value = profile.name || "";
+        if(editMobile) editMobile.value = profile.mobile || "";
+        if(editVillage) editVillage.value = profile.village || "";
+        if(editCrop) editCrop.value = profile.crop || "";
+    }
 
-);
+    // 1) Instant local render.
+    renderProfile(user);
 
-let data=await response.json();
+    // 2) Refresh silently in the background.
+    // The user can use the profile while the server/Firebase is loading.
+    try{
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
 
-if(data.status){
+        const response = await fetch(
+            `${API}/profile/${encodeURIComponent(user.id)}`,
+            {
+                method:"GET",
+                cache:"no-store",
+                signal:controller.signal
+            }
+        );
 
-document.getElementById("profileName").innerHTML=
-"👨‍🌾 "+data.user.name;
+        clearTimeout(timeout);
 
-document.getElementById("profileMobile").innerHTML=
-"📱 "+data.user.mobile;
+        if(!response.ok){
+            return;
+        }
 
-document.getElementById("profileVillage").innerHTML=
-"🏡 "+data.user.village;
+        const data = await response.json();
 
-document.getElementById("editProfileName").value = data.user.name || "";
-document.getElementById("editProfileMobile").value = data.user.mobile || "";
-document.getElementById("editProfileVillage").value = data.user.village || "";
-document.getElementById("editProfileCrop").value = data.user.crop || "";
+        if(data && data.status && data.user){
+            const freshUser = {
+                ...user,
+                ...data.user
+            };
 
-localStorage.setItem("user", JSON.stringify({
-    ...user,
-    ...data.user
-}));
-
-}
-
+            localStorage.setItem("user", JSON.stringify(freshUser));
+            renderProfile(freshUser);
+            updateUserUI(freshUser);
+        }
+    }
+    catch(error){
+        // Cached profile remains visible even if Render is sleeping,
+        // temporarily unavailable, or the network is slow.
+        console.warn("Background profile refresh skipped:", error);
+    }
 }
 
 async function saveProfile(event){
