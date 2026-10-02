@@ -15,9 +15,10 @@ import os
 import uuid
 from dotenv import load_dotenv
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 from PIL import Image
 import io
+from urllib.parse import quote
 
 load_dotenv()
 
@@ -50,6 +51,78 @@ if not firebase_admin._apps:
 
 
 firestore_db = firestore.client()
+
+# ==========================
+# FIREBASE STORAGE - PERMANENT CHAT PHOTOS
+# ==========================
+FIREBASE_STORAGE_BUCKET = os.getenv(
+    "FIREBASE_STORAGE_BUCKET",
+    "shrimant-shetkari.firebasestorage.app"
+)
+
+
+def get_chat_storage_bucket():
+    return storage.bucket(FIREBASE_STORAGE_BUCKET)
+
+
+def upload_chat_image_permanently(image_data, content_type, extension):
+    filename = f"{uuid.uuid4()}{extension}"
+    object_name = f"kisan_chat/{filename}"
+    bucket = get_chat_storage_bucket()
+    blob = bucket.blob(object_name)
+
+    blob.upload_from_string(
+        image_data,
+        content_type=content_type
+    )
+
+    token = str(uuid.uuid4())
+    blob.metadata = {
+        "firebaseStorageDownloadTokens": token
+    }
+    blob.patch()
+
+    return (
+        "https://firebasestorage.googleapis.com/v0/b/"
+        + quote(bucket.name, safe="")
+        + "/o/"
+        + quote(object_name, safe="")
+        + "?alt=media&token="
+        + token
+    )
+
+
+def migrate_old_chat_image_to_storage(image_url):
+    if not image_url or str(image_url).startswith("http"):
+        return image_url
+
+    relative = str(image_url).split("?", 1)[0].lstrip("/")
+    if not relative.startswith("uploads/chat/"):
+        return image_url
+    if not os.path.isfile(relative):
+        return image_url
+
+    try:
+        with open(relative, "rb") as f:
+            data = f.read()
+
+        ext = os.path.splitext(relative)[1].lower() or ".jpg"
+        content_type = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".webp": "image/webp",
+            ".gif": "image/gif"
+        }.get(ext, "image/jpeg")
+
+        return upload_chat_image_permanently(
+            data,
+            content_type,
+            ext
+        )
+    except Exception as e:
+        print("OLD CHAT PHOTO MIGRATION ERROR:", str(e))
+        return image_url
 
 MANDI_API_KEY = os.getenv("MANDI_API_KEY")
 
@@ -6020,7 +6093,7 @@ def get_chat(
             "message": chat.get("message", ""),
             "time": chat.get("time", ""),
             "message_type": chat.get("message_type", "text"),
-            "image": chat.get("image"),
+            "image": migrate_old_chat_image_to_storage(chat.get("image")),
             "latitude": chat.get("latitude"),
             "longitude": chat.get("longitude"),
             "created_at": chat.get("created_at", "")
@@ -6059,24 +6132,11 @@ async def upload_chat_image(
 ):
 
     try:
-
         if not file.content_type:
+            return {"status": False, "message": "Invalid file"}
 
-            return {
-                "status": False,
-                "message": "Invalid file"
-            }
-
-
-        if not file.content_type.startswith(
-            "image/"
-        ):
-
-            return {
-                "status": False,
-                "message": "Only images are allowed"
-            }
-
+        if not file.content_type.startswith("image/"):
+            return {"status": False, "message": "Only images are allowed"}
 
         image_data = await file.read()
 
@@ -6095,59 +6155,27 @@ async def upload_chat_image(
             "image/webp": ".webp",
             "image/gif": ".gif"
         }
+        extension = extension_by_type.get(file.content_type, ".jpg")
 
-        extension = extension_by_type.get(
+        # Permanent storage: Render's local uploads folder is not used for new chat photos.
+        image_url = upload_chat_image_permanently(
+            image_data,
             file.content_type,
-            ".jpg"
+            extension
         )
-
-
-        filename = (
-            str(uuid.uuid4())
-            + extension
-        )
-
-
-        file_path = os.path.join(
-            CHAT_UPLOAD_DIR,
-            filename
-        )
-
-
-        with open(
-            file_path,
-            "wb"
-        ) as buffer:
-
-            buffer.write(image_data)
-
 
         return {
-
             "status": True,
-
-            "image_url":
-                "/uploads/chat/" + filename
-
+            "image_url": image_url
         }
-
 
     except Exception as e:
-
-        print(
-            "CHAT IMAGE ERROR:",
-            str(e)
-        )
-
+        print("CHAT IMAGE ERROR:", str(e))
         return {
-
             "status": False,
-
             "message": str(e)
-
         }
 
-    
 
 # ==========================
 # RAZORPAY PLAN IDS
