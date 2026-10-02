@@ -5292,12 +5292,12 @@ Detecting...
 </div>
 
 <div class="item"
-     onclick="openFeature('profile','profilePage')">
+     onclick="openFeature('search','searchPage')">
 
-    👤
+    🔍
 
-    <p id="txtProfile">
-        Profile
+    <p id="txtSearch">
+        Search
     </p>
 
 </div>
@@ -6603,6 +6603,7 @@ document.getElementById("homeSection").style.display = "block";
 updateUserUI(data.user);
 applyLanguage();
 loadHomeMandiTicker();
+startLiveLocationOnAppOpen();
 loadPremiumStatus();
 loadDiseaseSummary();
 
@@ -6661,6 +6662,9 @@ async function loginUser(){
         document.getElementById("homeSection").style.display="block";
 
         updateUserUI(data.user);
+
+        // Start live location immediately after successful login.
+        startLiveLocationOnAppOpen();
 
         // ⭐ Selected language Home par apply karo
         applyLanguage();
@@ -6734,6 +6738,45 @@ async function syncLanguageWithServer(lang){
 }
 
 // ==========================
+// AUTO LIVE LOCATION ON APP START
+// ==========================
+
+function startLiveLocationOnAppOpen(){
+
+    const userData = localStorage.getItem("user");
+
+    if(!userData){
+        return;
+    }
+
+    try{
+
+        const user = JSON.parse(userData);
+
+        if(!user || !user.id){
+            return;
+        }
+
+        // Let the WebView/home screen finish opening first.
+        setTimeout(function(){
+
+            try{
+                getLiveLocation(true);
+            }
+            catch(error){
+                console.warn("AUTO LOCATION ERROR:", error);
+            }
+
+        }, 350);
+
+    }
+    catch(error){
+        console.warn("AUTO LOCATION USER ERROR:", error);
+    }
+
+}
+
+// ==========================
 // CHECK SAVED LOGIN
 // ==========================
 
@@ -6787,6 +6830,9 @@ function checkSavedLogin(){
             "userId",
             user.id
         );
+
+        // Start live location immediately for an already logged-in farmer.
+        startLiveLocationOnAppOpen();
 
         // Premium status is loaded in parallel during app startup.
         // Do not block the home screen here.
@@ -8401,7 +8447,7 @@ document.addEventListener("click", function(event){
 
 });
 
-function getLiveLocation(){
+function getLiveLocation(silentStartup = false){
 
     const locationText = document.getElementById("locationText");
     const weatherStatus = document.getElementById("weatherStatus");
@@ -8411,7 +8457,9 @@ function getLiveLocation(){
         if(locationText){
             locationText.innerHTML = "❌ This device/browser does not support live location.";
         }
-        alert("📍 Live Location is not supported on this device.");
+        if(!silentStartup){
+            alert("📍 Live Location is not supported on this device.");
+        }
         return;
     }
 
@@ -8494,10 +8542,13 @@ function getLiveLocation(){
                 '<span class="weatherStatusPill">⚠️ Live location required for local weather</span>';
         }
 
-        alert(messages[error && error.code] || messages[2]);
+        if(!silentStartup){
+            alert(messages[error && error.code] || messages[2]);
+        }
     }
 
-    // Fresh GPS/location request. Because getLiveLocation() is called from
+    // Fresh GPS/location request. This works both from the Weather button
+    // and from automatic app-start location detection.
     // the Weather button/page action, Android/browser can show its permission prompt.
     try{
         navigator.geolocation.getCurrentPosition(
@@ -11985,8 +12036,8 @@ function applyLanguage(){
     document.getElementById("txtNews").innerText =
         t.news;
 
-    document.getElementById("txtProfile").innerText =
-        t.profile;
+    document.getElementById("txtSearch").innerText =
+        t.search;
 
     document.getElementById("navHome").innerText =
         t.home;
