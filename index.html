@@ -6598,6 +6598,18 @@ localStorage.setItem("userId", data.user.id);
 alert(data.message + " - App opening");
 
 document.getElementById("registerSection").style.display = "none";
+
+// IMPORTANT: registration ke baad koi bhi feature/chat page visible na rahe.
+// Sirf Home screen open honi chahiye. Existing features ko remove/change nahi kar rahe.
+document.querySelectorAll(".featurePage").forEach(function(page){
+    page.style.display = "none";
+});
+
+const nav = document.querySelector("nav");
+if(nav){
+    nav.style.removeProperty("display");
+}
+
 document.getElementById("homeSection").style.display = "block";
 
 updateUserUI(data.user);
