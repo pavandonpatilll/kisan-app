@@ -7266,7 +7266,10 @@ async function loadCropGroupChat(){
         box.innerHTML=data.chat.map(c=>{
             const mine=String(c.sender)===String(user.id);
             let body=c.reply_to_id?`<div class="kcQuoted" onclick="event.stopPropagation();scrollToKcMessage('${escapeHtml(c.reply_to_id)}')">↩️ ${escapeHtml(c.reply_to_text||"Replied message")}</div>`:"";
-            if(c.message_type==="image"&&c.image){const src=c.image.startsWith("http")?c.image:API+c.image;body+=`<img class="kcImage" src="${escapeHtml(src)}" alt="Shared photo" onclick="event.stopPropagation();openKcPhoto('${encodeURIComponent(src)}')">`}
+            if(c.message_type==="image"&&c.image){
+                const src=resolveKcImageUrl(c.image);
+                body+=`<img class="kcImage" src="${escapeHtml(src)}" alt="Shared photo" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement("div"),{className:"chatImageUnavailable",textContent:"📷 Photo unavailable"}));" onclick="event.stopPropagation();openKcPhoto('${encodeURIComponent(src)}')">`;
+            }
             else if(c.message_type==="location"&&c.latitude!=null&&c.longitude!=null){body+=`<a href="https://www.google.com/maps?q=${encodeURIComponent(c.latitude)},${encodeURIComponent(c.longitude)}" target="_blank" rel="noopener">📍 Shared location</a>`}
             else{const lang=localStorage.getItem("appLanguage")||"hi",translated=c.translations&&c.translations[lang];body+=`<div class="kcText">${escapeHtml(translated||c.message||"")}</div>`}
             const reactions=Object.entries(c.reactions||{}).map(([e,n])=>`<button class="kcReactionBadge" type="button" onclick="event.stopPropagation();reactKcBadge('${escapeHtml(c.id)}','${escapeHtml(e)}')">${escapeHtml(e)} <span>${n}</span></button>`).join("");
@@ -7278,12 +7281,63 @@ async function loadCropGroupChat(){
     }catch(e){console.error("GROUP CHAT ERROR:",e);box.innerHTML='<div class="kcEmpty">⚠️ Group chat temporarily unavailable.</div>'}
 }
 
+function resolveKcImageUrl(value){
+    const raw = String(value || "").trim();
+
+    if(!raw){
+        return "";
+    }
+
+    if(raw.startsWith("data:image/")){
+        return raw;
+    }
+
+    if(raw.startsWith("/")){
+        return API + raw;
+    }
+
+    if(raw.startsWith("http")){
+        try{
+            const url = new URL(raw);
+
+            if(url.hostname === "firebasestorage.googleapis.com"){
+                const marker = "/o/";
+                const index = url.pathname.indexOf(marker);
+
+                if(index >= 0){
+                    const objectName = decodeURIComponent(
+                        url.pathname.slice(index + marker.length)
+                    );
+
+                    if(objectName.startsWith("kisan_chat/")){
+                        const filename = objectName.slice("kisan_chat/".length);
+
+                        if(filename){
+                            return API + "/chat-image/" + encodeURIComponent(filename);
+                        }
+                    }
+                }
+            }
+
+            return raw;
+        }
+        catch(error){
+            return raw;
+        }
+    }
+
+    return API + "/" + raw.replace(/^\/+/, "");
+}
+
 function appendKcMessageToUI(c,user){
     const box=document.getElementById("kcGroupMessages");
     if(!box||!c)return;
     const mine=String(c.sender)===String(user.id);
     let body=c.reply_to_id?`<div class="kcQuoted" onclick="event.stopPropagation();scrollToKcMessage('${escapeHtml(c.reply_to_id)}')">↩️ ${escapeHtml(c.reply_to_text||"Replied message")}</div>`:"";
-    if(c.message_type==="image"&&c.image){const src=c.image.startsWith("http")?c.image:API+c.image;body+=`<img class="kcImage" src="${escapeHtml(src)}" alt="Shared photo" onclick="event.stopPropagation();openKcPhoto('${encodeURIComponent(src)}')">`}
+    if(c.message_type==="image"&&c.image){
+                const src=resolveKcImageUrl(c.image);
+                body+=`<img class="kcImage" src="${escapeHtml(src)}" alt="Shared photo" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement("div"),{className:"chatImageUnavailable",textContent:"📷 Photo unavailable"}));" onclick="event.stopPropagation();openKcPhoto('${encodeURIComponent(src)}')">`;
+            }
     else if(c.message_type==="location"&&c.latitude!=null&&c.longitude!=null){body+=`<a href="https://www.google.com/maps?q=${encodeURIComponent(c.latitude)},${encodeURIComponent(c.longitude)}" target="_blank" rel="noopener">📍 Shared location</a>`}
     else{body+=`<div class="kcText">${escapeHtml(c.message||"")}</div>`}
     const row=document.createElement("div");
@@ -7463,7 +7517,7 @@ async function loadChat(){
             if(!c.message_type || c.message_type==="text"){
                 messageContent=`<div class="chatText">${escapeHtml(c.message||"")}</div>`;
             }else if(c.message_type==="image" && c.image){
-                const imageUrl=c.image.startsWith("http")?c.image:API+c.image;
+                const imageUrl=resolveKcImageUrl(c.image);
                 messageContent=`<img src="${escapeHtml(imageUrl)}" class="chatImage" alt="Shared photo" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement("div"),{className:"chatImageUnavailable",textContent:"📷 Photo unavailable"}));" onclick="openKcPhoto('${encodeURIComponent(imageUrl)}')">`;
             }else if(c.message_type==="location"){
                 const mapUrl="https://www.google.com/maps?q="+encodeURIComponent(c.latitude)+","+encodeURIComponent(c.longitude);
@@ -8563,10 +8617,23 @@ await response.json();
 
 if(data.status){
 
-document.getElementById(
-"currentLocation"
-).innerHTML =
-data.location;
+const place =
+    data.village ||
+    data.location ||
+    "Unknown";
+
+const stateText =
+    data.state
+        ? ", " + data.state
+        : "";
+
+const currentLocation =
+    document.getElementById("currentLocation");
+
+if(currentLocation){
+    currentLocation.innerHTML =
+        "📍 " + place + stateText;
+}
 
 }
 

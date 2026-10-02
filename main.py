@@ -1,7 +1,7 @@
 from fastapi.staticfiles import StaticFiles
 import json
 from urllib import response
-from fastapi import FastAPI, UploadFile, File, Form, Request, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, Request, BackgroundTasks, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
@@ -66,7 +66,7 @@ def get_chat_storage_bucket():
     return storage.bucket(FIREBASE_STORAGE_BUCKET)
 
 
-def upload_chat_image_permanently(image_data, content_type, extension):
+def upload_chat_image_permanently(image_data, content_type, extension, return_proxy_path=False):
     filename = f"{uuid.uuid4()}{extension}"
     object_name = f"kisan_chat/{filename}"
     bucket = get_chat_storage_bucket()
@@ -82,6 +82,11 @@ def upload_chat_image_permanently(image_data, content_type, extension):
         "firebaseStorageDownloadTokens": token
     }
     blob.patch()
+
+    # New uploads can be served through our backend proxy so the browser
+    # does not depend on Firebase Storage rules/CORS.
+    if return_proxy_path:
+        return "/chat-image/" + filename
 
     return (
         "https://firebasestorage.googleapis.com/v0/b/"
@@ -2105,60 +2110,62 @@ def location_name(lat:float, lon:float):
 
     try:
 
-        url=f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
-
+        url=f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&addressdetails=1"
 
         response=requests.get(
             url,
             headers={
-                "User-Agent":"KisanAI"
+                "User-Agent":"KisanAI/1.0",
+                "Accept-Language":"mr-IN,hi-IN,en"
             },
             timeout=10
         )
 
-
+        response.raise_for_status()
         data=response.json()
-
-
         address=data.get("address",{})
 
-
-        city=(
-            address.get("city")
+        # Prefer the actual village/hamlet from GPS.
+        # Fall back to town/city only when village-level data is unavailable.
+        village=(
+            address.get("village")
+            or
+            address.get("hamlet")
             or
             address.get("town")
             or
-            address.get("village")
+            address.get("city")
             or
             "Unknown"
         )
 
+        state=address.get("state","")
 
-        state=address.get(
-            "state",
+        district=(
+            address.get("county")
+            or
+            address.get("state_district")
+            or
             ""
         )
 
+        location_parts=[str(village).strip()]
+        if state:
+            location_parts.append(str(state).strip())
 
         return {
-
             "status":True,
-
-            "location":
-            city+", "+state
-
+            "location":", ".join([x for x in location_parts if x]),
+            "village":village,
+            "district":district,
+            "state":state
         }
-
 
     except Exception as e:
 
-
         return {
-
             "status":False,
-
             "message":str(e)
-
         }
 
 
@@ -6248,7 +6255,8 @@ async def upload_chat_image(
             image_url = upload_chat_image_permanently(
                 image_data,
                 file.content_type,
-                extension
+                extension,
+                return_proxy_path=True
             )
             storage_mode = "firebase_storage"
         except Exception as storage_error:
@@ -6271,6 +6279,60 @@ async def upload_chat_image(
             "status": False,
             "message": str(e)
         }
+
+
+# ==========================
+# CHAT IMAGE VIEW PROXY
+# ==========================
+# Firebase Storage remains the permanent source. This route only reads the
+# stored object through the Admin SDK and streams it to the app.
+@app.get("/chat-image/{filename}")
+def get_chat_image(filename: str):
+    try:
+        raw_filename = str(filename).strip()
+        safe_filename = os.path.basename(raw_filename)
+
+        if (
+            not safe_filename
+            or safe_filename != raw_filename
+            or safe_filename in {".", ".."}
+            or "/" in safe_filename
+            or "\\" in safe_filename
+        ):
+            return Response(
+                content=b"Invalid image",
+                status_code=400,
+                media_type="text/plain"
+            )
+
+        bucket = get_chat_storage_bucket()
+        blob = bucket.blob(f"kisan_chat/{safe_filename}")
+
+        if not blob.exists():
+            return Response(
+                content=b"Image not found",
+                status_code=404,
+                media_type="text/plain"
+            )
+
+        image_data = blob.download_as_bytes()
+        content_type = blob.content_type or "image/jpeg"
+
+        return Response(
+            content=image_data,
+            media_type=content_type,
+            headers={
+                "Cache-Control":"public, max-age=31536000, immutable"
+            }
+        )
+
+    except Exception as e:
+        print("CHAT IMAGE VIEW ERROR:", str(e))
+        return Response(
+            content=b"Unable to load image",
+            status_code=404,
+            media_type="text/plain"
+        )
 
 
 # ==========================
