@@ -18,6 +18,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, storage
 from PIL import Image
 import io
+import base64
 from urllib.parse import quote
 
 load_dotenv()
@@ -90,6 +91,32 @@ def upload_chat_image_permanently(image_data, content_type, extension):
         + "?alt=media&token="
         + token
     )
+
+
+def make_chat_fallback_data_url(image_data, content_type="image/jpeg"):
+    """
+    Emergency fallback for chat photos when Firebase Storage is unavailable.
+    Keeps the image small enough for a Firestore message document.
+    """
+    try:
+        source = Image.open(io.BytesIO(image_data)).convert("RGB")
+        source.thumbnail((1280, 1280))
+
+        for quality in (78, 70, 62, 55, 48):
+            out = io.BytesIO()
+            source.save(out, format="JPEG", quality=quality, optimize=True)
+            compressed = out.getvalue()
+            if len(compressed) <= 700 * 1024:
+                encoded = base64.b64encode(compressed).decode("ascii")
+                return "data:image/jpeg;base64," + encoded
+
+        out = io.BytesIO()
+        source.save(out, format="JPEG", quality=42, optimize=True)
+        encoded = base64.b64encode(out.getvalue()).decode("ascii")
+        return "data:image/jpeg;base64," + encoded
+    except Exception as e:
+        print("CHAT IMAGE FALLBACK ERROR:", str(e))
+        raise
 
 
 def migrate_old_chat_image_to_storage(image_url):
@@ -6157,16 +6184,28 @@ async def upload_chat_image(
         }
         extension = extension_by_type.get(file.content_type, ".jpg")
 
-        # Permanent storage: Render's local uploads folder is not used for new chat photos.
-        image_url = upload_chat_image_permanently(
-            image_data,
-            file.content_type,
-            extension
-        )
+        # Keep Firebase Storage as the normal permanent path.
+        # If Storage is unavailable/misconfigured, use a compressed Firestore-safe
+        # data URL so chat photos can still be sent instead of failing.
+        try:
+            image_url = upload_chat_image_permanently(
+                image_data,
+                file.content_type,
+                extension
+            )
+            storage_mode = "firebase_storage"
+        except Exception as storage_error:
+            print("CHAT STORAGE UPLOAD ERROR:", str(storage_error))
+            image_url = make_chat_fallback_data_url(
+                image_data,
+                file.content_type
+            )
+            storage_mode = "firestore_fallback"
 
         return {
             "status": True,
-            "image_url": image_url
+            "image_url": image_url,
+            "storage_mode": storage_mode
         }
 
     except Exception as e:
