@@ -4380,7 +4380,7 @@ button:active,
 }
 
 
-/* AI FARMING ADVICE animated farmer */
+/* farming Advice animated farmer */
 .aiFarmerStage{position:relative;width:100%;min-height:245px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:24px;margin-bottom:16px;background:radial-gradient(circle at 50% 28%,#fff 0%,#effaf2 48%,#dff2e4 100%);border:1px solid rgba(46,125,50,.12);box-shadow:inset 0 -18px 35px rgba(46,125,50,.08)}
 .aiFarmerGround{position:absolute;bottom:13px;width:72%;height:18px;border-radius:50%;background:rgba(46,125,50,.16);filter:blur(2px);animation:aiGroundPulse 1.1s ease-in-out infinite}
 .aiFarmer{position:relative;z-index:2;font-size:132px;line-height:1;transform-origin:50% 100%;filter:drop-shadow(0 10px 8px rgba(0,0,0,.16));animation:aiFarmerDance 1.15s ease-in-out infinite;user-select:none}
@@ -5207,7 +5207,7 @@ Detecting...
     🤖
 
     <p id="txtAIChat">
-        AI Chat
+        cropjit chat
     </p>
 
 </div>
@@ -5231,7 +5231,7 @@ Detecting...
     🤖
 
     <p id="txtAIAdvice">
-        AI Farming Advice
+        farming Advice
     </p>
 
 </div>
@@ -5545,7 +5545,7 @@ Back Home
                 <div>📷 AI Disease Scan</div>
                 <div>📋 Disease History</div>
                 <div>🤖 AI Farming Assistant</div>
-                <div>🧑‍🌾 AI Farming Advice</div>
+                <div>🧑‍🌾 farming Advice</div>
                 <div>📊 Advanced Farming Insights</div>
                 <div>🔔 Premium Farming Alerts</div>
                 <div>🏛 Government Schemes</div>
@@ -5768,7 +5768,7 @@ Loading...
 
 <section id="aiPage" class="featurePage">
 
-<h1>🤖 AI Kisan Assistant</h1>
+<h1>🤖 cropjit Assistant</h1>
 
 <div class="weatherCard">
 
@@ -5799,7 +5799,7 @@ font-size:16px;
 <hr>
 
 <h2>
-💡 AI Advice
+💡cropjit Advice
 </h2>
 
 <p id="aiAnswer">
@@ -5821,7 +5821,7 @@ Aapke sawal ka AI farming answer yaha aayega.
 <section id="advicePage" class="featurePage">
 
 <h1>
-🤖 AI Farming Advice
+🤖 farming Advice
 </h1>
 
 <div class="weatherCard">
@@ -5838,10 +5838,10 @@ Aapke sawal ka AI farming answer yaha aayega.
 </div>
 
 <div class="aiAdviceMeta">
-    <span id="aiAdviceStatus" class="aiAdviceStatus">🤖 AI Advice</span>
+    <span id="aiAdviceStatus" class="aiAdviceStatus">🤖cropjit Advice</span>
 </div>
 
-<div id="aiAdviceContent">Loading AI Advice...</div>
+<div id="aiAdviceContent">Loadingcropjit Advice...</div>
 
 </div>
 
@@ -9183,7 +9183,7 @@ function toggleForecast(i){
 
     <div class="adviceBox">
 
-    🌾 AI Farming Advice
+    🌾 farming Advice
 
     <br><br>
 
@@ -9650,7 +9650,7 @@ async function loadCropGuide(){
             .innerHTML =
                 data.pest;
 
-            // AI Advice
+            //cropjit Advice
             document
             .getElementById("guideAI")
             .innerHTML =
@@ -10570,7 +10570,7 @@ async function loadFarmingAdvice(){
             status.className = "aiAdviceStatus" + (data.ai_generated===false ? " fallback" : "");
             status.innerText = data.ai_generated===false
                 ? "🛡️ Live-data farming advice"
-                : "🤖 AI Farming Advice";
+                : "🤖 farming Advice";
         }
 
         const box = document.getElementById("aiAdviceContent");
@@ -10598,7 +10598,7 @@ async function askAI(){
         localStorage.getItem("appLanguage") || "en";
 
     document.getElementById("aiAnswer").innerHTML =
-        "🤖 AI soch raha hai...";
+        "🤖 Loading...";
 
     try{
 
@@ -11470,7 +11470,7 @@ async function loadNotificationCount(){
 
         }
 
-        // 💡 AI advice/action
+        // 💡cropjit Advice/action
         if(
             data.advice &&
             data.action
@@ -11519,7 +11519,7 @@ const appPages=[
 {type:"page",name:"Satbara",page:"satbaraPage"},
 {type:"page",name:"Crop Guide",page:"cropGuidePage"},
 {type:"page",name:"Disease Scan",page:"diseasePage"},
-{type:"page",name:"AI Farming Advice",page:"advicePage"},
+{type:"page",name:"farming Advice",page:"advicePage"},
 {type:"page",name:"Government Schemes",page:"schemePage"},
 {type:"page",name:"Alerts",page:"alertPage"},
 {type:"page",name:"Profile",page:"profilePage"}
@@ -11799,8 +11799,8 @@ const translations = {
         kisanConnect: "Kisan Connect",
         mandi: "Mandi",
         satbara: "Satbara",
-        aiChat: "AI Chat",
-        aiAdvice: "AI Farming Advice",
+        aiChat: "cropjit chat",
+        aiAdvice: "farming Advice",
         cropGuide: "Crop Guide",
         diseaseScan: "Disease Scan",
         schemes: "Schemes",
@@ -11830,8 +11830,8 @@ const translations = {
         kisanConnect: "किसान कनेक्ट",
         mandi: "मंडी भाव",
         satbara: "सातबारा",
-        aiChat: "AI चैट",
-        aiAdvice: "कृषि AI सलाह",
+        aiChat: "cropjit चैट",
+        aiAdvice: "कृषि  सलाह",
         cropGuide: "फसल गाइड",
         diseaseScan: "रोग जांच",
         schemes: "सरकारी योजनाएं",
@@ -11853,7 +11853,7 @@ const translations = {
     },
 
     mr: {
-        header: "🌾 AI सहाय्यक",
+        header: "🌾 crop सहाय्यक",
         cropLabel: "🌾 मुख्य पीक निवडा",
         villageLabel: "🏡 गाव:",
         locationLabel: "📍 स्थान:",
@@ -11861,8 +11861,8 @@ const translations = {
         kisanConnect: "किसान कनेक्ट",
         mandi: "बाजार भाव",
         satbara: "सातबारा",
-        aiChat: "AI चॅट",
-        aiAdvice: "शेतीसाठी AI सल्ला",
+        aiChat: "Cropjit चॅट",
+        aiAdvice: "शेतीसाठी सल्ला",
         cropGuide: "पीक मार्गदर्शक",
         diseaseScan: "रोग तपासणी",
         schemes: "सरकारी योजना",
@@ -11947,17 +11947,17 @@ function applyFeatureLanguage(){
         mr:{
             loginTitle:"शेतकरी स्वागत", loginSub:"पुढे जाण्यासाठी लॉगिन करा", login:"लॉगिन", register:"नोंदणी", create:"खाते तयार करा", join:"Cropjit मध्ये सामील व्हा", fullName:"पूर्ण नाव", mobile:"मोबाईल नंबर", village:"गाव", password:"पासवर्ड", already:"आधीच खाते आहे?", noAccount:"खाते नाही?",
             weather:"🌦 हवामान", location:"📍 तुमचे स्थान", getLocation:"📍 माझे स्थान मिळवा", humidity:"आर्द्रता", rain:"पाऊस", wind:"वारा", forecast:"📅 ७ दिवसांचा अंदाज", back:"मुख्यपृष्ठावर जा", loading:"लोड होत आहे...",
-            premiumSub:"फक्त ₹5 मध्ये सर्व Premium शेती सुविधा", subscribe:"₹5 मध्ये सदस्यता घ्या", searchTitle:"🔍 स्मार्ट शेतकरी शोध", alertTitle:"🔔 शेतकरी सूचना", notificationTitle:"🔔 शेतकरी सूचना", mandiTitle:"💰 थेट बाजार भाव", aiTitle:"🤖 AI शेतकरी सहाय्यक", ask:"🤖 AI ला विचारा", adviceTitle:"🤖 AI शेती सल्ला", guideTitle:"🌱 स्मार्ट पीक मार्गदर्शक", diseaseTitle:"📷 AI रोग तपासणी", camera:"📷 कॅमेरा उघडा", gallery:"🖼 गॅलरीतून निवडा", schemesTitle:"🏛 सरकारी योजना", findSchemes:"🔍 योजना शोधा", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग अहवाल", download:"📄 PDF अहवाल डाउनलोड करा", newsTitle:"📰 शेती बातम्या", all:"📰 सर्व", weatherNews:"🌧 हवामान", cropNews:"🌱 पीक", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 शेतकरी प्रोफाइल", save:"💾 बदल जतन करा", logout:"🚪 लॉगआउट", chatTitle:"💬 चॅट", farmersBack:"👥 शेतकऱ्यांकडे परत जा"
+            premiumSub:"फक्त ₹5 मध्ये सर्व Premium शेती सुविधा", subscribe:"₹5 मध्ये सदस्यता घ्या", searchTitle:"🔍 स्मार्ट शेतकरी शोध", alertTitle:"🔔 शेतकरी सूचना", notificationTitle:"🔔 शेतकरी सूचना", mandiTitle:"💰 थेट बाजार भाव", aiTitle:"🤖  शेतकरी सहाय्यक", ask:"🤖 AI ला विचारा", adviceTitle:"🤖  शेती सल्ला", guideTitle:"🌱 स्मार्ट पीक मार्गदर्शक", diseaseTitle:"📷 AI रोग तपासणी", camera:"📷 कॅमेरा उघडा", gallery:"🖼 गॅलरीतून निवडा", schemesTitle:"🏛 सरकारी योजना", findSchemes:"🔍 योजना शोधा", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग अहवाल", download:"📄 PDF अहवाल डाउनलोड करा", newsTitle:"📰 शेती बातम्या", all:"📰 सर्व", weatherNews:"🌧 हवामान", cropNews:"🌱 पीक", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 शेतकरी प्रोफाइल", save:"💾 बदल जतन करा", logout:"🚪 लॉगआउट", chatTitle:"💬 चॅट", farmersBack:"👥 शेतकऱ्यांकडे परत जा"
         },
         hi:{
             loginTitle:"किसान स्वागत", loginSub:"जारी रखने के लिए लॉगिन करें", login:"लॉगिन", register:"रजिस्टर", create:"खाता बनाएं", join:"Cropjit से जुड़ें", fullName:"पूरा नाम", mobile:"मोबाइल नंबर", village:"गांव", password:"पासवर्ड", already:"पहले से खाता है?", noAccount:"खाता नहीं है?",
             weather:"🌦 मौसम", location:"📍 आपका स्थान", getLocation:"📍 मेरा स्थान प्राप्त करें", humidity:"नमी", rain:"बारिश", wind:"हवा", forecast:"📅 7 दिनों का पूर्वानुमान", back:"होम पर जाएं", loading:"लोड हो रहा है...",
-            premiumSub:"सिर्फ ₹5 में सभी Premium कृषि सुविधाएं", subscribe:"₹5 में सदस्यता लें", searchTitle:"🔍 स्मार्ट किसान खोज", alertTitle:"🔔 किसान सूचनाएं", notificationTitle:"🔔 किसान सूचनाएं", mandiTitle:"💰 लाइव मंडी भाव", aiTitle:"🤖 AI किसान सहायक", ask:"🤖 AI से पूछें", adviceTitle:"🤖 AI कृषि सलाह", guideTitle:"🌱 स्मार्ट फसल गाइड", diseaseTitle:"📷 AI रोग जांच", camera:"📷 कैमरा खोलें", gallery:"🖼 गैलरी से चुनें", schemesTitle:"🏛 सरकारी योजनाएं", findSchemes:"🔍 योजनाएं खोजें", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग रिपोर्ट", download:"📄 PDF रिपोर्ट डाउनलोड करें", newsTitle:"📰 कृषि समाचार", all:"📰 सभी", weatherNews:"🌧 मौसम", cropNews:"🌱 फसल", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 किसान प्रोफाइल", save:"💾 बदलाव सेव करें", logout:"🚪 लॉगआउट", chatTitle:"💬 चैट", farmersBack:"👥 किसानों के पास वापस जाएं"
+            premiumSub:"सिर्फ ₹5 में सभी Premium कृषि सुविधाएं", subscribe:"₹5 में सदस्यता लें", searchTitle:"🔍 स्मार्ट किसान खोज", alertTitle:"🔔 किसान सूचनाएं", notificationTitle:"🔔 किसान सूचनाएं", mandiTitle:"💰 लाइव मंडी भाव", aiTitle:"🤖 किसान सहायक", ask:"🤖 AI से पूछें", adviceTitle:"🤖 कृषि सलाह", guideTitle:"🌱 स्मार्ट फसल गाइड", diseaseTitle:"📷 AI रोग जांच", camera:"📷 कैमरा खोलें", gallery:"🖼 गैलरी से चुनें", schemesTitle:"🏛 सरकारी योजनाएं", findSchemes:"🔍 योजनाएं खोजें", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग रिपोर्ट", download:"📄 PDF रिपोर्ट डाउनलोड करें", newsTitle:"📰 कृषि समाचार", all:"📰 सभी", weatherNews:"🌧 मौसम", cropNews:"🌱 फसल", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 किसान प्रोफाइल", save:"💾 बदलाव सेव करें", logout:"🚪 लॉगआउट", chatTitle:"💬 चैट", farmersBack:"👥 किसानों के पास वापस जाएं"
         },
         en:{
             loginTitle:"Welcome Farmer", loginSub:"Login to Continue", login:"Login", register:"Register", create:"Create Account", join:"Join Cropjit", fullName:"Full Name", mobile:"Mobile Number", village:"Village", password:"Password", already:"Already have an account?", noAccount:"Don't have an account?",
             weather:"🌦 Weather", location:"📍 Your Location", getLocation:"📍 Get My Location", humidity:"Humidity", rain:"Rain", wind:"Wind", forecast:"📅 7-Day Forecast", back:"Back Home", loading:"Loading...",
-            premiumSub:"All Premium Farming Features for just ₹5", subscribe:"Subscribe for ₹5", searchTitle:"🔍 Smart Farmer Search", alertTitle:"🔔 Farmer Alerts", notificationTitle:"🔔 Farmer Notifications", mandiTitle:"💰 Live Mandi Rates", aiTitle:"🤖 AI Kisan Assistant", ask:"🤖 Ask AI", adviceTitle:"🤖 AI Farming Advice", guideTitle:"🌱 Smart Crop Guide", diseaseTitle:"📷 AI Disease Scan", camera:"📷 Open Camera", gallery:"🖼 Choose From Gallery", schemesTitle:"🏛 Government Schemes", findSchemes:"🔍 Find Schemes", historyTitle:"📋 Disease History", reportTitle:"🤖 AI Disease Report", download:"📄 Download PDF Report", newsTitle:"📰 Agriculture News", all:"📰 All", weatherNews:"🌧 Weather", cropNews:"🌱 Crop", market:"💰 Market", diseaseNews:"🐛 Disease", gov:"🏛 Government", profileTitle:"👤 Farmer Profile", save:"💾 Save Changes", logout:"🚪 Logout", chatTitle:"💬 Chat", farmersBack:"👥 Back to Farmers"
+            premiumSub:"All Premium Farming Features for just ₹5", subscribe:"Subscribe for ₹5", searchTitle:"🔍 Smart Farmer Search", alertTitle:"🔔 Farmer Alerts", notificationTitle:"🔔 Farmer Notifications", mandiTitle:"💰 Live Mandi Rates", aiTitle:"🤖 cropjit Assistant", ask:"🤖 Ask AI", adviceTitle:"🤖 farming Advice", guideTitle:"🌱 Smart Crop Guide", diseaseTitle:"📷 AI Disease Scan", camera:"📷 Open Camera", gallery:"🖼 Choose From Gallery", schemesTitle:"🏛 Government Schemes", findSchemes:"🔍 Find Schemes", historyTitle:"📋 Disease History", reportTitle:"🤖 AI Disease Report", download:"📄 Download PDF Report", newsTitle:"📰 Agriculture News", all:"📰 All", weatherNews:"🌧 Weather", cropNews:"🌱 Crop", market:"💰 Market", diseaseNews:"🐛 Disease", gov:"🏛 Government", profileTitle:"👤 Farmer Profile", save:"💾 Save Changes", logout:"🚪 Logout", chatTitle:"💬 Chat", farmersBack:"👥 Back to Farmers"
         }
     }[lang] || null;
     if(!T) return;
