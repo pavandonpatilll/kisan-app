@@ -5292,12 +5292,12 @@ Detecting...
 </div>
 
 <div class="item"
-     onclick="openFeature('profile','profilePage')">
+     onclick="openFeature('search','searchPage')">
 
-    👤
+    🔍
 
-    <p id="txtProfile">
-        Profile
+    <p id="txtSearch">
+        Search
     </p>
 
 </div>
@@ -11987,6 +11987,11 @@ function applyLanguage(){
 
     document.getElementById("txtProfile").innerText =
         t.profile;
+
+    const txtSearch = document.getElementById("txtSearch");
+    if(txtSearch){
+        txtSearch.innerText = t.search;
+    }
 
     document.getElementById("navHome").innerText =
         t.home;
