@@ -1041,38 +1041,30 @@ def admin_users():
 
     users = []
 
-    user_docs = (
-        firestore_db
-        .collection("users")
-        .stream()
-    )
+    user_docs = firestore_db.collection("users").stream()
 
     for doc in user_docs:
 
         data = doc.to_dict()
+        created_at = data.get("created_at") or ""
 
         users.append({
-
             "id": data.get("id", doc.id),
-
             "name": data.get("name", ""),
-
             "mobile": data.get("mobile", ""),
-
             "village": data.get("village", ""),
-
             "crop": data.get("crop", ""),
-
-            "language": data.get("language", "")
-
+            "language": data.get("language", ""),
+            "created_at": created_at,
+            "date": created_at
         })
 
+    # Newest registered farmer first. Older/unknown dates stay at the bottom.
+    users.sort(key=lambda x: x.get("created_at") or "", reverse=True)
+
     return {
-
         "status": True,
-
         "users": users
-
     }
 
 
@@ -1182,6 +1174,12 @@ def admin_premium_users():
 
             "mobile": data.get("mobile", ""),
 
+            "village": data.get("village", ""),
+
+            "crop": data.get("crop", ""),
+
+            "created_at": data.get("created_at", ""),
+
             "premium_plan":
                 plan if plan else "Free",
 
@@ -1229,7 +1227,9 @@ def admin_premium_users():
 class MandiModel(BaseModel):
 
     crop: str
-    location: str
+    location: str = ""
+    city: str = ""
+    state: str = ""
     min_price: float
     max_price: float
     avg_price: float
@@ -1246,13 +1246,21 @@ def add_mandi(data: MandiModel):
 
         mandi_id = str(uuid.uuid4())
 
+        city = data.city.strip()
+        state = data.state.strip()
+        location = data.location.strip() or ", ".join([x for x in [city, state] if x])
+
         mandi_data = {
 
             "id": mandi_id,
 
             "crop": data.crop.strip(),
 
-            "location": data.location.strip(),
+            "location": location,
+
+            "city": city,
+
+            "state": state,
 
             "min_price": data.min_price,
 
@@ -1293,6 +1301,51 @@ def add_mandi(data: MandiModel):
 
 
 # ==========================
+# ADMIN EDIT MANDI - FIRESTORE
+# ==========================
+
+class MandiUpdateModel(BaseModel):
+    crop: str
+    location: str = ""
+    city: str = ""
+    state: str = ""
+    min_price: float
+    max_price: float
+    avg_price: float
+
+
+@app.put("/admin/mandi/{mandi_id}")
+def update_mandi(mandi_id: str, data: MandiUpdateModel):
+
+    try:
+        ref = firestore_db.collection("mandi").document(str(mandi_id))
+        doc = ref.get()
+
+        if not doc.exists:
+            return {"status": False, "message": "Mandi rate not found"}
+
+        city = data.city.strip()
+        state = data.state.strip()
+        location = data.location.strip() or ", ".join([x for x in [city, state] if x])
+
+        ref.update({
+            "crop": data.crop.strip(),
+            "location": location,
+            "city": city,
+            "state": state,
+            "min_price": data.min_price,
+            "max_price": data.max_price,
+            "avg_price": data.avg_price,
+            "date": datetime.now().strftime("%Y-%m-%d")
+        })
+
+        return {"status": True, "message": "Mandi rate updated successfully"}
+
+    except Exception as e:
+        return {"status": False, "message": str(e)}
+
+
+# ==========================
 # ADMIN MANDI LIST - FIRESTORE
 # ==========================
 
@@ -1318,6 +1371,10 @@ def get_admin_mandi():
             "crop": data.get("crop", ""),
 
             "location": data.get("location", ""),
+
+            "city": data.get("city", ""),
+
+            "state": data.get("state", ""),
 
             "min_price": data.get("min_price", 0),
 

@@ -534,6 +534,15 @@ body{
 
     <div class="panel">
 
+        <input
+            id="usersSearch"
+            class="input"
+            type="search"
+            placeholder="🔎 Search name, mobile, village, crop..."
+            oninput="filterUsersTable()"
+            style="margin-bottom:15px;"
+        >
+
         <div
             style="
             overflow-x:auto;
@@ -575,6 +584,10 @@ body{
                             Language
                         </th>
 
+                        <th style="padding:12px;text-align:left;">
+                            Registered Date & Time
+                        </th>
+
                     </tr>
 
                 </thead>
@@ -609,8 +622,18 @@ body{
         >
 
         <input
+            id="mandiCity"
+            placeholder="City / Market City"
+        >
+
+        <input
+            id="mandiState"
+            placeholder="State (e.g. Maharashtra)"
+        >
+
+        <input
             id="mandiLocation"
-            placeholder="Location / State"
+            placeholder="Location / Market (optional)"
         >
 
         <input
@@ -853,6 +876,17 @@ body{
     <h1>👑 Premium & Subscription Users</h1>
 
     <div class="panel">
+
+        <!-- SEARCH -->
+
+        <input
+            id="premiumUsersSearch"
+            class="input"
+            type="search"
+            placeholder="🔎 Search premium users by name, mobile, village, crop, ID..."
+            oninput="filterPremiumUsers()"
+            style="margin-bottom:15px;"
+        >
 
         <!-- FILTER BUTTONS -->
 
@@ -1340,276 +1374,135 @@ window.addEventListener(
 
 async function addMandiRate(){
 
-    const crop =
-        document
-        .getElementById("mandiCrop")
-        .value
-        .trim();
+    const crop = document.getElementById("mandiCrop").value.trim();
+    const city = document.getElementById("mandiCity").value.trim();
+    const state = document.getElementById("mandiState").value.trim();
+    const location = document.getElementById("mandiLocation").value.trim();
+    const minPrice = document.getElementById("mandiMin").value.trim();
+    const maxPrice = document.getElementById("mandiMax").value.trim();
+    const avgPrice = document.getElementById("mandiAvg").value.trim();
 
-    const location =
-        document
-        .getElementById("mandiLocation")
-        .value
-        .trim();
-
-    const minPrice =
-        document
-        .getElementById("mandiMin")
-        .value
-        .trim();
-
-    const maxPrice =
-        document
-        .getElementById("mandiMax")
-        .value
-        .trim();
-
-    const avgPrice =
-        document
-        .getElementById("mandiAvg")
-        .value
-        .trim();
-
-
-    // Validate
-    if(
-        !crop ||
-        !location ||
-        !minPrice ||
-        !maxPrice ||
-        !avgPrice
-    ){
-
-        alert("Please fill all fields");
-
+    if(!crop || !city || !state || !minPrice || !maxPrice || !avgPrice){
+        alert("Please fill crop, city, state and all prices");
         return;
-
     }
 
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
+    const avg = Number(avgPrice);
 
-    const min =
-        Number(minPrice);
-
-    const max =
-        Number(maxPrice);
-
-    const avg =
-        Number(avgPrice);
-
-
-    // Number validation
-    if(
-        !Number.isFinite(min) ||
-        !Number.isFinite(max) ||
-        !Number.isFinite(avg)
-    ){
-
+    if(!Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(avg)){
         alert("Please enter valid prices");
-
         return;
-
     }
-
 
     try{
+        const response = await fetch(API_URL + "/admin/mandi", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                crop, city, state, location,
+                min_price:min, max_price:max, avg_price:avg
+            })
+        });
 
-        const response =
-            await fetch(
-                API_URL + "/admin/mandi",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-
-                        crop: crop,
-
-                        location: location,
-
-                        min_price: min,
-
-                        max_price: max,
-
-                        avg_price: avg
-
-                    })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "ADD MANDI RESPONSE:",
-            data
-        );
-
+        const data = await response.json();
 
         if(data.status){
-
-            alert(
-                "🌾 Mandi rate added successfully"
-            );
-
-
-            // Clear form
-            document
-            .getElementById("mandiCrop")
-            .value = "";
-
-            document
-            .getElementById("mandiLocation")
-            .value = "";
-
-            document
-            .getElementById("mandiMin")
-            .value = "";
-
-            document
-            .getElementById("mandiMax")
-            .value = "";
-
-            document
-            .getElementById("mandiAvg")
-            .value = "";
-
-
-            // Reload admin mandi list
-            if(
-                typeof loadMandiRates === "function"
-            ){
-
-                loadMandiRates();
-
-            }
-
+            alert("🌾 Mandi rate added successfully");
+            ["mandiCrop","mandiCity","mandiState","mandiLocation","mandiMin","mandiMax","mandiAvg"].forEach(id=>{
+                const el=document.getElementById(id); if(el) el.value="";
+            });
+            loadMandiRates();
+        }else{
+            alert(data.message || "Failed to add mandi rate");
         }
-        else{
-
-            alert(
-                data.message ||
-                "Failed to add mandi rate"
-            );
-
-        }
-
-
-    }
-    catch(error){
-
-        console.error(
-            "ADD MANDI ERROR:",
-            error
-        );
-
-        alert(
-            "Server connection failed"
-        );
-
+    }catch(error){
+        console.error("ADD MANDI ERROR:",error);
+        alert("Server connection failed");
     }
 
 }
 
+let mandiCache = {};
+
 async function loadMandiRates(){
 
-    const list =
-        document.getElementById(
-            "mandiList"
-        );
-
+    const list = document.getElementById("mandiList");
+    if(!list) return;
 
     try{
+        const response = await fetch(API_URL + "/admin/mandi");
+        const data = await response.json();
 
-        const response =
-            await fetch(
-                API_URL + "/admin/mandi"
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if(
-            !data.status ||
-            !data.mandi ||
-            data.mandi.length === 0
-        ){
-
-            list.innerHTML =
-                "<p>No mandi rates added yet.</p>";
-
+        if(!data.status || !data.mandi || data.mandi.length === 0){
+            list.innerHTML = "<p>No mandi rates added yet.</p>";
             return;
-
         }
 
+        mandiCache = {};
+        data.mandi.forEach(item => mandiCache[item.id] = item);
 
-        let html = "";
-
-
-        data.mandi.forEach(item => {
-
-            html += `
-
-                <div style="
-                    border:1px solid #ddd;
-                    padding:15px;
-                    margin:10px 0;
-                    border-radius:10px;
-                ">
-
-                    <h3>
-                        🌾 ${item.crop}
-                    </h3>
-
-                    <p>
-                        📍 ${item.location}
-                    </p>
-
-                    <p>
-                        🔻 Minimum:
-                        ₹${item.min_price}
-                    </p>
-
-                    <p>
-                        🔺 Maximum:
-                        ₹${item.max_price}
-                    </p>
-
-                    <p>
-                        💰 Average:
-                        ₹${item.avg_price}
-                    </p>
-
-                    <small>
-                        📅 ${item.date}
-                    </small>
-
+        list.innerHTML = data.mandi.map(item => `
+            <div style="border:1px solid #ddd;padding:15px;margin:10px 0;border-radius:10px;background:#fff;">
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+                    <div>
+                        <h3>🌾 ${item.crop || "-"}</h3>
+                        <p>📍 ${item.city || item.location || "-"}${item.state ? ", " + item.state : ""}</p>
+                    </div>
+                    <button class="actionBtn" onclick="editMandiRate('${item.id}')">✏️ Edit</button>
                 </div>
+                <p>🔻 Minimum: ₹${item.min_price}</p>
+                <p>🔺 Maximum: ₹${item.max_price}</p>
+                <p>💰 Average: ₹${item.avg_price}</p>
+                <small>📅 ${item.date || "-"}</small>
+            </div>
+        `).join("");
 
-            `;
+    }catch(error){
+        console.error("MANDI LIST ERROR:",error);
+        list.innerHTML = "<p>Unable to load mandi rates.</p>";
+    }
+}
 
+async function editMandiRate(id){
+    const item = mandiCache[id];
+    if(!item) return;
+
+    const crop = prompt("Crop Name:", item.crop || "");
+    if(crop === null) return;
+    const city = prompt("City / Market City:", item.city || "");
+    if(city === null) return;
+    const state = prompt("State:", item.state || "");
+    if(state === null) return;
+    const location = prompt("Location / Market (optional):", item.location || "");
+    if(location === null) return;
+    const min = Number(prompt("Minimum Price:", item.min_price));
+    const max = Number(prompt("Maximum Price:", item.max_price));
+    const avg = Number(prompt("Average Price:", item.avg_price));
+
+    if(!crop.trim() || !city.trim() || !state.trim() || !Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(avg)){
+        alert("Please enter valid mandi details.");
+        return;
+    }
+
+    try{
+        const response = await fetch(API_URL + "/admin/mandi/" + encodeURIComponent(id), {
+            method:"PUT",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({crop:crop.trim(),city:city.trim(),state:state.trim(),location:location.trim(),min_price:min,max_price:max,avg_price:avg})
         });
-
-
-        list.innerHTML = html;
-
+        const data = await response.json();
+        if(data.status){
+            alert("✅ Mandi rate updated successfully");
+            loadMandiRates();
+        }else{
+            alert(data.message || "Update failed");
+        }
+    }catch(error){
+        console.error("EDIT MANDI ERROR:",error);
+        alert("Server connection failed");
     }
-    catch(error){
-
-        console.error(error);
-
-        list.innerHTML =
-            "<p>Unable to load mandi rates.</p>";
-
-    }
-
 }
 
 async function addNews(){
@@ -2117,474 +2010,120 @@ async function addGovernmentScheme(){
 }
 
 
+let premiumUsersCache = [];
+let premiumUsersCurrentFilter = "all";
+
 async function loadPremiumUsers(filter = "all") {
-
-    const tbody =
-        document.getElementById(
-            "premiumUsersTableBody"
-        );
-
-    if (!tbody) {
-        return;
-    }
-
-
-    // ==========================
-    // LOADING
-    // ==========================
-
-    tbody.innerHTML =
-        "<tr><td colspan='12' style='padding:20px;'>Loading...</td></tr>";
-
-
-    try {
-
-        const response =
-            await fetch(
-                API_URL + "/admin/premium-users"
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!data.status) {
-
-            tbody.innerHTML =
-                "<tr><td colspan='12' style='padding:20px;'>Unable to load users.</td></tr>";
-
-            return;
-        }
-
-
-        let users =
-            data.users || [];
-
-
-        // ==========================
-        // FILTER
-        // ==========================
-
-        if (filter !== "all") {
-
-            users =
-                users.filter(
-                    user =>
-                        user.premium_status === filter
-                );
-
-        }
-
-
-        if (users.length === 0) {
-
-            tbody.innerHTML =
-                "<tr><td colspan='12' style='padding:20px;'>No users found.</td></tr>";
-
-            return;
-        }
-
-
-        let html = "";
-
-
-        users.forEach(user => {
-
-
-            // ==========================
-            // PREMIUM STATUS
-            // ==========================
-
-            let statusText =
-                "⚪ Free";
-
-            let statusColor =
-                "#666";
-
-
-            if (
-                user.premium_status === "basic"
-            ) {
-
-                statusText =
-                    "🌱 Basic";
-
-                statusColor =
-                    "#2e7d32";
-
-            }
-
-            else if (
-                user.premium_status === "advanced"
-            ) {
-
-                statusText =
-                    "🚀 Advanced";
-
-                statusColor =
-                    "#1565c0";
-
-            }
-
-            else if (
-                user.premium_status === "expired"
-            ) {
-
-                statusText =
-                    "🔴 Expired";
-
-                statusColor =
-                    "#d32f2f";
-
-            }
-
-
-            // ==========================
-            // AUTOPAY STATUS
-            // ==========================
-
-            let autopayText =
-                user.autopay_status || "-";
-
-            let autopayColor =
-                "#666";
-
-
-            if (
-                autopayText === "active"
-            ) {
-
-                autopayText =
-                    "🟢 Active";
-
-                autopayColor =
-                    "#2e7d32";
-
-            }
-
-            else if (
-                autopayText === "pending"
-            ) {
-
-                autopayText =
-                    "🟡 Pending";
-
-                autopayColor =
-                    "#f57c00";
-
-            }
-
-            else if (
-                autopayText === "halted"
-            ) {
-
-                autopayText =
-                    "🔴 Halted";
-
-                autopayColor =
-                    "#d32f2f";
-
-            }
-
-            else if (
-                autopayText === "cancelled"
-            ) {
-
-                autopayText =
-                    "⚫ Cancelled";
-
-                autopayColor =
-                    "#555";
-
-            }
-
-
-            // ==========================
-            // PAYMENT STATUS
-            // ==========================
-
-            let paymentText =
-                user.last_payment_status || "-";
-
-            let paymentColor =
-                "#666";
-
-
-            if (
-                paymentText === "paid"
-            ) {
-
-                paymentText =
-                    "🟢 Paid";
-
-                paymentColor =
-                    "#2e7d32";
-
-            }
-
-            else if (
-                paymentText === "pending"
-            ) {
-
-                paymentText =
-                    "🟡 Pending";
-
-                paymentColor =
-                    "#f57c00";
-
-            }
-
-            else if (
-                paymentText === "failed"
-            ) {
-
-                paymentText =
-                    "🔴 Failed";
-
-                paymentColor =
-                    "#d32f2f";
-
-            }
-
-
-            // ==========================
-            // TABLE ROW
-            // ==========================
-
-            html += `
-
-                <tr>
-
-
-                    <!-- ID -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                    ">
-                        ${user.id || "-"}
-                    </td>
-
-
-                    <!-- FARMER -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                        font-weight:bold;
-                    ">
-                        ${user.name || "-"}
-                    </td>
-
-
-                    <!-- MOBILE -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                    ">
-                        ${user.mobile || "-"}
-                    </td>
-
-
-                    <!-- PLAN -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                    ">
-                        ${user.premium_plan || "Free"}
-                    </td>
-
-
-                    <!-- PREMIUM STATUS -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                        color:${statusColor};
-                        font-weight:bold;
-                    ">
-                        ${statusText}
-                    </td>
-
-
-                    <!-- EXPIRY -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                    ">
-                        ${user.premium_expiry || "-"}
-                    </td>
-
-
-                    <!-- SUBSCRIPTION ID -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                        font-size:13px;
-                    ">
-                        ${user.razorpay_subscription_id || "-"}
-                    </td>
-
-
-                    <!-- PAYMENT ID -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                        font-size:13px;
-                    ">
-                        ${user.razorpay_payment_id || "-"}
-                    </td>
-
-
-                    <!-- AUTOPAY -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                        color:${autopayColor};
-                        font-weight:bold;
-                    ">
-                        ${autopayText}
-                    </td>
-
-
-                    <!-- PAYMENT -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                        color:${paymentColor};
-                        font-weight:bold;
-                    ">
-                        ${paymentText}
-                    </td>
-
-
-                    <!-- LAST PAYMENT -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                    ">
-                        ${user.last_payment_date || "-"}
-                    </td>
-
-
-                    <!-- NEXT PAYMENT -->
-
-                    <td style="
-                        padding:12px;
-                        border-top:1px solid #eee;
-                    ">
-                        ${user.next_payment_date || "-"}
-                    </td>
-
-
-                </tr>
-
-            `;
-
-        });
-
-
-        tbody.innerHTML =
-            html;
-
-
-    }
-    catch (error) {
-
-        console.error(
-            "Premium users error:",
-            error
-        );
-
-
-        tbody.innerHTML =
-            "<tr><td colspan='12' style='padding:20px;color:red;'>Server connection failed.</td></tr>";
-
-    }
-
-}
-
-
-
-async function loadUsers(){
+    premiumUsersCurrentFilter = filter;
+    const tbody = document.getElementById("premiumUsersTableBody");
+    if(!tbody) return;
+    tbody.innerHTML = "<tr><td colspan='12' style='padding:20px;'>Loading...</td></tr>";
 
     try{
-
-        const response =
-            await fetch(
-                API_URL + "/admin/users"
-            );
-
-        const data =
-            await response.json();
-
+        const response = await fetch(API_URL + "/admin/premium-users");
+        const data = await response.json();
         if(!data.status){
-
+            tbody.innerHTML = "<tr><td colspan='12' style='padding:20px;'>Unable to load users.</td></tr>";
             return;
         }
-
-        const tbody =
-            document.getElementById(
-                "usersTableBody"
-            );
-
-        tbody.innerHTML = "";
-
-        data.users.forEach(user => {
-
-            tbody.innerHTML += `
-
-                <tr>
-
-                    <td style="padding:12px;border-top:1px solid #eee;">
-                        ${user.id}
-                    </td>
-
-                    <td style="padding:12px;border-top:1px solid #eee;">
-                        ${user.name || "-"}
-                    </td>
-
-                    <td style="padding:12px;border-top:1px solid #eee;">
-                        ${user.mobile || "-"}
-                    </td>
-
-                    <td style="padding:12px;border-top:1px solid #eee;">
-                        ${user.village || "-"}
-                    </td>
-
-                    <td style="padding:12px;border-top:1px solid #eee;">
-                        ${user.crop || "-"}
-                    </td>
-
-                    <td style="padding:12px;border-top:1px solid #eee;">
-                        ${user.language || "-"}
-                    </td>
-
-                </tr>
-
-            `;
-
-        });
-
+        premiumUsersCache = data.users || [];
+        renderPremiumUsers();
+    }catch(error){
+        console.error("Premium users error:",error);
+        tbody.innerHTML = "<tr><td colspan='12' style='padding:20px;color:red;'>Server connection failed.</td></tr>";
     }
-    catch(error){
+}
 
-        console.error(
-            "Users loading error:",
-            error
-        );
+function filterPremiumUsers(){
+    renderPremiumUsers();
+}
 
+function renderPremiumUsers(){
+    const tbody = document.getElementById("premiumUsersTableBody");
+    if(!tbody) return;
+    const q = (document.getElementById("premiumUsersSearch")?.value || "").trim().toLowerCase();
+    let users = premiumUsersCache.filter(user => premiumUsersCurrentFilter === "all" || user.premium_status === premiumUsersCurrentFilter);
+    if(q){
+        users = users.filter(user => [user.id,user.name,user.mobile,user.village,user.crop,user.premium_plan,user.razorpay_subscription_id,user.razorpay_payment_id].some(v=>String(v||"").toLowerCase().includes(q)));
     }
+    if(!users.length){
+        tbody.innerHTML = "<tr><td colspan='12' style='padding:20px;'>No users found.</td></tr>";
+        return;
+    }
+    tbody.innerHTML = users.map(user => {
+        let statusText="⚪ Free", statusColor="#666";
+        if(user.premium_status==="basic"){statusText="🌱 Basic";statusColor="#2e7d32";}
+        else if(user.premium_status==="advanced"){statusText="🚀 Advanced";statusColor="#1565c0";}
+        else if(user.premium_status==="expired"){statusText="🔴 Expired";statusColor="#d32f2f";}
+        let autopayText=user.autopay_status||"-", autopayColor="#666";
+        if(autopayText==="active"){autopayText="🟢 Active";autopayColor="#2e7d32";}
+        else if(autopayText==="pending"){autopayText="🟡 Pending";autopayColor="#f57c00";}
+        else if(autopayText==="halted"){autopayText="🔴 Halted";autopayColor="#d32f2f";}
+        else if(autopayText==="cancelled"){autopayText="⚫ Cancelled";autopayColor="#555";}
+        let paymentText=user.last_payment_status||"-", paymentColor="#666";
+        if(paymentText==="paid"){paymentText="🟢 Paid";paymentColor="#2e7d32";}
+        else if(paymentText==="pending"){paymentText="🟡 Pending";paymentColor="#f57c00";}
+        else if(paymentText==="failed"){paymentText="🔴 Failed";paymentColor="#d32f2f";}
+        return `<tr>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.id||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;font-weight:bold;">${user.name||"-"}<br><small>🏡 ${user.village||"-"} • 🌱 ${user.crop||"-"}</small></td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.mobile||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.premium_plan||"Free"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;color:${statusColor};font-weight:bold;">${statusText}</td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.premium_expiry||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;font-size:13px;">${user.razorpay_subscription_id||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;font-size:13px;">${user.razorpay_payment_id||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;color:${autopayColor};font-weight:bold;">${autopayText}</td>
+            <td style="padding:12px;border-top:1px solid #eee;color:${paymentColor};font-weight:bold;">${paymentText}</td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.last_payment_date||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.next_payment_date||"-"}</td>
+        </tr>`;
+    }).join("");
+}
 
+let usersCache = [];
+
+async function loadUsers(){
+    try{
+        const response = await fetch(API_URL + "/admin/users");
+        const data = await response.json();
+        if(!data.status) return;
+        usersCache = data.users || [];
+        renderUsersTable();
+    }catch(error){
+        console.error("Users loading error:",error);
+    }
+}
+
+function filterUsersTable(){
+    renderUsersTable();
+}
+
+function formatRegisteredDate(value){
+    if(!value) return "-";
+    try{
+        const d=new Date(value);
+        if(Number.isNaN(d.getTime())) return value;
+        return d.toLocaleString("en-IN",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    }catch(e){return value;}
+}
+
+function renderUsersTable(){
+    const tbody=document.getElementById("usersTableBody");
+    if(!tbody) return;
+    const q=(document.getElementById("usersSearch")?.value||"").trim().toLowerCase();
+    const users=usersCache.filter(user=>[user.id,user.name,user.mobile,user.village,user.crop,user.language].some(v=>String(v||"").toLowerCase().includes(q)));
+    if(!users.length){tbody.innerHTML="<tr><td colspan='7' style='padding:20px;'>No users found.</td></tr>";return;}
+    tbody.innerHTML=users.map((user,index)=>`
+        <tr ${index===0 && !q ? 'style="background:#f1fff4;"' : ''}>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.id||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;font-weight:bold;">${user.name||"-"}${index===0 && !q ? ' <span style="font-size:11px;color:#2e7d32;background:#e8f5e9;padding:3px 6px;border-radius:8px;">NEWEST</span>' : ''}</td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.mobile||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.village||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.crop||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;">${user.language||"-"}</td>
+            <td style="padding:12px;border-top:1px solid #eee;white-space:nowrap;">📅 ${formatRegisteredDate(user.created_at)}</td>
+        </tr>`).join("");
 }
 
 </script>
