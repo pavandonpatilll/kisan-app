@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
 from google import genai
+import sqlite3
 import razorpay
 import hashlib
 import hmac
@@ -243,11 +244,504 @@ app.add_middleware(
 )
 
 # ==========================
-# DATABASE
+# Database
 # ==========================
-# All persistent application data is stored in Firebase Firestore.
-# Firebase Storage is used for persistent uploaded images/files.
-# No local SQLite database is used.
+
+
+DATABASE_PATH = "data/database.db"
+
+# Create database folder if it does not exist
+os.makedirs(
+    os.path.dirname(DATABASE_PATH),
+    exist_ok=True
+)
+
+conn = sqlite3.connect(
+    DATABASE_PATH,
+    check_same_thread=False,
+    timeout=20
+)
+
+# Enable WAL mode for better concurrent performance
+conn.execute("PRAGMA journal_mode=WAL")
+conn.execute("PRAGMA synchronous=NORMAL")
+conn.execute("PRAGMA cache_size=-64000")  # 64MB cache
+conn.execute("PRAGMA temp_store=MEMORY")
+
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    name TEXT,
+
+    mobile TEXT UNIQUE,
+
+    village TEXT,
+
+    password TEXT,
+
+    crop TEXT,
+
+    latitude REAL,
+
+    longitude REAL
+
+)
+""")
+
+conn.commit()
+
+
+# ==========================
+# Add location columns
+# ==========================
+
+try:
+
+    cursor.execute(
+        "ALTER TABLE users ADD COLUMN latitude REAL"
+    )
+
+except:
+
+    pass
+
+
+try:
+
+    cursor.execute(
+        "ALTER TABLE users ADD COLUMN longitude REAL"
+    )
+
+except:
+
+    pass
+
+
+try:
+
+    cursor.execute(
+        "ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'"
+    )
+
+except:
+
+    pass
+
+
+# ==========================
+# PREMIUM COLUMNS MIGRATION
+# ==========================
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN premium_plan TEXT DEFAULT ''
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN premium_expiry TEXT DEFAULT ''
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+
+try:
+
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN razorpay_subscription_id TEXT DEFAULT ''
+    """)
+
+except sqlite3.OperationalError:
+
+    pass
+
+# ==========================
+# RAZORPAY AUTOPAY / PAYMENT COLUMNS
+# ==========================
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN razorpay_subscription_status TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN last_payment_status TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN last_payment_date TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN next_payment_date TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
+# ==========================
+# RAZORPAY PAYMENT ID
+# ==========================
+
+try:
+    cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN razorpay_payment_id TEXT DEFAULT ''
+    """)
+except sqlite3.OperationalError:
+    pass
+
+
+conn.commit()
+
+
+# ==========================
+# Disease History
+# ==========================
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS disease_history(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    user_id INTEGER,
+
+    crop TEXT,
+
+    disease TEXT,
+
+    confidence TEXT,
+
+    severity TEXT,
+
+    affected TEXT,
+
+    date TEXT
+
+)
+""")
+
+conn.commit()
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN reason TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN symptoms TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN medicine TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN organic TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN recovery TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN yield_loss TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN prevention TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN ai TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE disease_history ADD COLUMN weather TEXT")
+except:
+    pass
+
+conn.commit()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS farmer_posts(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    user_id INTEGER,
+
+    crop TEXT,
+
+    image TEXT,
+
+    description TEXT,
+
+    village TEXT,
+
+    date TEXT
+
+)
+""")
+
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS messages(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    sender_id INTEGER,
+
+    receiver_id INTEGER,
+
+    message TEXT,
+
+    time TEXT
+
+)
+""")
+
+
+conn.commit()
+
+try:
+    cursor.execute("""
+        ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'hi'
+    """)
+    conn.commit()
+    print("    language column added")
+except Exception as e:
+    print("Language column:", e)
+
+
+# ==========================
+# MANDI TABLE
+# ==========================
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS mandi(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    crop TEXT,
+    location TEXT,
+    min_price REAL,
+    max_price REAL,
+    avg_price REAL,
+    date TEXT
+)
+""")
+
+conn.commit()
+
+# ==========================
+# ADMIN TABLE
+# ==========================
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admins(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    username TEXT UNIQUE,
+
+    password TEXT
+
+)
+""")
+
+conn.commit()
+
+
+# Default Admin
+# Username: admin
+# Password: admin123
+
+admin_password = hashlib.sha256(
+    "admin123".encode()
+).hexdigest()
+
+try:
+    cursor.execute(
+        "INSERT INTO admins (username, password) VALUES (?, ?)",
+        ("admin", admin_password)
+    )
+    conn.commit()
+except sqlite3.IntegrityError:
+    pass
+
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admin_news(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    title TEXT NOT NULL,
+
+    description TEXT NOT NULL,
+
+    date TEXT
+
+)
+""")
+
+conn.commit()
+
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admin_crop_guides(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    crop TEXT NOT NULL,
+
+    information TEXT NOT NULL,
+
+    date TEXT
+
+)
+""")
+
+conn.commit()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admin_disease_data(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    disease TEXT NOT NULL,
+
+    crop TEXT NOT NULL,
+
+    treatment TEXT NOT NULL,
+
+    date TEXT
+
+)
+""")
+
+conn.commit()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS notifications(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    message TEXT NOT NULL,
+
+    date TEXT NOT NULL
+
+)
+""")
+
+conn.commit()
+
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS admin_schemes(
+
+
+id INTEGER PRIMARY KEY AUTOINCREMENT,  
+
+name TEXT NOT NULL,  
+
+description TEXT NOT NULL,  
+
+benefit TEXT NOT NULL,  
+
+eligibility TEXT NOT NULL,  
+
+state TEXT NOT NULL,  
+
+apply_url TEXT NOT NULL,  
+
+date TEXT NOT NULL  
+
+
+)
+""")
+
+conn.commit()
+
+# ==========================
+
+# UPDATE MESSAGES TABLE
+
+# ==========================
+
+try:
+    cursor.execute("""  
+        ALTER TABLE messages  
+        ADD COLUMN message_type TEXT DEFAULT 'text'  
+    """)  
+except sqlite3.OperationalError:
+    pass  
+
+try:
+    cursor.execute("""  
+        ALTER TABLE messages  
+        ADD COLUMN image TEXT  
+    """)  
+except sqlite3.OperationalError:
+    pass  
+
+
+try:
+    cursor.execute("""  
+        ALTER TABLE messages  
+        ADD COLUMN latitude REAL  
+    """)  
+except sqlite3.OperationalError:
+    pass  
+
+
+try:
+    cursor.execute("""  
+        ALTER TABLE messages  
+        ADD COLUMN longitude REAL  
+    """)  
+except sqlite3.OperationalError:
+    pass  
+
+
+conn.commit()
+
 
 # ==========================
 # Password Hash

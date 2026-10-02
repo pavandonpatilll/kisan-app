@@ -5292,12 +5292,12 @@ Detecting...
 </div>
 
 <div class="item"
-     onclick="openFeature('search','searchPage')">
+     onclick="openFeature('profile','profilePage')">
 
-    🔍
+    👤
 
-    <p id="txtSearch">
-        Search
+    <p id="txtProfile">
+        Profile
     </p>
 
 </div>
@@ -6342,7 +6342,7 @@ Back Home
   <div class="kcWrap">
     <div class="kcTop">
             <h1>👥 Kisan Connect</h1>
-            <p>अपने crop के farmers के group में जुड़ो और chat करो</p>
+            <p>अपने crop के farmers के group में जुड़ो और Telegram-style chat करो</p>
       <input id="kcGroupSearch" class="kcSearch" placeholder="🔎 Crop group search..." oninput="filterCropGroups()">
     </div>
     <div id="cropGroupList" class="kcGroups">
@@ -6460,18 +6460,6 @@ let chatUserName = "";
 let sendingMessage = false;
 
 const API = "https://kisan-app-1.onrender.com";
-
-/* ==========================
-   FAST STARTUP / PROFILE CACHE
-   ========================== */
-function getStoredUserFast(){
-    try{
-        return JSON.parse(localStorage.getItem("user") || "null");
-    }catch(error){
-        return null;
-    }
-}
-
 
 initializeAppHistory();
 
@@ -11671,7 +11659,10 @@ function selectLanguage(lang){
     syncLanguageWithServer(lang);
 
     applyLanguage();
+    applyFeatureLanguage();
+    applyCropLanguage();
     applyWeatherLanguage();
+    applyAlertLanguage();
     applyKisanConnectLanguage();
     updateLanguageUI(lang);
 
@@ -11996,11 +11987,6 @@ function applyLanguage(){
 
     document.getElementById("txtProfile").innerText =
         t.profile;
-
-    const txtSearch = document.getElementById("txtSearch");
-    if(txtSearch){
-        txtSearch.innerText = t.search;
-    }
 
     document.getElementById("navHome").innerText =
         t.home;
@@ -13010,84 +12996,47 @@ document.addEventListener(
 
 async function loadProfile(){
 
-    // Show cached profile immediately so the Profile page never waits
-    // for Render/Firebase network response.
-    let user = null;
+let user=JSON.parse(
+localStorage.getItem("user")
+);
 
-    try{
-        user = JSON.parse(localStorage.getItem("user") || "null");
-    }catch(error){
-        console.error("Cached profile parse error:", error);
-    }
+if(!user){
 
-    if(!user || !user.id){
-        return;
-    }
+return;
 
-    function renderProfile(profile){
-        if(!profile){
-            return;
-        }
+}
 
-        const name = document.getElementById("profileName");
-        const mobile = document.getElementById("profileMobile");
-        const village = document.getElementById("profileVillage");
-        const editName = document.getElementById("editProfileName");
-        const editMobile = document.getElementById("editProfileMobile");
-        const editVillage = document.getElementById("editProfileVillage");
-        const editCrop = document.getElementById("editProfileCrop");
+let response=await fetch(
 
-        if(name) name.textContent = "👨‍🌾 " + (profile.name || "");
-        if(mobile) mobile.textContent = "📱 " + (profile.mobile || "");
-        if(village) village.textContent = "🏡 " + (profile.village || "");
-        if(editName) editName.value = profile.name || "";
-        if(editMobile) editMobile.value = profile.mobile || "";
-        if(editVillage) editVillage.value = profile.village || "";
-        if(editCrop) editCrop.value = profile.crop || "";
-    }
+"https://kisan-app-1.onrender.com/profile/"+user.id
 
-    // 1) Instant local render.
-    renderProfile(user);
+);
 
-    // 2) Refresh silently in the background.
-    // The user can use the profile while the server/Firebase is loading.
-    try{
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
+let data=await response.json();
 
-        const response = await fetch(
-            `${API}/profile/${encodeURIComponent(user.id)}`,
-            {
-                method:"GET",
-                cache:"no-store",
-                signal:controller.signal
-            }
-        );
+if(data.status){
 
-        clearTimeout(timeout);
+document.getElementById("profileName").innerHTML=
+"👨‍🌾 "+data.user.name;
 
-        if(!response.ok){
-            return;
-        }
+document.getElementById("profileMobile").innerHTML=
+"📱 "+data.user.mobile;
 
-        const data = await response.json();
+document.getElementById("profileVillage").innerHTML=
+"🏡 "+data.user.village;
 
-        if(data && data.status && data.user){
-            const freshUser = {
-                ...user,
-                ...data.user
-            };
+document.getElementById("editProfileName").value = data.user.name || "";
+document.getElementById("editProfileMobile").value = data.user.mobile || "";
+document.getElementById("editProfileVillage").value = data.user.village || "";
+document.getElementById("editProfileCrop").value = data.user.crop || "";
 
-            localStorage.setItem("user", JSON.stringify(freshUser));
-            renderProfile(freshUser);
-            updateUserUI(freshUser);
-        }
-    }
-    catch(error){
-        // Cached profile remains visible even if Render is sleeping,
-        // temporarily unavailable, or the network is slow.
-        console.warn("Background profile refresh skipped:", error);
-    }
+localStorage.setItem("user", JSON.stringify({
+    ...user,
+    ...data.user
+}));
+
+}
+
 }
 
 async function saveProfile(event){
