@@ -4737,6 +4737,156 @@ body > nav p{
 
 
 
+
+/* =========================================================
+   FINAL UNIVERSAL RESPONSIVE + SAFE-AREA LAYER
+   Keeps existing UI/features, prevents tall/large phones
+   from clipping the top or bottom content.
+========================================================= */
+html{
+    width:100%;
+    min-height:100%;
+    overflow-x:hidden;
+    -webkit-text-size-adjust:100%;
+}
+body{
+    width:100%;
+    min-height:100dvh;
+    overflow-x:hidden;
+    overflow-y:auto;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+}
+section{
+    width:100%;
+    min-height:100dvh;
+    box-sizing:border-box;
+}
+header{
+    top:env(safe-area-inset-top,0px);
+    height:70px;
+    box-sizing:border-box;
+    padding-left:max(12px,env(safe-area-inset-left,0px) + 12px);
+    padding-right:max(12px,env(safe-area-inset-right,0px) + 12px);
+}
+#homeSection{
+    min-height:100dvh;
+    padding-top:calc(90px + env(safe-area-inset-top,0px));
+    padding-bottom:calc(95px + env(safe-area-inset-bottom,0px));
+    overflow-y:auto;
+    justify-content:flex-start;
+    align-items:stretch;
+}
+.featurePage{
+    min-height:100dvh;
+    height:auto;
+    overflow-y:auto;
+    overflow-x:hidden;
+    justify-content:flex-start;
+    padding-top:calc(78px + env(safe-area-inset-top,0px)) !important;
+    padding-bottom:calc(95px + env(safe-area-inset-bottom,0px)) !important;
+}
+nav{
+    bottom:env(safe-area-inset-bottom,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    box-sizing:border-box;
+}
+.card,.weatherCard,.profileBox,.searchCard,.premiumPlan,.satbaraCard,.mandiCard,.newsCard,.alertCard,.aiCard{
+    max-width:100%;
+}
+img,video,canvas,iframe{
+    max-width:100%;
+}
+input,select,textarea,button{
+    max-width:100%;
+}
+#premiumPage{
+    min-height:100dvh !important;
+    height:auto !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    justify-content:flex-start !important;
+    padding-top:calc(12px + env(safe-area-inset-top,0px)) !important;
+    padding-bottom:calc(95px + env(safe-area-inset-bottom,0px)) !important;
+}
+#premiumPage .premiumHeader{
+    flex:0 0 auto;
+    margin-top:0;
+}
+#premiumPage #premiumStatus{
+    flex:0 0 auto;
+}
+#premiumPage .premiumPlans{
+    flex:0 0 auto;
+    align-items:flex-start;
+}
+#premiumPage .premiumPlan{
+    overflow:visible;
+}
+/* ₹5 action stays at the top of the plan card */
+#premiumPage .premiumPlan{
+    display:flex;
+    flex-direction:column;
+}
+#premiumPage .premiumPlan .planHeader{order:1;}
+#premiumPage .premiumPlan .priceOption{order:2;}
+#premiumPage .premiumPlan .planFeatureList{order:3;}
+@media(max-width:600px){
+    #homeSection{
+        padding-left:8px;
+        padding-right:8px;
+    }
+    .welcomeCard{
+        margin:12px 6px;
+        padding:18px;
+    }
+    .grid{
+        padding-left:6px !important;
+        padding-right:6px !important;
+    }
+    .featurePage{
+        padding-left:10px !important;
+        padding-right:10px !important;
+    }
+    #premiumPage{
+        padding-left:8px !important;
+        padding-right:8px !important;
+    }
+    #premiumPage .premiumHeader h1{
+        font-size:clamp(20px,6vw,28px);
+        line-height:1.2;
+    }
+    #premiumPage .premiumHeader p{
+        font-size:clamp(12px,3.5vw,15px);
+        line-height:1.4;
+    }
+    #premiumPage .priceOption{
+        flex-direction:row !important;
+        text-align:left !important;
+        gap:8px !important;
+        padding:10px 0 !important;
+    }
+    #premiumPage .priceOption button{
+        width:auto !important;
+        flex:0 0 auto;
+        white-space:nowrap;
+        padding:10px 12px !important;
+    }
+    #premiumPage .planFeatureList div{
+        font-size:clamp(12px,3.5vw,14px);
+        line-height:1.35;
+    }
+}
+@media(max-width:380px){
+    #premiumPage .priceOption{
+        flex-direction:column !important;
+        align-items:stretch !important;
+        text-align:center !important;
+    }
+    #premiumPage .priceOption button{
+        width:100% !important;
+    }
+}
 </style>
 
 </head>
@@ -5508,18 +5658,18 @@ Back Home
 
             <div class="planFeatureList">
 
-                <div>🌦️ Live Weather & Farming Advice</div>
-                <div>💰 Live Mandi Prices</div>
-                <div>🌱 Crop Guide & Farming Guidance</div>
-                <div>📷 AI Disease Scan</div>
-                <div>📋 Disease History</div>
-                <div>🤖 AI Farming Assistant</div>
-                <div>🧑‍🌾 farming Advice</div>
-                <div>📊 Advanced Farming Insights</div>
-                <div>🔔 Premium Farming Alerts</div>
-                <div>🏛 Government Schemes</div>
-                <div>📰 Agriculture News</div>
-                <div>🔍 Smart Search</div>
+                <div id="premiumFeatureWeather">🌦️ Live Weather & Farming Advice</div>
+                <div id="premiumFeatureMandi">💰 Live Mandi Prices</div>
+                <div id="premiumFeatureCrop">🌱 Crop Guide & Farming Guidance</div>
+                <div id="premiumFeatureDisease">📷 AI Disease Scan</div>
+                <div id="premiumFeatureHistory">📋 Disease History</div>
+                <div id="premiumFeatureAI">🤖 AI Farming Assistant</div>
+                <div id="premiumFeatureAdvice">🧑‍🌾 farming Advice</div>
+                <div id="premiumFeatureInsights">📊 Advanced Farming Insights</div>
+                <div id="premiumFeatureAlerts">🔔 Premium Farming Alerts</div>
+                <div id="premiumFeatureSchemes">🏛 Government Schemes</div>
+                <div id="premiumFeatureNews">📰 Agriculture News</div>
+                <div id="premiumFeatureSearch">🔍 Smart Search</div>
 
             </div>
 
@@ -11983,17 +12133,17 @@ function applyFeatureLanguage(){
         mr:{
             loginTitle:"शेतकरी स्वागत", loginSub:"पुढे जाण्यासाठी लॉगिन करा", login:"लॉगिन", register:"नोंदणी", create:"खाते तयार करा", join:"Cropjit मध्ये सामील व्हा", fullName:"पूर्ण नाव", mobile:"मोबाईल नंबर", village:"गाव", password:"पासवर्ड", already:"आधीच खाते आहे?", noAccount:"खाते नाही?",
             weather:"🌦 हवामान", location:"📍 तुमचे स्थान", getLocation:"📍 माझे स्थान मिळवा", humidity:"आर्द्रता", rain:"पाऊस", wind:"वारा", forecast:"📅 ७ दिवसांचा अंदाज", back:"मुख्यपृष्ठावर जा", loading:"लोड होत आहे...",
-            premiumSub:"फक्त ₹5 मध्ये सर्व Premium शेती सुविधा", subscribe:"₹5 मध्ये सदस्यता घ्या", searchTitle:"🔍 स्मार्ट शेतकरी शोध", alertTitle:"🔔 शेतकरी सूचना", notificationTitle:"🔔 शेतकरी सूचना", mandiTitle:"💰 थेट बाजार भाव", aiTitle:"🤖  शेतकरी सहाय्यक", ask:"🤖 AI ला विचारा", adviceTitle:"🤖  शेती सल्ला", guideTitle:"🌱 स्मार्ट पीक मार्गदर्शक", diseaseTitle:"📷 AI रोग तपासणी", camera:"📷 कॅमेरा उघडा", gallery:"🖼 गॅलरीतून निवडा", schemesTitle:"🏛 सरकारी योजना", findSchemes:"🔍 योजना शोधा", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग अहवाल", download:"📄 PDF अहवाल डाउनलोड करा", newsTitle:"📰 शेती बातम्या", all:"📰 सर्व", weatherNews:"🌧 हवामान", cropNews:"🌱 पीक", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 शेतकरी प्रोफाइल", save:"💾 बदल जतन करा", logout:"🚪 लॉगआउट", chatTitle:"💬 चॅट", farmersBack:"👥 शेतकऱ्यांकडे परत जा"
+            premiumSub:"फक्त ₹5 मध्ये सर्व Premium शेती सुविधा", subscribe:"₹5 मध्ये सदस्यता घ्या", premiumFeatures:["🌦️ थेट हवामान व शेती सल्ला","💰 थेट बाजार भाव","🌱 पीक मार्गदर्शक व शेती मार्गदर्शन","📷 AI रोग तपासणी","📋 रोग इतिहास","🤖 AI शेती सहाय्यक","🧑‍🌾 शेती सल्ला","📊 प्रगत शेती माहिती","🔔 प्रीमियम शेती सूचना","🏛 सरकारी योजना","📰 शेती बातम्या","🔍 स्मार्ट शोध"], searchTitle:"🔍 स्मार्ट शेतकरी शोध", alertTitle:"🔔 शेतकरी सूचना", notificationTitle:"🔔 शेतकरी सूचना", mandiTitle:"💰 थेट बाजार भाव", aiTitle:"🤖  शेतकरी सहाय्यक", ask:"🤖 AI ला विचारा", adviceTitle:"🤖  शेती सल्ला", guideTitle:"🌱 स्मार्ट पीक मार्गदर्शक", diseaseTitle:"📷 AI रोग तपासणी", camera:"📷 कॅमेरा उघडा", gallery:"🖼 गॅलरीतून निवडा", schemesTitle:"🏛 सरकारी योजना", findSchemes:"🔍 योजना शोधा", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग अहवाल", download:"📄 PDF अहवाल डाउनलोड करा", newsTitle:"📰 शेती बातम्या", all:"📰 सर्व", weatherNews:"🌧 हवामान", cropNews:"🌱 पीक", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 शेतकरी प्रोफाइल", save:"💾 बदल जतन करा", logout:"🚪 लॉगआउट", chatTitle:"💬 चॅट", farmersBack:"👥 शेतकऱ्यांकडे परत जा"
         },
         hi:{
             loginTitle:"किसान स्वागत", loginSub:"जारी रखने के लिए लॉगिन करें", login:"लॉगिन", register:"रजिस्टर", create:"खाता बनाएं", join:"Cropjit से जुड़ें", fullName:"पूरा नाम", mobile:"मोबाइल नंबर", village:"गांव", password:"पासवर्ड", already:"पहले से खाता है?", noAccount:"खाता नहीं है?",
             weather:"🌦 मौसम", location:"📍 आपका स्थान", getLocation:"📍 मेरा स्थान प्राप्त करें", humidity:"नमी", rain:"बारिश", wind:"हवा", forecast:"📅 7 दिनों का पूर्वानुमान", back:"होम पर जाएं", loading:"लोड हो रहा है...",
-            premiumSub:"सिर्फ ₹5 में सभी Premium कृषि सुविधाएं", subscribe:"₹5 में सदस्यता लें", searchTitle:"🔍 स्मार्ट किसान खोज", alertTitle:"🔔 किसान सूचनाएं", notificationTitle:"🔔 किसान सूचनाएं", mandiTitle:"💰 लाइव मंडी भाव", aiTitle:"🤖 किसान सहायक", ask:"🤖 AI से पूछें", adviceTitle:"🤖 कृषि सलाह", guideTitle:"🌱 स्मार्ट फसल गाइड", diseaseTitle:"📷 AI रोग जांच", camera:"📷 कैमरा खोलें", gallery:"🖼 गैलरी से चुनें", schemesTitle:"🏛 सरकारी योजनाएं", findSchemes:"🔍 योजनाएं खोजें", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग रिपोर्ट", download:"📄 PDF रिपोर्ट डाउनलोड करें", newsTitle:"📰 कृषि समाचार", all:"📰 सभी", weatherNews:"🌧 मौसम", cropNews:"🌱 फसल", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 किसान प्रोफाइल", save:"💾 बदलाव सेव करें", logout:"🚪 लॉगआउट", chatTitle:"💬 चैट", farmersBack:"👥 किसानों के पास वापस जाएं"
+            premiumSub:"सिर्फ ₹5 में सभी Premium कृषि सुविधाएं", subscribe:"₹5 में सदस्यता लें", premiumFeatures:["🌦️ लाइव मौसम और खेती की सलाह","💰 लाइव मंडी भाव","🌱 फसल गाइड और खेती मार्गदर्शन","📷 AI रोग जांच","📋 रोग इतिहास","🤖 AI किसान सहायक","🧑‍🌾 खेती की सलाह","📊 उन्नत खेती की जानकारी","🔔 प्रीमियम खेती सूचनाएं","🏛 सरकारी योजनाएं","📰 कृषि समाचार","🔍 स्मार्ट खोज"], searchTitle:"🔍 स्मार्ट किसान खोज", alertTitle:"🔔 किसान सूचनाएं", notificationTitle:"🔔 किसान सूचनाएं", mandiTitle:"💰 लाइव मंडी भाव", aiTitle:"🤖 किसान सहायक", ask:"🤖 AI से पूछें", adviceTitle:"🤖 कृषि सलाह", guideTitle:"🌱 स्मार्ट फसल गाइड", diseaseTitle:"📷 AI रोग जांच", camera:"📷 कैमरा खोलें", gallery:"🖼 गैलरी से चुनें", schemesTitle:"🏛 सरकारी योजनाएं", findSchemes:"🔍 योजनाएं खोजें", historyTitle:"📋 रोग इतिहास", reportTitle:"🤖 AI रोग रिपोर्ट", download:"📄 PDF रिपोर्ट डाउनलोड करें", newsTitle:"📰 कृषि समाचार", all:"📰 सभी", weatherNews:"🌧 मौसम", cropNews:"🌱 फसल", market:"💰 बाजार", diseaseNews:"🐛 रोग", gov:"🏛 सरकार", profileTitle:"👤 किसान प्रोफाइल", save:"💾 बदलाव सेव करें", logout:"🚪 लॉगआउट", chatTitle:"💬 चैट", farmersBack:"👥 किसानों के पास वापस जाएं"
         },
         en:{
             loginTitle:"Welcome Farmer", loginSub:"Login to Continue", login:"Login", register:"Register", create:"Create Account", join:"Join Cropjit", fullName:"Full Name", mobile:"Mobile Number", village:"Village", password:"Password", already:"Already have an account?", noAccount:"Don't have an account?",
             weather:"🌦 Weather", location:"📍 Your Location", getLocation:"📍 Get My Location", humidity:"Humidity", rain:"Rain", wind:"Wind", forecast:"📅 7-Day Forecast", back:"Back Home", loading:"Loading...",
-            premiumSub:"All Premium Farming Features for just ₹5", subscribe:"Subscribe for ₹5", searchTitle:"🔍 Smart Farmer Search", alertTitle:"🔔 Farmer Alerts", notificationTitle:"🔔 Farmer Notifications", mandiTitle:"💰 Live Mandi Rates", aiTitle:"🤖 cropjit Assistant", ask:"🤖 Ask AI", adviceTitle:"🤖 farming Advice", guideTitle:"🌱 Smart Crop Guide", diseaseTitle:"📷 AI Disease Scan", camera:"📷 Open Camera", gallery:"🖼 Choose From Gallery", schemesTitle:"🏛 Government Schemes", findSchemes:"🔍 Find Schemes", historyTitle:"📋 Disease History", reportTitle:"🤖 AI Disease Report", download:"📄 Download PDF Report", newsTitle:"📰 Agriculture News", all:"📰 All", weatherNews:"🌧 Weather", cropNews:"🌱 Crop", market:"💰 Market", diseaseNews:"🐛 Disease", gov:"🏛 Government", profileTitle:"👤 Farmer Profile", save:"💾 Save Changes", logout:"🚪 Logout", chatTitle:"💬 Chat", farmersBack:"👥 Back to Farmers"
+            premiumSub:"All Premium Farming Features for just ₹5", subscribe:"Subscribe for ₹5", premiumFeatures:["🌦️ Live Weather & Farming Advice","💰 Live Mandi Prices","🌱 Crop Guide & Farming Guidance","📷 AI Disease Scan","📋 Disease History","🤖 AI Farming Assistant","🧑‍🌾 Farming Advice","📊 Advanced Farming Insights","🔔 Premium Farming Alerts","🏛 Government Schemes","📰 Agriculture News","🔍 Smart Search"], searchTitle:"🔍 Smart Farmer Search", alertTitle:"🔔 Farmer Alerts", notificationTitle:"🔔 Farmer Notifications", mandiTitle:"💰 Live Mandi Rates", aiTitle:"🤖 cropjit Assistant", ask:"🤖 Ask AI", adviceTitle:"🤖 farming Advice", guideTitle:"🌱 Smart Crop Guide", diseaseTitle:"📷 AI Disease Scan", camera:"📷 Open Camera", gallery:"🖼 Choose From Gallery", schemesTitle:"🏛 Government Schemes", findSchemes:"🔍 Find Schemes", historyTitle:"📋 Disease History", reportTitle:"🤖 AI Disease Report", download:"📄 Download PDF Report", newsTitle:"📰 Agriculture News", all:"📰 All", weatherNews:"🌧 Weather", cropNews:"🌱 Crop", market:"💰 Market", diseaseNews:"🐛 Disease", gov:"🏛 Government", profileTitle:"👤 Farmer Profile", save:"💾 Save Changes", logout:"🚪 Logout", chatTitle:"💬 Chat", farmersBack:"👥 Back to Farmers"
         }
     }[lang] || null;
     if(!T) return;
@@ -12005,7 +12155,9 @@ function applyFeatureLanguage(){
     ph('#regName',T.fullName); ph('#regMobile',T.mobile); ph('#regVillage',T.village); ph('#regPassword',T.password);
     set('#registerSection label', '🌾 '+(lang==='mr'?'मुख्य पीक':lang==='hi'?'मुख्य फसल':'Main Crop')); set('#registerSection .card>button',T.register);
     set('#weatherPage h1',T.weather); set('#weatherPage .weatherCard h2',T.location); set('#getLocationButton',T.getLocation); set('#humidityLabel',T.humidity); set('#rainLabel',T.rain); set('#windLabel',T.wind); set('#forecastLabel',T.forecast); set('#weatherPage .featurePage button',T.back);
-    set('#premiumPage .premiumHeader p',T.premiumSub); set('#basic_monthly_btn',T.subscribe); set('#searchPage h1',T.searchTitle); set('#alertPage h1',T.alertTitle); set('#notificationPage h1',T.notificationTitle); set('#mandiPage h1',T.mandiTitle); set('#aiPage h1',T.aiTitle); set('#aiPage button',T.ask); set('#advicePage h1',T.adviceTitle); set('#cropGuidePage h1',T.guideTitle); set('#diseasePage h1',T.diseaseTitle); set('#diseasePage button',T.camera); set('#diseasePage label',T.gallery); set('#schemePage h1',T.schemesTitle); set('#schemePage button',T.findSchemes); set('#historyPage h1',T.historyTitle); set('#reportPage h1',T.reportTitle); set('#reportPage button',T.download); set('#newsPage h1',T.newsTitle); set('#newsPage .newsFilter button:nth-child(1)',T.all); set('#newsPage .newsFilter button:nth-child(2)',T.weatherNews); set('#newsPage .newsFilter button:nth-child(3)',T.cropNews); set('#newsPage .newsFilter button:nth-child(4)',T.market); set('#newsPage .newsFilter button:nth-child(5)',T.diseaseNews); set('#newsPage .newsFilter button:nth-child(6)',T.gov); set('#profilePage h1',T.profileTitle); set('#saveProfileButton',T.save); set('#profilePage .logoutProfileBtn',T.logout); set('#chatPage h1',T.chatTitle); set('#chatPage button[onclick*="kisanPage"]',T.farmersBack);
+    set('#premiumPage .premiumHeader p',T.premiumSub); set('#basic_monthly_btn',T.subscribe);
+    const premiumFeatureIds=["premiumFeatureWeather","premiumFeatureMandi","premiumFeatureCrop","premiumFeatureDisease","premiumFeatureHistory","premiumFeatureAI","premiumFeatureAdvice","premiumFeatureInsights","premiumFeatureAlerts","premiumFeatureSchemes","premiumFeatureNews","premiumFeatureSearch"];
+    premiumFeatureIds.forEach((id,i)=>{const e=document.getElementById(id); if(e && T.premiumFeatures && T.premiumFeatures[i]) e.textContent=T.premiumFeatures[i];}); set('#searchPage h1',T.searchTitle); set('#alertPage h1',T.alertTitle); set('#notificationPage h1',T.notificationTitle); set('#mandiPage h1',T.mandiTitle); set('#aiPage h1',T.aiTitle); set('#aiPage button',T.ask); set('#advicePage h1',T.adviceTitle); set('#cropGuidePage h1',T.guideTitle); set('#diseasePage h1',T.diseaseTitle); set('#diseasePage button',T.camera); set('#diseasePage label',T.gallery); set('#schemePage h1',T.schemesTitle); set('#schemePage button',T.findSchemes); set('#historyPage h1',T.historyTitle); set('#reportPage h1',T.reportTitle); set('#reportPage button',T.download); set('#newsPage h1',T.newsTitle); set('#newsPage .newsFilter button:nth-child(1)',T.all); set('#newsPage .newsFilter button:nth-child(2)',T.weatherNews); set('#newsPage .newsFilter button:nth-child(3)',T.cropNews); set('#newsPage .newsFilter button:nth-child(4)',T.market); set('#newsPage .newsFilter button:nth-child(5)',T.diseaseNews); set('#newsPage .newsFilter button:nth-child(6)',T.gov); set('#profilePage h1',T.profileTitle); set('#saveProfileButton',T.save); set('#profilePage .logoutProfileBtn',T.logout); set('#chatPage h1',T.chatTitle); set('#chatPage button[onclick*="kisanPage"]',T.farmersBack);
     applyCropLanguage();
     applyKisanConnectLanguage();
 }
