@@ -4887,6 +4887,74 @@ input,select,textarea,button{
         width:100% !important;
     }
 }
+
+/* KISAN CONNECT — FIXED HEADER + ONLY GROUP LIST SCROLL
+   This override changes only Kisan Connect layout. */
+#kisanPage{
+    height:100dvh !important;
+    min-height:100dvh !important;
+    max-height:100dvh !important;
+    overflow:hidden !important;
+    padding:0 !important;
+    align-items:stretch !important;
+    justify-content:flex-start !important;
+}
+#kisanPage .kcWrap{
+    width:100% !important;
+    max-width:900px !important;
+    height:100% !important;
+    min-height:0 !important;
+    margin:0 auto !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    display:flex !important;
+    flex-direction:column !important;
+}
+#kisanPage .kcTop{
+    position:relative !important;
+    top:auto !important;
+    z-index:50 !important;
+    flex:0 0 auto !important;
+    width:100% !important;
+}
+#kisanPage .kcGroups{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    height:auto !important;
+    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior:contain !important;
+    padding:12px 12px 18px !important;
+}
+#kisanPage .kcWrap > div:last-child{
+    flex:0 0 auto !important;
+    position:relative !important;
+    bottom:auto !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px)) !important;
+    background:#f4f7f5 !important;
+    box-shadow:0 -4px 14px rgba(0,0,0,.08) !important;
+    box-sizing:border-box !important;
+    z-index:60 !important;
+}
+#kisanPage .kcWrap > div:last-child button{
+    display:block !important;
+    width:min(100%,520px) !important;
+    margin:0 auto !important;
+}
+@media(max-width:600px){
+    #kisanPage .kcTop{
+        padding-top:calc(18px + env(safe-area-inset-top,0px)) !important;
+    }
+    #kisanPage .kcGroups{
+        padding-left:10px !important;
+        padding-right:10px !important;
+    }
+}
+
 </style>
 
 </head>
