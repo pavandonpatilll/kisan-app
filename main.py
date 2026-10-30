@@ -6348,7 +6348,7 @@ RAZORPAY_PLANS = {
     # ==========================
 
     "basic_monthly":
-        "plan_TQTNYbVUVJZU8x",
+        "plan_Tezlw549ykQC62",
 
     # ==========================
     # ADVANCED MONTHLY
@@ -6520,20 +6520,32 @@ def create_subscription(data: dict):
             }
 
         # ==========================
-        # NEXT MONTH START DATE
+        # FIRST RECURRING CHARGE
+        # 24 HOURS AFTER UPFRONT ₹5
         # ==========================
 
-        from dateutil.relativedelta import (
-            relativedelta
-        )
+        from datetime import timedelta
+        from dateutil.relativedelta import relativedelta
 
-        next_month = (
-            datetime.now()
-            + relativedelta(months=1)
-        )
+        if plan_key == "basic_monthly":
+            # Basic: ₹5 upfront, then ₹150 AutoPay after 24 hours.
+            first_recurring_at = (
+                datetime.now()
+                + timedelta(hours=24)
+            )
+        else:
+            # Keep the existing Advanced offer schedule unchanged.
+            first_recurring_at = (
+                datetime.now()
+                + relativedelta(months=1)
+            )
 
         start_at = int(
-            next_month.timestamp()
+            first_recurring_at.timestamp()
+        )
+
+        first_recurring_date = (
+            first_recurring_at.strftime("%Y-%m-%d")
         )
 
         # ==========================
@@ -6618,6 +6630,9 @@ def create_subscription(data: dict):
 
             "plan_id":
                 plan_id,
+
+            "first_recurring_date":
+                first_recurring_date,
 
             "key_id":
                 RAZORPAY_KEY_ID
@@ -6820,8 +6835,15 @@ def verify_subscription(data: dict):
         )
 
 
+        # The ₹150 monthly AutoPay is scheduled for 24 hours
+        # after the upfront ₹5 payment. Keep this date visible
+        # until the first ₹150 charge is confirmed by webhook.
+        from datetime import timedelta
+
         next_payment_date = (
-            expiry_string
+            (today + timedelta(hours=24)).strftime("%Y-%m-%d")
+            if plan_key == "basic_monthly"
+            else expiry_string
         )
 
 
@@ -6874,7 +6896,10 @@ def verify_subscription(data: dict):
                 payment_date,
 
             "next_payment_date":
-                next_payment_date
+                next_payment_date,
+
+            "razorpay_first_recurring_charge_received":
+                False if plan_key == "basic_monthly" else True
 
         })
 
@@ -7764,6 +7789,39 @@ async def razorpay_webhook(request: Request):
 
         if event == "subscription.charged":
 
+            # Razorpay can send a subscription charge event for an
+            # upfront/add-on payment too. For the Basic offer, ₹5
+            # (500 paise) is NOT the ₹150 monthly renewal.
+            payment_entity = (
+                payload.get("payload", {})
+                .get("payment", {})
+                .get("entity", {})
+            )
+            charged_amount = payment_entity.get("amount")
+
+            if (
+                plan_key == "basic_monthly"
+                and charged_amount is not None
+                and int(charged_amount) < 15000
+            ):
+                user_ref.update({
+                    "razorpay_subscription_id": subscription_id,
+                    "razorpay_subscription_status": "authenticated",
+                    "last_payment_status": "paid"
+                })
+
+                if event_id:
+                    event_ref.set({
+                        "event": event,
+                        "created_at": datetime.now().isoformat(),
+                        "amount": int(charged_amount),
+                        "note": "Upfront payment; not monthly renewal"
+                    })
+
+                return {
+                    "status": True,
+                    "message": "Upfront payment recorded; monthly renewal not counted"
+                }
 
             # ==========================
             # SAVE EVENT FIRST
@@ -7886,12 +7944,20 @@ async def razorpay_webhook(request: Request):
             # NEVER MOVE EXPIRY BACKWARD
             # ==========================
 
-            if current_expiry > today:
+            first_basic_recurring_charge = (
+                plan_key == "basic_monthly"
+                and not user_data.get(
+                    "razorpay_first_recurring_charge_received",
+                    False
+                )
+            )
 
+            if first_basic_recurring_charge:
+                # First ₹150 debit starts the first full monthly cycle.
+                base_date = today
+            elif current_expiry > today:
                 base_date = current_expiry
-
             else:
-
                 base_date = today
 
 
@@ -7995,7 +8061,13 @@ async def razorpay_webhook(request: Request):
                     ),
 
                 "next_payment_date":
-                    next_payment_date
+                    next_payment_date,
+
+                "razorpay_first_recurring_charge_received":
+                    True if plan_key == "basic_monthly" else user_data.get(
+                        "razorpay_first_recurring_charge_received",
+                        True
+                    )
 
             })
 
