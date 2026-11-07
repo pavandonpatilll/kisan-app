@@ -6525,7 +6525,7 @@ def create_subscription(data: dict):
         # ==========================
 
         from datetime import timedelta
-        from dateutil.relativedelta import relativedelta
+        import calendar
 
         if plan_key == "basic_monthly":
             # Basic: ₹5 upfront, then ₹150 AutoPay after 24 hours.
@@ -6535,9 +6535,13 @@ def create_subscription(data: dict):
             )
         else:
             # Keep the existing Advanced offer schedule unchanged.
-            first_recurring_at = (
-                datetime.now()
-                + relativedelta(months=1)
+            now = datetime.now()
+            next_month = now.month % 12 + 1
+            next_year = now.year + (now.month // 12)
+            first_recurring_at = now.replace(
+                year=next_year,
+                month=next_month,
+                day=min(now.day, calendar.monthrange(next_year, next_month)[1]),
             )
 
         start_at = int(
